@@ -30,7 +30,8 @@
            (mouseleave)="onDragEnd()"
            (touchstart)="onDragStart($event)"
            (touchmove)="onDragMove($event)"
-           (touchend)="onDragEnd()">
+           (touchend)="onDragEnd()"
+           (click)="onPlanetHover(false)">
 
         <!-- Space Particles -->
         <div class="space-particles">
@@ -87,7 +88,8 @@
                    [style.--brand-color-light]="skill.brandColorLight"
                    [style.--brand-color-dark]="skill.brandColorDark"
                    (mouseenter)="onPlanetHover(true, skill)"
-                   (mouseleave)="onPlanetHover(false)">
+                   (mouseleave)="onPlanetHover(false)"
+                   (click)="onPlanetHover(true, skill); $event.stopPropagation()">
                 <i class="planet-icon" [ngClass]="skill.icon"></i>
               </div>
               
