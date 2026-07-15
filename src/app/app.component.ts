@@ -5,6 +5,8 @@ import { FooterComponent } from './layout/footer/footer.component';
 import { HeroComponent } from './features/hero/hero.component';
 import { ProjectsComponent } from './features/projects/projects.component';
 import { AboutComponent } from './features/about/about.component';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollTopModule } from 'primeng/scrolltop';
 import Lenis from 'lenis';
 

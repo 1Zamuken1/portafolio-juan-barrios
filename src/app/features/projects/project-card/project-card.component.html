@@ -5,7 +5,7 @@
   pRipple>
 
   <!-- Image / Gradient Header -->
-  <div class="card-image" [style.background]="cardBackground">
+  <div class="card-image" [style.background]="cardBackground" (click)="viewMore.emit()" style="cursor: pointer;">
     <div class="card-image-overlay">
       <i class="fas fa-eye"></i>
     </div>

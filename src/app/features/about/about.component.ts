@@ -7,8 +7,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TimelineModule } from 'primeng/timeline';
 import { RippleModule } from 'primeng/ripple';
 import { KnowledgePillarsComponent } from './knowledge-pillars/knowledge-pillars.component';
-import gsap from 'gsap';
-import ScrollTrigger from 'gsap/ScrollTrigger';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 @Component({
   selector: 'app-about',
