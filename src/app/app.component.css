@@ -1,0 +1,19 @@
+/* App-level styles */
+main {
+  min-height: 100vh;
+}
+
+/* PrimeNG ScrollTop override */
+:host ::ng-deep .scroll-top-btn {
+  background: var(--gradient-accent) !important;
+  border: none !important;
+  border-radius: var(--radius-lg) !important;
+  width: 44px !important;
+  height: 44px !important;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3) !important;
+}
+
+:host ::ng-deep .scroll-top-btn:hover {
+  box-shadow: 0 6px 25px rgba(37, 99, 235, 0.5) !important;
+  transform: translateY(-3px) !important;
+}

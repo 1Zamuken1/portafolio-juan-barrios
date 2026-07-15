@@ -1,0 +1,236 @@
+[
+    {
+        "id": 1,
+        "name": "Gastu Django",
+        "slug": "gastu-django",
+        "type": "Web Application",
+        "shortDescription": "Sistema de gestión financiera personal desarrollado como proyecto formativo del SENA.",
+        "fullDescription": "Sistema de gestión financiera personal desarrollado como proyecto formativo del SENA. Incluye dashboard financiero interactivo, análisis de gastos/ingresos, categorización automática con IA, exportación de reportes en PDF/Excel/CSV, autenticación con Google OAuth, WebSockets para notificaciones en tiempo real, y un agente de IA que genera recomendaciones personalizadas usando Gemini AI API.",
+        "image": "/assets/images/projects/gastu-django.png",
+        "technologies": [
+            "Python",
+            "Django 5.2",
+            "PostgreSQL",
+            "Supabase",
+            "JavaScript",
+            "TailwindCSS",
+            "Gemini AI",
+            "OAuth 2.0",
+            "WebSockets"
+        ],
+        "features": [
+            "Dashboard financiero interactivo con gráficos en tiempo real",
+            "Gestión de ingresos, egresos y ahorros",
+            "Categorización automática de transacciones",
+            "Exportación a PDF, Excel y CSV",
+            "Autenticación con Google OAuth",
+            "Agente IA para recomendaciones financieras personalizadas",
+            "Notificaciones automáticas via WebSockets",
+            "Análisis predictivo de gastos"
+        ],
+        "role": "Líder técnico y diseño visual",
+        "year": 2026,
+        "status": "Production",
+        "links": {
+            "github": "https://github.com/1Zamuken1/GastuDjango",
+            "live": "https://gastu.onrender.com/",
+            "documentation": null
+        },
+        "highlights": [
+            "Integración con autenticación Google OAuth",
+            "Arquitectura modular escalable",
+            "Exportación multiformato",
+            "Compatibilidad SQLite/PostgreSQL",
+            "Agente IA integrado para recomendaciones financieras"
+        ],
+        "keywords": [
+            "finanzas",
+            "IA",
+            "fullstack",
+            "Django",
+            "producción",
+            "WebSockets"
+        ],
+        "metrics": {
+            "performance": "95/100 Lighthouse",
+            "accessibility": "A (WCAG)",
+            "responsiveBreakpoints": 3,
+            "apiEndpoints": 12
+        }
+    },
+    {
+        "id": 2,
+        "name": "SGVA Assistant",
+        "slug": "sgva-assistant",
+        "type": "Desktop Application",
+        "shortDescription": "Herramienta de automatización para búsqueda inteligente de ofertas de prácticas SENA.",
+        "fullDescription": "Aplicación de escritorio que automatiza la búsqueda y análisis de ofertas de prácticas del portal SGVA del SENA. Utiliza automatización web con Playwright para extraer datos automáticamente, procesa ofertas con IA (Groq API) para análisis inteligente, mantiene base de datos local en JSON para reutilizar información, y exporta resultados a Excel y Markdown para fácil lectura.",
+        "image": "/assets/images/projects/sgva-assistant.png",
+        "technologies": [
+            "Electron",
+            "Node.js",
+            "Playwright",
+            "Groq API",
+            "JavaScript",
+            "ExcelJS",
+            "File System API"
+        ],
+        "features": [
+            "Automatización web con Playwright para scraping",
+            "Procesamiento inteligente de ofertas con Groq AI",
+            "Base de datos local JSON para caché",
+            "Exportación a Excel con formato profesional",
+            "Exportación a Markdown optimizada",
+            "Interfaz moderna y fácil de usar",
+            "Modo de bajo rendimiento para máquinas lentas",
+            "Ejecutable distribuible (.exe, .dmg, .AppImage)",
+            "Actualización de datos con un click",
+            "Filtrado de ofertas por criterios"
+        ],
+        "role": "Desarrollador único",
+        "year": 2026,
+        "status": "Active Development",
+        "links": {
+            "github": "https://github.com/1Zamuken1/SGVA-Assistant",
+            "live": null,
+            "documentation": null
+        },
+        "highlights": [
+            "Automatización real de procesos manuales",
+            "Uso práctico en búsqueda de prácticas SENA",
+            "Integración con APIs externas (Groq)",
+            "Reduce tiempo de búsqueda en 80%"
+        ],
+        "keywords": [
+            "automatización",
+            "web scraping",
+            "IA",
+            "desktop",
+            "productividad",
+            "Electron"
+        ],
+        "metrics": {
+            "automationLevel": "High",
+            "timeReductionPercent": 80,
+            "dataPointsProcessed": 1000
+        }
+    },
+    {
+        "id": 3,
+        "name": "Seona",
+        "slug": "seona",
+        "type": "Desktop Tool",
+        "shortDescription": "Analizador profesional de SEO On-Page para proyectos en desarrollo local.",
+        "fullDescription": "Herramienta de escritorio para análisis automático de SEO técnico en proyectos desarrollados localmente. Detecta automáticamente el framework utilizado (Django, Angular, Thymeleaf, HTML), realiza análisis completo de meta tags, rendimiento, accesibilidad, CSS, JavaScript, y genera reportes detallados en JSON y Markdown optimizados para lectura por modelos de IA.",
+        "image": "/assets/images/projects/seona.png",
+        "technologies": [
+            "Electron",
+            "React",
+            "TypeScript",
+            "Playwright",
+            "TailwindCSS",
+            "Vite",
+            "Cheerio"
+        ],
+        "features": [
+            "Detección automática de framework (Django, Angular, Thymeleaf, HTML)",
+            "Análisis SEO técnico completo",
+            "Scoring 0-100 con detalles de mejora",
+            "5 analizadores especializados (Meta, Performance, Accessibility, CSS, JS)",
+            "Generación de reportes JSON estructurados",
+            "Exportación a Markdown para lectura humana",
+            "Optimizado para lectura por modelos de IA",
+            "Interfaz moderna con tema claro/oscuro",
+            "Ejecución local sin datos enviados a la nube",
+            "Ejecutable distribuible"
+        ],
+        "role": "Desarrollador único",
+        "year": 2026,
+        "status": "Published",
+        "links": {
+            "github": "https://github.com/1Zamuken1/Seona",
+            "live": null,
+            "documentation": null
+        },
+        "highlights": [
+            "Versión 0.1.0 publicada y distribuible",
+            "Ejecutable distribuible (92.4MB)",
+            "Producto único en el mercado colombiano",
+            "Herramienta utilizada en producción personal"
+        ],
+        "keywords": [
+            "SEO",
+            "análisis",
+            "herramienta",
+            "desktop",
+            "productividad",
+            "Electron",
+            "React"
+        ],
+        "metrics": {
+            "detectedFrameworks": 4,
+            "analyzersCount": 5,
+            "reportFormats": 2,
+            "versionPublished": "0.1.0"
+        }
+    },
+    {
+        "id": 4,
+        "name": "Salsamentaría",
+        "slug": "salsamentaria",
+        "type": "Web Application",
+        "shortDescription": "Sistema e-commerce completo con dashboard administrativo y gestión de inventario.",
+        "fullDescription": "Proyecto académico de calidad de software que implementa un sistema e-commerce integral para una salsamentaría local. Incluye autenticación con JWT, roles diferenciados (administrador/cliente), gestión completa de productos, control de inventario en tiempo real, carrito de compras funcional, checkout seguro, y dashboard administrativo con reportes, gráficos y estadísticas de ventas.",
+        "image": "/assets/images/projects/salsamentaria.png",
+        "technologies": [
+            "Java 21",
+            "Spring Boot 3.x",
+            "Angular 18+",
+            "JWT",
+            "MySQL",
+            "Bootstrap 5",
+            "Chart.js"
+        ],
+        "features": [
+            "Autenticación y autorización con JWT",
+            "Sistema de roles (ADMIN, CLIENTE)",
+            "CRUD completo de productos",
+            "Gestión de inventario con alertas",
+            "Carrito de compras persistente",
+            "Checkout seguro con validaciones",
+            "Dashboard administrativo completo",
+            "Gráficos de ventas e ingresos",
+            "Validación de stock automática",
+            "Historial de órdenes del usuario"
+        ],
+        "role": "Desarrollador único",
+        "year": 2025,
+        "status": "Completed",
+        "links": {
+            "github": "https://github.com/1Zamuken1/taller_calidad_software_Salsamentaria",
+            "live": null,
+            "documentation": null
+        },
+        "highlights": [
+            "Cumple 100% de requerimientos del proyecto",
+            "Analizado con SonarQube y Codacy",
+            "Fullstack real (backend Spring + frontend Angular)",
+            "Proyecto académico de calidad de software"
+        ],
+        "keywords": [
+            "e-commerce",
+            "fullstack",
+            "Java",
+            "Spring",
+            "Angular",
+            "académico",
+            "JWT"
+        ],
+        "metrics": {
+            "endpoints": 12,
+            "angularComponents": 8,
+            "codeReviews": 2,
+            "sonarQubeRating": "A"
+        }
+    }
+]

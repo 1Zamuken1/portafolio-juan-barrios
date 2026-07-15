@@ -1,0 +1,176 @@
+{
+    "backend": {
+        "category": "Backend",
+        "color": "#2563EB",
+        "skills": [
+            {
+                "id": "java",
+                "name": "Java",
+                "icon": "devicon-java-plain",
+                "brandColor": "#ED8B00",
+                "description": "Lenguaje principal para aplicaciones robustas",
+                "brandColorLight": "#ED8B00",
+                "brandColorDark": "#ED8B00"
+            },
+            {
+                "id": "spring-boot",
+                "name": "Spring Boot",
+                "icon": "devicon-spring-plain",
+                "brandColor": "#6DB33F",
+                "description": "Framework backend principal • APIs REST • Microservicios",
+                "brandColorLight": "#6DB33F",
+                "brandColorDark": "#6DB33F"
+            },
+            {
+                "id": "python",
+                "name": "Python",
+                "icon": "devicon-python-plain",
+                "brandColor": "#3776AB",
+                "description": "Automatización • Scripts • Lógica orientada a IA",
+                "brandColorLight": "#3776AB",
+                "brandColorDark": "#3776AB"
+            },
+            {
+                "id": "django",
+                "name": "Django",
+                "icon": "devicon-django-plain",
+                "brandColor": "#10B981",
+                "description": "Framework secundario para desarrollo web rápido",
+                "brandColorLight": "#10B981",
+                "brandColorDark": "#10B981"
+            }
+        ]
+    },
+    "frontend": {
+        "category": "Frontend",
+        "color": "#22C55E",
+        "skills": [
+            {
+                "id": "angular",
+                "name": "Angular",
+                "icon": "devicon-angular-plain",
+                "brandColor": "#DD0031",
+                "description": "Desarrollo de interfaces dinámicas e integraciones",
+                "brandColorLight": "#DD0031",
+                "brandColorDark": "#DD0031"
+            },
+            {
+                "id": "typescript",
+                "name": "TypeScript",
+                "icon": "devicon-typescript-plain",
+                "brandColor": "#3178C6",
+                "description": "Lógica de UI y consumo de APIs",
+                "brandColorLight": "#3178C6",
+                "brandColorDark": "#3178C6"
+            },
+            {
+                "id": "javascript",
+                "name": "JavaScript",
+                "icon": "devicon-javascript-plain",
+                "brandColor": "#F7DF1E",
+                "description": "Bases de desarrollo web frontend",
+                "brandColorLight": "#F7DF1E",
+                "brandColorDark": "#F7DF1E"
+            },
+            {
+                "id": "tailwind",
+                "name": "TailwindCSS",
+                "icon": "devicon-tailwindcss-plain",
+                "brandColor": "#06B6D4",
+                "description": "Maquetación rápida y diseño responsivo",
+                "brandColorLight": "#06B6D4",
+                "brandColorDark": "#06B6D4"
+            }
+        ]
+    },
+    "databases": {
+        "category": "Databases",
+        "color": "#F59E0B",
+        "skills": [
+            {
+                "id": "postgresql",
+                "name": "PostgreSQL",
+                "icon": "devicon-postgresql-plain",
+                "brandColor": "#4169E1",
+                "description": "Base de datos relacional principal • SQL",
+                "brandColorLight": "#4169E1",
+                "brandColorDark": "#4169E1"
+            },
+            {
+                "id": "mysql",
+                "name": "MySQL",
+                "icon": "devicon-mysql-plain",
+                "brandColor": "#4479A1",
+                "description": "Diseño y modelado de bases de datos relacionales",
+                "brandColorLight": "#4479A1",
+                "brandColorDark": "#4479A1"
+            },
+            {
+                "id": "sqlite",
+                "name": "SQLite",
+                "icon": "devicon-sqlite-plain",
+                "brandColor": "#0EA5E9",
+                "description": "Almacenamiento ligero y pruebas de concepto",
+                "brandColorLight": "#0EA5E9",
+                "brandColorDark": "#0EA5E9"
+            }
+        ]
+    },
+    "tools": {
+        "category": "Tools",
+        "color": "#8B5CF6",
+        "skills": [
+            {
+                "id": "git",
+                "name": "Git",
+                "icon": "devicon-git-plain",
+                "brandColor": "#F05032",
+                "description": "Control de versiones distribuido",
+                "brandColorLight": "#F05032",
+                "brandColorDark": "#F05032"
+            },
+            {
+                "id": "github",
+                "name": "GitHub",
+                "icon": "devicon-github-plain",
+                "brandColor": "#E6EDF3",
+                "description": "Repositorios • Colaboración • CI/CD básico",
+                "brandColorLight": "#000000",
+                "brandColorDark": "#FFFFFF"
+            },
+            {
+                "id": "docker",
+                "name": "Docker",
+                "icon": "devicon-docker-plain",
+                "brandColor": "#2496ED",
+                "description": "Contenerización de aplicaciones backend",
+                "brandColorLight": "#2496ED",
+                "brandColorDark": "#2496ED"
+            },
+            {
+                "id": "postman",
+                "name": "Postman",
+                "icon": "fas fa-paper-plane",
+                "brandColor": "#FF6C37",
+                "description": "Pruebas y documentación de APIs",
+                "brandColorLight": "#FF6C37",
+                "brandColorDark": "#FF6C37"
+            }
+        ]
+    },
+    "ai": {
+        "category": "AI Integration",
+        "color": "#EC4899",
+        "skills": [
+            {
+                "id": "gemini",
+                "name": "Google Gemini API",
+                "icon": "fas fa-gem",
+                "brandColor": "#4285F4",
+                "description": "Integración de IA generativa y recomendaciones",
+                "brandColorLight": "#4285F4",
+                "brandColorDark": "#4285F4"
+            }
+        ]
+    }
+}

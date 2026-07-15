@@ -1,0 +1,183 @@
+/* ============================================
+   THEME SYSTEM - Light & Dark Mode
+   Glassmorphism-first approach
+   ============================================ */
+
+/* ---- Light Mode ---- */
+[data-theme="light"] {
+  /* Fondo principal beige suave/crema cálido para mejor contraste */
+  --bg-primary: #F4F1EA; 
+  --bg-secondary: #EBE7DF;
+  --bg-tertiary: #E0DCD3;
+  --bg-elevated: rgba(244, 241, 234, 0.9);
+
+  --text-primary: #2C2825;
+  --text-secondary: #4A443F;
+  --text-tertiary: #756D65;
+  --text-accent: var(--color-primary-blue-dark);
+
+  --border-subtle: rgba(44, 40, 37, 0.08);
+  --border-default: rgba(44, 40, 37, 0.12);
+  --border-strong: rgba(44, 40, 37, 0.2);
+
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --glass-shadow: 0 8px 32px rgba(44, 40, 37, 0.06);
+
+  --shadow-xs: 0 1px 2px rgba(44, 40, 37, 0.05);
+  --shadow-sm: 0 2px 4px rgba(44, 40, 37, 0.08);
+  --shadow-md: 0 4px 12px rgba(44, 40, 37, 0.1);
+  --shadow-lg: 0 8px 24px rgba(44, 40, 37, 0.12);
+  --shadow-xl: 0 16px 48px rgba(44, 40, 37, 0.15);
+
+  --glow-primary: 0 0 20px rgba(37, 99, 235, 0.15);
+  --glow-green: 0 0 20px rgba(34, 197, 94, 0.15);
+
+  --gradient-hero: linear-gradient(135deg, #F4F1EA 0%, #EFEBE1 50%, #EAE5D9 100%);
+  --gradient-card: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(244,241,234,0.85) 100%);
+  --gradient-accent: linear-gradient(135deg, var(--color-primary-blue) 0%, var(--color-primary-green) 100%);
+
+  --scrollbar-track: #EBE7DF;
+  --scrollbar-thumb: #C2BBB1;
+
+  /* ---- Space Theme Variables ---- */
+  --space-glass-bg: rgba(255, 255, 255, 0.7);
+  --space-glass-border: rgba(44, 40, 37, 0.1);
+  --space-glass-shadow: 0 8px 32px rgba(44, 40, 37, 0.08);
+  --space-glass-inset: inset 0 1px 0 rgba(255, 255, 255, 1);
+  
+  /* Estrellas cálidas doradas/café sutil */
+  --star-color-base: rgba(139, 115, 85, 0.3);
+  --star-color-bright: rgba(139, 115, 85, 0.6);
+  
+  /* Cometas cálidos oscuros */
+  --comet-head: #6B5B47;
+  --comet-tail: rgba(139, 115, 85, 0.6);
+  
+  --ring-glow-center: rgba(245, 158, 11, 0.4);
+  --ring-glow-outer: rgba(253, 224, 71, 0.15);
+  
+  /* Planetas con más contraste sobre el beige */
+  --planet-bg: #FFFFFF;
+  --planet-border: rgba(44, 40, 37, 0.15);
+  --planet-shadow: 0 6px 16px rgba(44, 40, 37, 0.12);
+  --planet-icon-shadow: rgba(44, 40, 37, 0.1);
+  
+  --orbital-track-base: rgba(44, 40, 37, 0.1);
+  --orbital-track-left: rgba(44, 40, 37, 0.25);
+  --orbital-track-right: rgba(44, 40, 37, 0.05);
+
+  --center-skill-bg: rgba(255, 255, 255, 0.9);
+  --center-skill-border: rgba(44, 40, 37, 0.15);
+  
+  /* Ring Component Light Theme Overrides */
+  --core-text-gradient: linear-gradient(135deg, #111827 40%, #4B5563);
+  --core-text-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 15px rgba(245, 158, 11, 0.6);
+  --concept-tag-bg: rgba(255, 255, 255, 0.6);
+  --concept-tag-text: var(--text-secondary);
+  --concept-tag-border: rgba(44, 40, 37, 0.1);
+  --stat-badge-bg: rgba(255, 255, 255, 0.6);
+  --stat-badge-text: var(--text-secondary);
+  --stat-badge-hover-bg: rgba(255, 255, 255, 0.9);
+  --stat-badge-hover-text: var(--text-primary);
+  --tooltip-bg: rgba(255, 255, 255, 0.85);
+}
+
+/* ---- Dark Mode (Default) ---- */
+[data-theme="dark"] {
+  --bg-primary: #0a0f1a;
+  --bg-secondary: #111827;
+  --bg-tertiary: #1F2937;
+  --bg-elevated: rgba(17, 24, 39, 0.8);
+
+  --text-primary: #F9FAFB;
+  --text-secondary: #D1D5DB;
+  --text-tertiary: #6B7280;
+  --text-accent: var(--color-primary-blue-light);
+
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+
+  --glass-bg: rgba(17, 24, 39, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
+
+  --glow-primary: 0 0 30px rgba(59, 130, 246, 0.3);
+  --glow-green: 0 0 30px rgba(34, 197, 94, 0.25);
+
+  --gradient-hero: linear-gradient(-45deg, #0a0f1a, #0f1d3a, #0a2618, #0a0f1a);
+  --gradient-card: linear-gradient(135deg, rgba(17,24,39,0.7) 0%, rgba(31,41,55,0.7) 100%);
+  --gradient-accent: linear-gradient(135deg, var(--color-primary-blue-light) 0%, var(--color-primary-green) 100%);
+
+  --scrollbar-track: #1F2937;
+  --scrollbar-thumb: #374151;
+
+  /* ---- Space Theme Variables ---- */
+  --space-glass-bg: rgba(10, 15, 30, 0.4);
+  --space-glass-border: rgba(100, 150, 255, 0.08);
+  --space-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --space-glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  
+  --star-color-base: rgba(255, 255, 255, 0.4);
+  --star-color-bright: rgba(255, 255, 255, 0.8);
+  --comet-head: #ffffff;
+  --comet-tail: rgba(100, 180, 255, 0.8);
+  
+  --ring-glow-center: rgba(245, 158, 11, 0.5);
+  --ring-glow-outer: rgba(253, 224, 71, 0.2);
+  
+  --planet-bg: rgba(15, 20, 40, 0.6);
+  --planet-border: rgba(100, 150, 255, 0.12);
+  --planet-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  --planet-icon-shadow: rgba(255,255,255,0.1);
+  
+  --orbital-track-base: rgba(100, 150, 255, 0.1);
+  --orbital-track-left: rgba(100, 150, 255, 0.25);
+  --orbital-track-right: rgba(100, 150, 255, 0.05);
+
+  --center-skill-bg: rgba(10, 15, 30, 0.7);
+  --center-skill-border: rgba(255,255,255,0.1);
+
+  /* Ring Component Dark Theme Overrides */
+  --core-text-gradient: linear-gradient(135deg, #ffffff 40%, rgba(255, 255, 255, 0.6));
+  --core-text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 10px rgba(245, 158, 11, 0.3);
+  --concept-tag-bg: rgba(15, 20, 40, 0.5);
+  --concept-tag-text: rgba(255, 255, 255, 0.4);
+  --concept-tag-border: rgba(255, 255, 255, 0.05);
+  --stat-badge-bg: rgba(10, 15, 30, 0.7);
+  --stat-badge-text: var(--text-secondary);
+  --stat-badge-hover-bg: rgba(15, 20, 45, 0.9);
+  --stat-badge-hover-text: #fff;
+  --tooltip-bg: rgba(10, 15, 30, 0.85);
+}
+
+/* ---- Glassmorphism Utility Classes ---- */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-subtle {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-strong {
+  background: var(--glass-bg);
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glow-primary);
+}

@@ -1,0 +1,57 @@
+<article
+  class="project-card glass animate-fade-in-up"
+  [style]="tiltStyle"
+  [style.animation-delay]="animationDelay"
+  pRipple>
+
+  <!-- Image / Gradient Header -->
+  <div class="card-image" [style.background]="cardBackground">
+    <div class="card-image-overlay">
+      <i class="fas fa-eye"></i>
+    </div>
+    @if (isLive) {
+      <span class="live-badge">
+        <i class="fas fa-circle live-dot"></i> Live
+      </span>
+    }
+  </div>
+
+  <!-- Content -->
+  <div class="card-body">
+    <div class="card-header">
+      <h3 class="card-title">{{ project.name }}</h3>
+      <p-tag
+        [value]="project.status"
+        [severity]="statusSeverity"
+        [rounded]="true"
+      />
+    </div>
+
+    <p class="card-description">{{ project.shortDescription }}</p>
+
+    <!-- Tech Tags -->
+    <div class="card-tags">
+      @for (tech of project.technologies.slice(0, 5); track tech) {
+        <span class="tech-tag">{{ tech }}</span>
+      }
+      @if (project.technologies.length > 5) {
+        <span class="tech-tag tech-tag-more">+{{ project.technologies.length - 5 }}</span>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="card-footer">
+      <a [href]="project.links.github" target="_blank" rel="noopener noreferrer" class="card-link">
+        <i class="fab fa-github"></i> Código
+      </a>
+      @if (project.links.live) {
+        <a [href]="project.links.live" target="_blank" rel="noopener noreferrer" class="card-link card-link-live">
+          <i class="fas fa-external-link-alt"></i> Demo
+        </a>
+      }
+      <button class="card-link card-link-details" (click)="viewMore.emit()">
+        <i class="fas fa-arrow-right"></i> Ver más
+      </button>
+    </div>
+  </div>
+</article>

@@ -1,0 +1,89 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [style]="{ width: '90vw', maxWidth: '750px' }"
+  [breakpoints]="{ '768px': '95vw' }"
+  (onHide)="onHide()"
+  [header]="project.name"
+  styleClass="project-dialog">
+
+  <div class="modal-content">
+    <!-- Description -->
+    <p class="modal-description">{{ project.fullDescription }}</p>
+
+    <!-- Role & Year -->
+    <div class="modal-meta">
+      <div class="meta-item">
+        <i class="fas fa-user-tag"></i>
+        <span>{{ project.role }}</span>
+      </div>
+      <div class="meta-item">
+        <i class="fas fa-calendar"></i>
+        <span>{{ project.year }}</span>
+      </div>
+      <div class="meta-item">
+        <p-tag [value]="project.status" severity="success" [rounded]="true" />
+      </div>
+    </div>
+
+    <!-- Technologies -->
+    <div class="modal-section">
+      <h4 class="modal-section-title">
+        <i class="fas fa-layer-group"></i> Tecnologías
+      </h4>
+      <div class="modal-tags">
+        @for (tech of project.technologies; track tech) {
+          <span class="modal-tech-tag">{{ tech }}</span>
+        }
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div class="modal-section">
+      <h4 class="modal-section-title">
+        <i class="fas fa-star"></i> Características
+      </h4>
+      <ul class="modal-features">
+        @for (feature of project.features; track feature) {
+          <li>
+            <i class="fas fa-check-circle"></i>
+            <span>{{ feature }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+
+    <!-- Highlights -->
+    @if (project.highlights.length) {
+      <div class="modal-section">
+        <h4 class="modal-section-title">
+          <i class="fas fa-trophy"></i> Logros
+        </h4>
+        <div class="modal-highlights">
+          @for (highlight of project.highlights; track highlight) {
+            <div class="highlight-item">
+              <i class="fas fa-medal"></i>
+              <span>{{ highlight }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Links -->
+    <div class="modal-actions">
+      <a [href]="project.links.github" target="_blank" rel="noopener noreferrer" class="modal-btn modal-btn-github">
+        <i class="fab fa-github"></i> Ver Código
+      </a>
+      @if (project.links.live) {
+        <a [href]="project.links.live" target="_blank" rel="noopener noreferrer" class="modal-btn modal-btn-live">
+          <i class="fas fa-external-link-alt"></i> Demo en Vivo
+        </a>
+      }
+    </div>
+  </div>
+</p-dialog>

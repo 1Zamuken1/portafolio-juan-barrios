@@ -1,0 +1,35 @@
+<nav [class.scrolled]="scrolled()">
+  <div class="navbar-inner">
+    <!-- Logo -->
+    <a class="navbar-brand" (click)="scrollTo('hero')" role="button" tabindex="0">
+      <span class="brand-text gradient-text">JEB</span>
+    </a>
+
+    <!-- Navigation Links -->
+    <div class="navbar-links">
+      <a class="nav-link" (click)="scrollTo('projects')" role="button" tabindex="0">
+        <i class="fas fa-code"></i>
+        <span>Proyectos</span>
+      </a>
+      <a class="nav-link" (click)="scrollTo('about')" role="button" tabindex="0">
+        <i class="fas fa-user"></i>
+        <span>Sobre Mí</span>
+      </a>
+      <a class="nav-link" (click)="scrollTo('contact')" role="button" tabindex="0">
+        <i class="fas fa-envelope"></i>
+        <span>Contacto</span>
+      </a>
+    </div>
+
+    <!-- Theme Toggle -->
+    <button
+      class="theme-toggle"
+      (click)="toggleTheme()"
+      [pTooltip]="themeService.isDark() ? 'Modo claro' : 'Modo oscuro'"
+      tooltipPosition="bottom"
+      aria-label="Cambiar tema"
+      pRipple>
+      <i [class]="themeService.isDark() ? 'fas fa-sun' : 'fas fa-moon'"></i>
+    </button>
+  </div>
+</nav>
