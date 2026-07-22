@@ -21,24 +21,32 @@ export class ProjectsComponent implements OnInit {
   selectedProject = signal<Project | null>(null);
 
   ngOnInit(): void {
-    this.dataService.getProjects().subscribe(data => {
-      this.projects.set(data);
-      
-      // Initialize ScrollTrigger for cards after render
-      setTimeout(() => {
-        gsap.registerPlugin(ScrollTrigger);
-        gsap.fromTo('.project-card', 
-          { y: 80, opacity: 0 },
-          { 
-            y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power3.out',
-            scrollTrigger: { 
-              trigger: '.projects-grid', 
-              start: 'top 85%',
-              toggleActions: 'play none none none'
+    this.dataService.getProjects().subscribe({
+      next: (data) => {
+        // Show only active/production projects on the home page, or all if you prefer
+        // For now, let's just show all of them and filter out drafts if needed
+        const visibleProjects = data.filter(p => p.status !== 'Draft');
+        this.projects.set(visibleProjects);
+        
+        // Initialize ScrollTrigger for cards after render
+        setTimeout(() => {
+          gsap.registerPlugin(ScrollTrigger);
+          gsap.fromTo('.stitch-project-card', 
+            { y: 80, opacity: 0 },
+            { 
+              y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power3.out',
+              scrollTrigger: { 
+                trigger: '.projects-grid', 
+                start: 'top 85%',
+                toggleActions: 'play none none none'
+              }
             }
-          }
-        );
-      }, 100);
+          );
+        }, 100);
+      },
+      error: (err) => {
+        console.error('Error loading projects:', err);
+      }
     });
   }
 
