@@ -17,8 +17,8 @@
 }
 
 .stitch-project-card:hover {
-  border-color: var(--text-accent);
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2), 0 0 0 1px var(--text-accent);
+  border-color: var(--border-subtle);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border-subtle);
   transform: translateY(-6px);
 }
 
@@ -112,9 +112,9 @@
 }
 
 .stitch-project-card:hover .stitch-tag {
-  background: var(--text-primary);
-  color: var(--bg-secondary);
-  border-color: var(--text-primary);
+  background: var(--border-subtle);
+  color: var(--text-primary);
+  border-color: var(--border-default);
 }
 
 /* ---- Title & Description ---- */
@@ -124,7 +124,7 @@
 }
 
 .stitch-card-content p {
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.7); /* Improved contrast for dark themes */
 }
 
 /* ---- Actions ---- */
