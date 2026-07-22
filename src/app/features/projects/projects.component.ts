@@ -22,8 +22,7 @@ export class ProjectsComponent implements OnInit {
 
   ngOnInit(): void {
     this.dataService.getProjects().subscribe(data => {
-      // Only show the 4 main projects (exclude Gastu Spring)
-      this.projects.set(data.filter(p => p.slug !== 'gastu-spring'));
+      this.projects.set(data);
       
       // Initialize ScrollTrigger for cards after render
       setTimeout(() => {

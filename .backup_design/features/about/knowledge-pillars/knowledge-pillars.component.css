@@ -1,0 +1,429 @@
+/* ════════════════════════════════════════════════════════
+   Knowledge Pillars — Architecture & Learning
+   ════════════════════════════════════════════════════════ */
+
+.pillars-intro {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 80px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pillars-intro i {
+  color: var(--color-primary-blue);
+}
+
+.mobile-only {
+  display: none;
+}
+
+.knowledge-pillars {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2xl);
+  margin-top: 24px;
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Shared Section Styles ── */
+.pillar-section {
+  text-align: center;
+}
+
+.pillar-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.pillar-title i {
+  color: var(--color-primary-blue);
+  font-size: 1.1rem;
+}
+
+.pillar-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+
+/* ════════════════════════════════════════════════════════
+   ARCHITECTURE BUILDING
+   ════════════════════════════════════════════════════════ */
+.building-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* ── Roof ── */
+.building-roof {
+  width: 60px;
+  height: 50px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: -2px;
+}
+
+.building-roof::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  border-left: 50px solid transparent;
+  border-right: 50px solid transparent;
+  border-bottom: 40px solid var(--space-glass-bg);
+  filter: drop-shadow(0 -2px 4px rgba(37, 99, 235, 0.1));
+}
+
+.roof-antenna {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 20px;
+  background: linear-gradient(to top, var(--color-primary-blue), transparent);
+  border-radius: 2px;
+}
+
+.roof-antenna::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary-blue);
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.5);
+  animation: antennaPulse 2s ease-in-out infinite;
+}
+
+@keyframes antennaPulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(37, 99, 235, 0.4); }
+  50% { box-shadow: 0 0 14px rgba(37, 99, 235, 0.8); }
+}
+
+/* ── Building Body ── */
+.building-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  border-left: 2px solid var(--space-glass-border);
+  border-right: 2px solid var(--space-glass-border);
+  background: var(--space-glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 0 6px;
+  position: relative;
+}
+
+/* Central structural line */
+.building-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(37, 99, 235, 0.15) 20%,
+    rgba(37, 99, 235, 0.15) 80%,
+    transparent
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Floor (Row) ── */
+.building-floor {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 10px 8px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* Beam separator between floors */
+.building-floor + .building-floor {
+  border-top: 1px solid var(--space-glass-border);
+}
+
+/* Each floor gets slightly wider */
+.building-floor:nth-child(1) { width: 55%; }
+.building-floor:nth-child(2) { width: 75%; }
+.building-floor:nth-child(3) { width: 90%; }
+.building-floor:nth-child(4) { width: 100%; }
+
+/* ── Floor Block ── */
+.floor-block {
+  background: rgba(37, 99, 235, 0.05);
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  border-bottom: 3px solid rgba(37, 99, 235, 0.25);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: default;
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+}
+
+.floor-block span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.floor-block:hover {
+  transform: translateY(-3px);
+  border-bottom-color: var(--color-primary-blue);
+  color: var(--text-accent);
+  background: rgba(37, 99, 235, 0.12);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.15);
+}
+
+/* ── Foundation ── */
+.building-foundation {
+  width: 110%;
+  padding: 8px 0;
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.08),
+    rgba(34, 197, 94, 0.05)
+  );
+  border: 2px solid var(--space-glass-border);
+  border-top: 3px solid rgba(37, 99, 235, 0.3);
+  border-radius: 0 0 8px 8px;
+  text-align: center;
+}
+
+.foundation-text {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ════════════════════════════════════════════════════════
+   LEARNING STAIRCASE
+   ════════════════════════════════════════════════════════ */
+.staircase-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  max-width: 400px;
+  margin: 0 auto;
+  padding-left: 16px;
+  position: relative;
+}
+
+/* ── Guide Line ── */
+.staircase-guide-line {
+  position: absolute;
+  left: 28px;
+  top: 12px;
+  bottom: 30px;
+  width: 2px;
+  background: linear-gradient(
+    to top,
+    rgba(34, 197, 94, 0.1),
+    rgba(34, 197, 94, 0.35) 50%,
+    rgba(37, 99, 235, 0.3)
+  );
+  border-radius: 2px;
+  z-index: 0;
+}
+
+/* ── Step ── */
+.stair-step {
+  display: flex;
+  align-items: stretch;
+  margin-left: calc(var(--step-index, 0) * 42px);
+  position: relative;
+  z-index: 1;
+}
+
+/* Vertical riser connecting to the next step */
+.step-riser {
+  width: 2px;
+  min-height: 24px;
+  background: linear-gradient(
+    to bottom,
+    rgba(34, 197, 94, 0.3),
+    rgba(34, 197, 94, 0.1)
+  );
+  margin-left: 12px;
+  border-radius: 2px;
+}
+
+/* Horizontal platform */
+.step-platform {
+  display: flex;
+  align-items: center;
+  margin-top: auto;
+}
+
+.step-platform::before {
+  content: '';
+  width: 16px;
+  height: 2px;
+  background: rgba(34, 197, 94, 0.3);
+  flex-shrink: 0;
+}
+
+.step-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: var(--space-glass-bg);
+  border: 1px solid rgba(34, 197, 94, 0.15);
+  border-bottom: 3px solid rgba(34, 197, 94, 0.25);
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: default;
+}
+
+.step-content:hover {
+  transform: translateY(-3px);
+  border-bottom-color: var(--color-primary-green);
+  background: rgba(34, 197, 94, 0.08);
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.15);
+}
+
+.step-content:hover .step-icon {
+  color: var(--color-primary-green);
+}
+
+.step-content:hover .step-label {
+  color: var(--text-accent);
+}
+
+.step-icon {
+  font-size: 1rem;
+  color: var(--text-muted);
+  transition: color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.step-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
+  white-space: nowrap;
+}
+
+/* ── Arrow at top ── */
+.staircase-arrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: calc(var(--step-index, 0) * 42px + 26px);
+  padding: 6px 14px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.staircase-arrow i {
+  color: var(--color-primary-green);
+  animation: arrowBounce 2s ease-in-out infinite;
+}
+
+@keyframes arrowBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* ════════════════════════════════════════════════════════
+   RESPONSIVE
+   ════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .pillars-intro {
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 60px;
+  }
+
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: block;
+  }
+
+  .knowledge-pillars {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    margin-top: 60px;
+  }
+
+  .building-wrapper {
+    max-width: 340px;
+  }
+
+  .staircase-wrapper {
+    max-width: 340px;
+  }
+
+  .stair-step {
+    margin-left: calc(var(--step-index, 0) * 30px);
+  }
+
+  .staircase-arrow {
+    margin-left: calc(var(--step-index, 0) * 30px + 26px);
+  }
+}
+
+@media (max-width: 480px) {
+  .floor-block {
+    padding: 6px 8px;
+    font-size: 0.7rem;
+  }
+
+  .stair-step {
+    margin-left: calc(var(--step-index, 0) * 20px);
+  }
+
+  .staircase-arrow {
+    margin-left: calc(var(--step-index, 0) * 20px + 26px);
+  }
+}

@@ -1,183 +1,175 @@
 /* ============================================
    THEME SYSTEM - Light & Dark Mode
-   Glassmorphism-first approach
+   Event Horizon Aesthetic (Stitch)
    ============================================ */
 
-/* ---- Light Mode ---- */
+/* ---- Light Mode (Azul Claro / Slate) ---- */
 [data-theme="light"] {
-  /* Fondo principal beige suave/crema cálido para mejor contraste */
-  --bg-primary: #F4F1EA; 
-  --bg-secondary: #EBE7DF;
-  --bg-tertiary: #E0DCD3;
-  --bg-elevated: rgba(244, 241, 234, 0.9);
+  --bg-primary: #E2E8F0; /* Slate 200 - clearly gray-blue, not white */
+  --bg-secondary: #FFFFFF; /* Pure white for cards */
+  --bg-tertiary: #CBD5E1; /* Slate 300 for tags/accents */
+  --bg-elevated: #FFFFFF;
 
-  --text-primary: #2C2825;
-  --text-secondary: #4A443F;
-  --text-tertiary: #756D65;
-  --text-accent: var(--color-primary-blue-dark);
+  --text-primary: #0F172A; /* Slate 900 */
+  --text-secondary: #334155; /* Slate 700 */
+  --text-tertiary: #475569; /* Slate 600 */
+  --text-accent: #2563EB; /* Blue 600 */
 
-  --border-subtle: rgba(44, 40, 37, 0.08);
-  --border-default: rgba(44, 40, 37, 0.12);
-  --border-strong: rgba(44, 40, 37, 0.2);
+  --border-subtle: #CBD5E1;
+  --border-default: #94A3B8;
+  --border-strong: #475569;
 
-  --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.8);
-  --glass-shadow: 0 8px 32px rgba(44, 40, 37, 0.06);
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(15, 23, 42, 0.15);
+  --glass-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
 
-  --shadow-xs: 0 1px 2px rgba(44, 40, 37, 0.05);
-  --shadow-sm: 0 2px 4px rgba(44, 40, 37, 0.08);
-  --shadow-md: 0 4px 12px rgba(44, 40, 37, 0.1);
-  --shadow-lg: 0 8px 24px rgba(44, 40, 37, 0.12);
-  --shadow-xl: 0 16px 48px rgba(44, 40, 37, 0.15);
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 12px 32px rgba(15, 23, 42, 0.12);
+  --shadow-lg: 0 20px 50px rgba(15, 23, 42, 0.18);
+  --shadow-xl: 0 32px 80px rgba(15, 23, 42, 0.25);
 
-  --glow-primary: 0 0 20px rgba(37, 99, 235, 0.15);
-  --glow-green: 0 0 20px rgba(34, 197, 94, 0.15);
+  --glow-primary: none;
+  --glow-green: none;
 
-  --gradient-hero: linear-gradient(135deg, #F4F1EA 0%, #EFEBE1 50%, #EAE5D9 100%);
-  --gradient-card: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(244,241,234,0.85) 100%);
-  --gradient-accent: linear-gradient(135deg, var(--color-primary-blue) 0%, var(--color-primary-green) 100%);
+  --gradient-hero: linear-gradient(180deg, #E2E8F0 0%, #CBD5E1 100%);
+  --gradient-card: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+  --gradient-accent: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
 
-  --scrollbar-track: #EBE7DF;
-  --scrollbar-thumb: #C2BBB1;
+  --scrollbar-track: #CBD5E1;
+  --scrollbar-thumb: #94A3B8;
 
   /* ---- Space Theme Variables ---- */
-  --space-glass-bg: rgba(255, 255, 255, 0.7);
-  --space-glass-border: rgba(44, 40, 37, 0.1);
-  --space-glass-shadow: 0 8px 32px rgba(44, 40, 37, 0.08);
+  --space-glass-bg: rgba(255, 255, 255, 0.95);
+  --space-glass-border: rgba(15, 23, 42, 0.2);
+  --space-glass-shadow: 0 8px 32px rgba(15, 23, 42, 0.1);
   --space-glass-inset: inset 0 1px 0 rgba(255, 255, 255, 1);
   
-  /* Estrellas cálidas doradas/café sutil */
-  --star-color-base: rgba(139, 115, 85, 0.3);
-  --star-color-bright: rgba(139, 115, 85, 0.6);
+  --star-color-base: rgba(15, 23, 42, 0.2);
+  --star-color-bright: rgba(15, 23, 42, 0.4);
+  --comet-head: #475569;
+  --comet-tail: rgba(15, 23, 42, 0.15);
   
-  /* Cometas cálidos oscuros */
-  --comet-head: #6B5B47;
-  --comet-tail: rgba(139, 115, 85, 0.6);
+  --ring-glow-center: rgba(37, 99, 235, 0.1);
+  --ring-glow-outer: rgba(37, 99, 235, 0.04);
   
-  --ring-glow-center: rgba(245, 158, 11, 0.4);
-  --ring-glow-outer: rgba(253, 224, 71, 0.15);
-  
-  /* Planetas con más contraste sobre el beige */
   --planet-bg: #FFFFFF;
-  --planet-border: rgba(44, 40, 37, 0.15);
-  --planet-shadow: 0 6px 16px rgba(44, 40, 37, 0.12);
-  --planet-icon-shadow: rgba(44, 40, 37, 0.1);
+  --planet-border: #94A3B8;
+  --planet-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
+  --planet-icon-shadow: rgba(15, 23, 42, 0.15);
   
-  --orbital-track-base: rgba(44, 40, 37, 0.1);
-  --orbital-track-left: rgba(44, 40, 37, 0.25);
-  --orbital-track-right: rgba(44, 40, 37, 0.05);
+  --orbital-track-base: rgba(15, 23, 42, 0.15);
+  --orbital-track-left: rgba(37, 99, 235, 0.3);
+  --orbital-track-right: rgba(15, 23, 42, 0.08);
 
-  --center-skill-bg: rgba(255, 255, 255, 0.9);
-  --center-skill-border: rgba(44, 40, 37, 0.15);
+  --center-skill-bg: #FFFFFF;
+  --center-skill-border: #94A3B8;
   
   /* Ring Component Light Theme Overrides */
-  --core-text-gradient: linear-gradient(135deg, #111827 40%, #4B5563);
-  --core-text-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 15px rgba(245, 158, 11, 0.6);
-  --concept-tag-bg: rgba(255, 255, 255, 0.6);
-  --concept-tag-text: var(--text-secondary);
-  --concept-tag-border: rgba(44, 40, 37, 0.1);
-  --stat-badge-bg: rgba(255, 255, 255, 0.6);
-  --stat-badge-text: var(--text-secondary);
-  --stat-badge-hover-bg: rgba(255, 255, 255, 0.9);
-  --stat-badge-hover-text: var(--text-primary);
-  --tooltip-bg: rgba(255, 255, 255, 0.85);
+  --core-text-gradient: linear-gradient(135deg, #0F172A 40%, #1E293B);
+  --core-text-shadow: none;
+  --concept-tag-bg: #F8FAFC;
+  --concept-tag-text: #0F172A;
+  --concept-tag-border: #94A3B8;
+  --stat-badge-bg: #FFFFFF;
+  --stat-badge-text: #0F172A;
+  --stat-badge-hover-bg: #0F172A;
+  --stat-badge-hover-text: #FFFFFF;
+  --tooltip-bg: rgba(255, 255, 255, 0.98);
 }
 
 /* ---- Dark Mode (Default) ---- */
 [data-theme="dark"] {
-  --bg-primary: #0a0f1a;
-  --bg-secondary: #111827;
-  --bg-tertiary: #1F2937;
-  --bg-elevated: rgba(17, 24, 39, 0.8);
+  --bg-primary: #000000;
+  --bg-secondary: #0A0A0A;
+  --bg-tertiary: #141414;
+  --bg-elevated: #0A0A0A;
 
-  --text-primary: #F9FAFB;
-  --text-secondary: #D1D5DB;
-  --text-tertiary: #6B7280;
-  --text-accent: var(--color-primary-blue-light);
+  --text-primary: #FFFFFF;
+  --text-secondary: #A1A1AA;
+  --text-tertiary: #71717A;
+  --text-accent: #FFFFFF;
 
-  --border-subtle: rgba(255, 255, 255, 0.04);
-  --border-default: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.12);
+  --border-subtle: #1F1F1F;
+  --border-default: #27272A;
+  --border-strong: #3F3F46;
 
-  --glass-bg: rgba(17, 24, 39, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --glass-bg: rgba(10, 10, 10, 0.85);
+  --glass-border: #1F1F1F;
+  --glass-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.8);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.7);
+  --shadow-xl: 0 32px 80px rgba(0, 0, 0, 0.9);
 
-  --glow-primary: 0 0 30px rgba(59, 130, 246, 0.3);
-  --glow-green: 0 0 30px rgba(34, 197, 94, 0.25);
+  --glow-primary: none;
+  --glow-green: none;
 
-  --gradient-hero: linear-gradient(-45deg, #0a0f1a, #0f1d3a, #0a2618, #0a0f1a);
-  --gradient-card: linear-gradient(135deg, rgba(17,24,39,0.7) 0%, rgba(31,41,55,0.7) 100%);
-  --gradient-accent: linear-gradient(135deg, var(--color-primary-blue-light) 0%, var(--color-primary-green) 100%);
+  --gradient-hero: linear-gradient(180deg, #000000 0%, #050505 100%);
+  --gradient-card: linear-gradient(180deg, #0A0A0A 0%, #0F0F0F 100%);
+  --gradient-accent: linear-gradient(135deg, #333 0%, #666 100%);
 
-  --scrollbar-track: #1F2937;
-  --scrollbar-thumb: #374151;
+  --scrollbar-track: #000000;
+  --scrollbar-thumb: #27272A;
 
   /* ---- Space Theme Variables ---- */
-  --space-glass-bg: rgba(10, 15, 30, 0.4);
-  --space-glass-border: rgba(100, 150, 255, 0.08);
-  --space-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  --space-glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --space-glass-bg: rgba(10, 10, 10, 0.6);
+  --space-glass-border: #1F1F1F;
+  --space-glass-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  --space-glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.02);
   
-  --star-color-base: rgba(255, 255, 255, 0.4);
-  --star-color-bright: rgba(255, 255, 255, 0.8);
-  --comet-head: #ffffff;
-  --comet-tail: rgba(100, 180, 255, 0.8);
+  --star-color-base: rgba(255, 255, 255, 0.15);
+  --star-color-bright: rgba(255, 255, 255, 0.4);
+  --comet-head: #FFFFFF;
+  --comet-tail: rgba(255, 255, 255, 0.2);
   
-  --ring-glow-center: rgba(245, 158, 11, 0.5);
-  --ring-glow-outer: rgba(253, 224, 71, 0.2);
+  --ring-glow-center: rgba(255, 255, 255, 0.05);
+  --ring-glow-outer: rgba(255, 255, 255, 0.02);
   
-  --planet-bg: rgba(15, 20, 40, 0.6);
-  --planet-border: rgba(100, 150, 255, 0.12);
-  --planet-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  --planet-icon-shadow: rgba(255,255,255,0.1);
+  --planet-bg: #0A0A0A;
+  --planet-border: #27272A;
+  --planet-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  --planet-icon-shadow: rgba(255,255,255,0.05);
   
-  --orbital-track-base: rgba(100, 150, 255, 0.1);
-  --orbital-track-left: rgba(100, 150, 255, 0.25);
-  --orbital-track-right: rgba(100, 150, 255, 0.05);
+  --orbital-track-base: rgba(255, 255, 255, 0.05);
+  --orbital-track-left: rgba(255, 255, 255, 0.1);
+  --orbital-track-right: rgba(255, 255, 255, 0.02);
 
-  --center-skill-bg: rgba(10, 15, 30, 0.7);
-  --center-skill-border: rgba(255,255,255,0.1);
+  --center-skill-bg: #0A0A0A;
+  --center-skill-border: #1F1F1F;
 
   /* Ring Component Dark Theme Overrides */
-  --core-text-gradient: linear-gradient(135deg, #ffffff 40%, rgba(255, 255, 255, 0.6));
-  --core-text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 10px rgba(245, 158, 11, 0.3);
-  --concept-tag-bg: rgba(15, 20, 40, 0.5);
-  --concept-tag-text: rgba(255, 255, 255, 0.4);
-  --concept-tag-border: rgba(255, 255, 255, 0.05);
-  --stat-badge-bg: rgba(10, 15, 30, 0.7);
-  --stat-badge-text: var(--text-secondary);
-  --stat-badge-hover-bg: rgba(15, 20, 45, 0.9);
-  --stat-badge-hover-text: #fff;
-  --tooltip-bg: rgba(10, 15, 30, 0.85);
+  --core-text-gradient: linear-gradient(135deg, #FFFFFF 40%, #A1A1AA);
+  --core-text-shadow: none;
+  --concept-tag-bg: #0A0A0A;
+  --concept-tag-text: #A1A1AA;
+  --concept-tag-border: #1F1F1F;
+  --stat-badge-bg: #0A0A0A;
+  --stat-badge-text: #A1A1AA;
+  --stat-badge-hover-bg: #1F1F1F;
+  --stat-badge-hover-text: #FFFFFF;
+  --tooltip-bg: #0A0A0A;
 }
 
-/* ---- Glassmorphism Utility Classes ---- */
+/* ---- Component Utility Classes ---- */
 .glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-md);
 }
 
 .glass-subtle {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-  border: 1px solid var(--glass-border);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
 }
 
 .glass-strong {
-  background: var(--glass-bg);
-  backdrop-filter: blur(30px) saturate(200%);
-  -webkit-backdrop-filter: blur(30px) saturate(200%);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow), var(--glow-primary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg);
 }

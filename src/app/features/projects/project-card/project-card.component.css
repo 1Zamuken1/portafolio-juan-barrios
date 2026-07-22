@@ -2,188 +2,171 @@
   display: block;
 }
 
-.project-card {
-  border-radius: var(--radius-xl);
+.stitch-project-card {
+  border-radius: var(--radius-lg);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: default;
-  will-change: transform;
+  will-change: transform, box-shadow;
+  background: var(--gradient-card);
+  border: 1px solid var(--border-default);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  position: relative;
+}
+
+.stitch-project-card:hover {
+  border-color: var(--border-subtle);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border-subtle);
+  transform: translateY(-6px);
 }
 
 /* ---- Image Header ---- */
-.card-image {
+.stitch-card-image-wrapper {
   position: relative;
-  height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-default);
 }
 
-.card-image-overlay {
+.stitch-card-img, .stitch-card-img-placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s ease;
+}
+
+.stitch-project-card:hover .stitch-card-img,
+.stitch-project-card:hover .stitch-card-img-placeholder {
+  transform: scale(1.05);
+}
+
+.stitch-card-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.6) 0%, transparent 60%);
   opacity: 0;
-  transition: opacity var(--transition-base);
+  transition: opacity 0.4s ease;
 }
 
-.card-image-overlay i {
-  font-size: 2rem;
-  color: white;
-  transform: scale(0.8);
-  transition: transform var(--transition-base);
-}
-
-.project-card:hover .card-image-overlay {
+.stitch-project-card:hover .stitch-card-overlay {
   opacity: 1;
 }
 
-.project-card:hover .card-image-overlay i {
-  transform: scale(1);
-}
-
 /* ---- Live Badge ---- */
-.live-badge {
+.live-indicator {
   position: absolute;
-  top: var(--space-md);
-  right: var(--space-md);
+  top: 1rem;
+  right: 1rem;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  background: rgba(34, 197, 94, 0.9);
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 700;
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--color-primary-green);
+  border: 1px solid rgba(34, 197, 94, 0.3);
   border-radius: var(--radius-full);
-  backdrop-filter: blur(8px);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  backdrop-filter: blur(4px);
+  z-index: 2;
 }
 
 .live-dot {
-  font-size: 6px;
-  animation: pulse 2s ease-in-out infinite;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 /* ---- Card Body ---- */
-.card-body {
-  padding: var(--space-lg);
+.stitch-card-content {
+  padding: 1.75rem;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
-}
-
-.card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-sm);
-}
-
-.card-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-.card-description {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  flex: 1;
+  z-index: 1;
 }
 
 /* ---- Tech Tags ---- */
-.card-tags {
+.stitch-card-tags {
   display: flex;
-  gap: 6px;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.stitch-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: var(--radius-full);
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  transition: all 0.3s ease;
+}
+
+.stitch-project-card:hover .stitch-tag {
+  background: var(--border-subtle);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+
+/* ---- Title & Description ---- */
+.stitch-card-content h3 {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.stitch-card-content p {
+  color: rgba(255, 255, 255, 0.7); /* Improved contrast for dark themes */
+}
+
+/* ---- Actions ---- */
+.stitch-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
   flex-wrap: wrap;
 }
 
-.tech-tag {
+.stitch-link {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
-  font-size: 0.72rem;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
   font-weight: 600;
-  border-radius: var(--radius-full);
-  background: rgba(37, 99, 235, 0.06);
-  color: var(--text-secondary);
-  border: 1px solid rgba(37, 99, 235, 0.15);
-  transition: all var(--transition-fast);
-}
-
-.tech-tag:hover {
-  color: var(--text-accent);
-  border-color: var(--color-primary-blue);
-  background: rgba(37, 99, 235, 0.08);
-}
-
-.tech-tag-more {
-  background: rgba(37, 99, 235, 0.1);
-  color: var(--text-accent);
-  border-color: rgba(37, 99, 235, 0.2);
-}
-
-/* ---- Card Footer ---- */
-.card-footer {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  padding-top: var(--space-md);
-  border-top: 1px solid var(--border-subtle);
-}
-
-.card-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  transition: color var(--transition-fast);
-  text-decoration: none;
+  color: var(--text-primary);
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
-  font-family: inherit;
+  text-decoration: none;
+  transition: all var(--transition-fast);
 }
 
-.card-link:hover {
+.stitch-link:hover {
   color: var(--text-accent);
 }
 
-.card-link-live {
-  color: var(--color-primary-green);
+.group-hover-gap {
+  transition: gap 0.3s ease;
 }
 
-.card-link-live:hover {
-  color: var(--color-primary-green-light);
+.stitch-link:hover,
+.stitch-project-card:hover .stitch-link {
+  gap: 1rem;
 }
 
-.card-link-details {
-  margin-left: auto;
-  color: var(--text-accent);
-  font-weight: 600;
-}
-
-.card-link-details:hover {
-  color: var(--color-primary-blue-light);
-}
-
-.card-link-details i {
-  transition: transform var(--transition-fast);
-}
-
-.card-link-details:hover i {
-  transform: translateX(3px);
+.stitch-link i {
+  font-size: 1rem;
 }

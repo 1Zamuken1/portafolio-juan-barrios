@@ -1,0 +1,65 @@
+<p-toast />
+<p-confirmDialog />
+
+<div class="admin-projects-header">
+  <h2 class="font-code-lg">Projects</h2>
+  <button pButton label="+ New Project" class="p-button-sm" (click)="createNew()"></button>
+</div>
+
+<div *ngIf="loading" class="loading-state" style="padding: 3rem; text-align: center;">
+  <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+  <p style="margin-top: 1rem;">Loading projects...</p>
+</div>
+
+<div *ngIf="!loading">
+  <p-table 
+    [value]="projects" 
+    [paginator]="true"
+    [rows]="10"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} projects"
+    styleClass="p-datatable-sm p-datatable-striped"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 60px">ID</th>
+        <th>Name</th>
+        <th>Status</th>
+        <th style="width: 80px">Year</th>
+        <th style="width: 80px">Order</th>
+        <th style="width: 180px">Actions</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-project>
+      <tr>
+        <td>{{ project.id }}</td>
+        <td>
+          <div class="project-name-cell">
+            <strong>{{ project.name }}</strong>
+            <small class="text-secondary">{{ project.shortDescription | slice:0:60 }}...</small>
+          </div>
+        </td>
+        <td>
+          <p-tag [value]="project.status" [severity]="getStatusSeverity(project.status)" [rounded]="true" />
+        </td>
+        <td>{{ project.year }}</td>
+        <td>{{ project.displayOrder }}</td>
+        <td>
+          <div class="action-buttons">
+            <button pButton icon="pi pi-pencil" class="p-button-sm p-button-text p-button-info" (click)="editProject(project)" pTooltip="Edit"></button>
+            <button pButton icon="pi pi-trash" class="p-button-sm p-button-text p-button-danger" (click)="confirmDelete(project)" pTooltip="Delete"></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 2rem;">
+          <p>No projects yet. Click <strong>+ New Project</strong> to create one.</p>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

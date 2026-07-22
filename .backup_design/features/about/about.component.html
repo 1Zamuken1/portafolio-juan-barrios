@@ -1,0 +1,256 @@
+<section class="section" id="about">
+  <!-- Starfield Background -->
+  <div class="starfield">
+    <div class="stars stars-sm"></div>
+    <div class="stars stars-md"></div>
+    <div class="stars stars-lg"></div>
+    <div class="comet comet-1"></div>
+    <div class="comet comet-2"></div>
+    <div class="comet comet-3"></div>
+  </div>
+
+  <div class="container">
+
+    <!-- ---- Interactive 3D Skills Ring (Stack Tecnológico) ---- -->
+    <div class="skills-section gsap-reveal" id="skills">
+      <h3 class="subsection-title skills-title">
+        <i class="fas fa-code"></i> Stack Tecnológico
+      </h3>
+      <p class="ring-subtitle">
+        Selecciono cada herramienta por su capacidad para resolver problemas complejos y construir soluciones escalables.
+      </p>
+      <p class="ring-hint">
+        <i class="fas fa-hand-pointer"></i> Arrastra para explorar
+      </p>
+
+      <div class="skills-3d-scene"
+           (mousedown)="onDragStart($event)"
+           (mousemove)="onDragMove($event)"
+           (mouseup)="onDragEnd()"
+           (mouseleave)="onDragEnd()"
+           (touchstart)="onDragStart($event)"
+           (touchmove)="onDragMove($event)"
+           (touchend)="onDragEnd()"
+           (click)="onPlanetHover(false)">
+
+        <!-- Space Particles -->
+        <div class="space-particles">
+          <div class="particle p-1"></div>
+          <div class="particle p-2"></div>
+          <div class="particle p-3"></div>
+          <div class="particle p-4"></div>
+          <div class="particle p-5"></div>
+        </div>
+
+        <!-- Central glow -->
+        <div class="ring-glow"></div>
+        
+        <!-- Central Core (Hidden when hovering a skill) -->
+        <div class="ring-core" [class.hidden]="hoveredSkill()">
+          <span class="core-text">BACKEND<br>DEVELOPER</span>
+        </div>
+        
+        <!-- Central Text Display -->
+        <div class="center-skill-display" [class.visible]="hoveredSkill()">
+          <span class="skill-category">{{ hoveredSkill()?.category }}</span>
+          <span class="skill-name" 
+                [style.--brand-color]="hoveredSkill()?.brandColor"
+                [style.--brand-color-light]="hoveredSkill()?.brandColorLight"
+                [style.--brand-color-dark]="hoveredSkill()?.brandColorDark">
+            {{ hoveredSkill()?.name }}
+          </span>
+          <span class="skill-description">{{ hoveredSkill()?.description }}</span>
+        </div>
+           
+        <div class="skills-ring" #skillsRing>
+          <!-- Orbital Track -->
+          <div class="orbital-track"></div>
+          <div class="orbital-track secondary-track"></div>
+          <div class="orbital-track tertiary-track"></div>
+          
+          <!-- Secondary Conceptual Orbit -->
+          <div class="conceptual-orbit">
+            <span class="concept-tag tag-1">Clean Code</span>
+            <span class="concept-tag tag-2">SOLID</span>
+            <span class="concept-tag tag-3">REST APIs</span>
+            <span class="concept-tag tag-4">Arquitectura</span>
+            <span class="concept-tag tag-5">Git Flow</span>
+          </div>
+          
+          @for (skill of flatSkills(); track skill.id) {
+            <div class="skill-wrapper"
+                 [style.--angle]="skill.angle + 'deg'"
+                 [style.transform]="'rotateZ(' + skill.angle + 'deg) translateX(280px)'">
+              
+              <div class="skill-planet glass-space"
+                   #skillPlanet
+                   [style.--brand-color]="skill.brandColor"
+                   [style.--brand-color-light]="skill.brandColorLight"
+                   [style.--brand-color-dark]="skill.brandColorDark"
+                   (mouseenter)="onPlanetHover(true, skill)"
+                   (mouseleave)="onPlanetHover(false)"
+                   (click)="onPlanetHover(true, skill); $event.stopPropagation()">
+                <i class="planet-icon" [ngClass]="skill.icon"></i>
+              </div>
+              
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Ring Stats -->
+      <div class="ring-stats">
+        <span class="ring-stat-badge">20+ Tecnologías</span>
+        <span class="ring-stat-badge">5 Proyectos</span>
+        <span class="ring-stat-badge">Backend Principal</span>
+        <span class="ring-stat-badge">IA Integrada</span>
+      </div>
+    </div>
+
+    <!-- ---- About Me ---- -->
+    <h2 class="section-title">Sobre Mí</h2>
+    <p class="section-subtitle">Diseñar antes de codificar — siempre</p>
+
+    <div class="about-grid">
+      <div class="about-text-block">
+        <p class="about-text">
+          Soy Tecnólogo en Análisis y Desarrollo de Software del SENA con enfoque en desarrollo backend
+          utilizando <strong>Java (Spring Boot)</strong> y <strong>Python (Django)</strong>.
+        </p>
+        <p class="about-text">
+          Tengo experiencia desarrollando aplicaciones web completas, APIs REST, herramientas de
+          automatización, aplicaciones de escritorio y soluciones orientadas a resolver problemas reales.
+        </p>
+        <p class="about-text">
+          Me interesa especialmente el diseño de software, la arquitectura de aplicaciones, la automatización
+          de procesos y la integración responsable de <strong>Inteligencia Artificial</strong> como herramienta
+          de productividad.
+        </p>
+
+        <div class="about-philosophy glass-space">
+          <i class="fas fa-quote-left quote-icon"></i>
+          <p>
+            Disfruto diseñar soluciones antes de escribir código. Mi enfoque consiste en analizar el problema,
+            definir la arquitectura y seleccionar las tecnologías adecuadas antes de la primera línea de código.
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="about-stats">
+        <div class="stat-card glass-space">
+          <span class="stat-number gradient-text">5+</span>
+          <span class="stat-label">Proyectos</span>
+        </div>
+        <div class="stat-card glass-space">
+          <span class="stat-number gradient-text">15+</span>
+          <span class="stat-label">Tecnologías</span>
+        </div>
+        <div class="stat-card glass-space">
+          <span class="stat-number gradient-text">B2</span>
+          <span class="stat-label">Inglés</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Architecture & Learning Component -->
+    <app-knowledge-pillars />
+
+    <!-- ---- Experience ---- -->
+    <div class="experience-section" id="experience">
+      <h3 class="subsection-title">
+        <i class="fas fa-briefcase"></i> Experiencia
+      </h3>
+
+      @for (exp of experience; track exp.company) {
+        <div class="experience-card glass-space">
+          <div class="exp-header">
+            <div class="exp-icon-wrapper">
+              <i [class]="exp.icon"></i>
+            </div>
+            <div class="exp-info">
+              <h4 class="exp-role">{{ exp.role }}</h4>
+              <p class="exp-company">{{ exp.company }}</p>
+              <span class="exp-period">{{ exp.period }}</span>
+            </div>
+          </div>
+          <p class="exp-description">{{ exp.description }}</p>
+          <div class="exp-achievements">
+            @for (achievement of exp.achievements; track achievement) {
+              <div class="achievement-item">
+                <i class="fas fa-check"></i>
+                <span>{{ achievement }}</span>
+              </div>
+            }
+          </div>
+          <div class="exp-techs">
+            @for (tech of exp.technologies; track tech) {
+              <span class="tech-tag">{{ tech }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- ---- Contact ---- -->
+    <div class="contact-section" id="contact">
+      <h3 class="subsection-title">
+        <i class="fas fa-paper-plane"></i> Contacto
+      </h3>
+      <p class="contact-intro">
+        ¿Interesado en trabajar juntos? ¡No dudes en contactarme!
+      </p>
+
+      <div class="contact-grid">
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=juanbarrios072@gmail.com" target="_blank" rel="noopener noreferrer" class="contact-card glass-space" pRipple>
+          <div class="contact-icon" style="background: rgba(37, 99, 235, 0.1); color: var(--color-primary-blue);">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <div class="contact-info">
+            <span class="contact-label">Email</span>
+            <span class="contact-value">juanbarrios072&#64;gmail.com</span>
+          </div>
+        </a>
+
+        <a href="tel:+573337222705" class="contact-card glass-space" pRipple>
+          <div class="contact-icon" style="background: rgba(34, 197, 94, 0.1); color: var(--color-primary-green);">
+            <i class="fas fa-phone"></i>
+          </div>
+          <div class="contact-info">
+            <span class="contact-label">Teléfono</span>
+            <span class="contact-value">+57 333 722 2705</span>
+          </div>
+        </a>
+
+        <a href="https://github.com/1Zamuken1" target="_blank" rel="noopener noreferrer" class="contact-card glass-space" pRipple>
+          <div class="contact-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--color-accent-purple);">
+            <i class="fab fa-github"></i>
+          </div>
+          <div class="contact-info">
+            <span class="contact-label">GitHub</span>
+            <span class="contact-value">1Zamuken1</span>
+          </div>
+        </a>
+
+        <a href="https://linkedin.com/in/juan-barrios-a8a651274" target="_blank" rel="noopener noreferrer" class="contact-card glass-space" pRipple>
+          <div class="contact-icon" style="background: rgba(6, 182, 212, 0.1); color: var(--color-accent-cyan);">
+            <i class="fab fa-linkedin"></i>
+          </div>
+          <div class="contact-info">
+            <span class="contact-label">LinkedIn</span>
+            <span class="contact-value">Juan Barrios</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Availability Banner -->
+      <div class="availability-banner glass-space">
+        <i class="fas fa-briefcase"></i>
+        <p>
+          <strong>Disponible</strong> para iniciar etapa productiva mediante Contrato de Aprendizaje SENA.
+          Ubicación: <strong>Bogotá D.C., Colombia</strong>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

@@ -27,12 +27,12 @@ export class ProjectCardComponent {
   };
 
   get cardGradient(): string {
-    return this.gradientColors[this.project.slug] || this.gradientColors['gastu-django'];
+    return this.gradientColors[this.project.name?.toLowerCase().replace(/\s+/g, '-')] || this.gradientColors['gastu-django'];
   }
 
   get cardBackground(): string {
-    if (this.project.image) {
-      return `url(${this.project.image}) center/cover no-repeat`;
+    if (this.project.imageUrl) {
+      return `url(${this.project.imageUrl}) center/cover no-repeat`;
     }
     return this.cardGradient;
   }
@@ -42,7 +42,7 @@ export class ProjectCardComponent {
   }
 
   get isLive(): boolean {
-    return !!this.project.links.live;
+    return !!this.project.liveUrl;
   }
 
   get statusSeverity(): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | undefined {

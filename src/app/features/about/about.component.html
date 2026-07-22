@@ -82,7 +82,7 @@
                  [style.--angle]="skill.angle + 'deg'"
                  [style.transform]="'rotateZ(' + skill.angle + 'deg) translateX(280px)'">
               
-              <div class="skill-planet glass-space"
+              <div class="skill-planet glass"
                    #skillPlanet
                    [style.--brand-color]="skill.brandColor"
                    [style.--brand-color-light]="skill.brandColorLight"
@@ -108,47 +108,53 @@
     </div>
 
     <!-- ---- About Me ---- -->
-    <h2 class="section-title">Sobre Mí</h2>
-    <p class="section-subtitle">Diseñar antes de codificar — siempre</p>
-
-    <div class="about-grid">
-      <div class="about-text-block">
-        <p class="about-text">
-          Soy Tecnólogo en Análisis y Desarrollo de Software del SENA con enfoque en desarrollo backend
-          utilizando <strong>Java (Spring Boot)</strong> y <strong>Python (Django)</strong>.
-        </p>
-        <p class="about-text">
-          Tengo experiencia desarrollando aplicaciones web completas, APIs REST, herramientas de
-          automatización, aplicaciones de escritorio y soluciones orientadas a resolver problemas reales.
-        </p>
-        <p class="about-text">
-          Me interesa especialmente el diseño de software, la arquitectura de aplicaciones, la automatización
-          de procesos y la integración responsable de <strong>Inteligencia Artificial</strong> como herramienta
-          de productividad.
-        </p>
-
-        <div class="about-philosophy glass-space">
-          <i class="fas fa-quote-left quote-icon"></i>
-          <p>
-            Disfruto diseñar soluciones antes de escribir código. Mi enfoque consiste en analizar el problema,
-            definir la arquitectura y seleccionar las tecnologías adecuadas antes de la primera línea de código.
-          </p>
-        </div>
+    <div class="stitch-section-layout">
+      <div class="stitch-section-header">
+        <h2 class="font-code-md tracking-widest uppercase text-primary" style="font-size: 1.1rem; opacity: 0.7;">01 // IDENTITY</h2>
       </div>
+      
+      <div class="stitch-section-content">
+        <h3 class="font-headline-md text-primary leading-tight mb-8" style="font-size: 2rem; font-weight: 600;">
+          Construyo los cimientos invisibles que impulsan grandes experiencias.
+        </h3>
+        
+        <div class="about-text-block">
+          <p class="about-text">
+            Soy Tecnólogo en Análisis y Desarrollo de Software del SENA con enfoque en desarrollo backend
+            utilizando <strong>Java (Spring Boot)</strong> y <strong>Python (Django)</strong>.
+          </p>
+          <p class="about-text">
+            Tengo experiencia desarrollando aplicaciones web completas, APIs REST, herramientas de
+            automatización, aplicaciones de escritorio y soluciones orientadas a resolver problemas reales.
+          </p>
+          <p class="about-text">
+            Me interesa especialmente el diseño de software, la arquitectura de aplicaciones, la automatización
+            de procesos y la integración responsable de <strong>Inteligencia Artificial</strong> como herramienta
+            de productividad.
+          </p>
 
-      <!-- Quick Stats -->
-      <div class="about-stats">
-        <div class="stat-card glass-space">
-          <span class="stat-number gradient-text">5+</span>
-          <span class="stat-label">Proyectos</span>
+          <div class="about-philosophy glass" style="border-left: 3px solid var(--border-strong);">
+            <p>
+              Disfruto diseñar soluciones antes de escribir código. Mi enfoque consiste en analizar el problema,
+              definir la arquitectura y seleccionar las tecnologías adecuadas antes de la primera línea de código.
+            </p>
+          </div>
         </div>
-        <div class="stat-card glass-space">
-          <span class="stat-number gradient-text">15+</span>
-          <span class="stat-label">Tecnologías</span>
-        </div>
-        <div class="stat-card glass-space">
-          <span class="stat-number gradient-text">B2</span>
-          <span class="stat-label">Inglés</span>
+
+        <!-- Quick Stats -->
+        <div class="about-stats" style="margin-top: 3rem;">
+          <div class="stat-card">
+            <span class="stat-number font-headline-md text-primary" style="font-size: 2.5rem;">5+</span>
+            <span class="stat-label font-code-md text-tertiary">PROYECTOS</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number font-headline-md text-primary" style="font-size: 2.5rem;">15+</span>
+            <span class="stat-label font-code-md text-tertiary">TECNOLOGÍAS</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number font-headline-md text-primary" style="font-size: 2.5rem;">B2</span>
+            <span class="stat-label font-code-md text-tertiary">INGLÉS</span>
+          </div>
         </div>
       </div>
     </div>
@@ -157,99 +163,112 @@
     <app-knowledge-pillars />
 
     <!-- ---- Experience ---- -->
-    <div class="experience-section" id="experience">
-      <h3 class="subsection-title">
-        <i class="fas fa-briefcase"></i> Experiencia
-      </h3>
+    <div class="stitch-section-layout" id="experience" style="margin-top: var(--space-4xl);">
+      <div class="stitch-section-header">
+        <h2 class="font-code-md tracking-widest uppercase text-primary" style="font-size: 1.1rem; opacity: 0.7;">02 // EXPERIENCE</h2>
+      </div>
 
-      @for (exp of experience; track exp.company) {
-        <div class="experience-card glass-space">
-          <div class="exp-header">
-            <div class="exp-icon-wrapper">
-              <i [class]="exp.icon"></i>
-            </div>
-            <div class="exp-info">
-              <h4 class="exp-role">{{ exp.role }}</h4>
-              <p class="exp-company">{{ exp.company }}</p>
-              <span class="exp-period">{{ exp.period }}</span>
-            </div>
-          </div>
-          <p class="exp-description">{{ exp.description }}</p>
-          <div class="exp-achievements">
-            @for (achievement of exp.achievements; track achievement) {
-              <div class="achievement-item">
-                <i class="fas fa-check"></i>
-                <span>{{ achievement }}</span>
+      <div class="stitch-section-content">
+        <div class="experience-list">
+          @for (exp of experience; track exp.company) {
+            <div class="experience-card">
+              <div class="exp-header">
+                <div class="exp-icon-wrapper">
+                  <i [class]="exp.icon"></i>
+                </div>
+                <div class="exp-info">
+                  <h4 class="exp-role font-headline-md text-primary" style="font-size: 1.25rem;">{{ exp.role }}</h4>
+                  <p class="exp-company font-mono text-secondary" style="font-size: 0.9rem;">{{ exp.company }}</p>
+                  <span class="exp-period font-mono text-tertiary" style="font-size: 0.8rem;">{{ exp.period }}</span>
+                </div>
               </div>
-            }
-          </div>
-          <div class="exp-techs">
-            @for (tech of exp.technologies; track tech) {
-              <span class="tech-tag">{{ tech }}</span>
-            }
-          </div>
+              <p class="exp-description font-body-sm text-secondary leading-relaxed mt-4 mb-6">{{ exp.description }}</p>
+              
+              <div class="exp-achievements">
+                @for (achievement of exp.achievements; track achievement) {
+                  <div class="achievement-item">
+                    <i class="fas fa-check"></i>
+                    <span class="font-body-sm text-secondary">{{ achievement }}</span>
+                  </div>
+                }
+              </div>
+              
+              <div class="exp-techs mt-6">
+                @for (tech of exp.technologies; track tech) {
+                  <span class="stitch-tag font-code-md">{{ tech }}</span>
+                }
+              </div>
+            </div>
+          }
         </div>
-      }
+      </div>
     </div>
 
     <!-- ---- Contact ---- -->
-    <div class="contact-section" id="contact">
-      <h3 class="subsection-title">
-        <i class="fas fa-paper-plane"></i> Contacto
-      </h3>
-      <p class="contact-intro">
-        ¿Interesado en trabajar juntos? ¡No dudes en contactarme!
-      </p>
-
-      <div class="contact-grid">
-        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=juanbarrios072@gmail.com" target="_blank" rel="noopener noreferrer" class="contact-card glass-space" pRipple>
-          <div class="contact-icon" style="background: rgba(37, 99, 235, 0.1); color: var(--color-primary-blue);">
-            <i class="fas fa-envelope"></i>
-          </div>
-          <div class="contact-info">
-            <span class="contact-label">Email</span>
-            <span class="contact-value">juanbarrios072&#64;gmail.com</span>
-          </div>
-        </a>
-
-        <a href="tel:+573337222705" class="contact-card glass-space" pRipple>
-          <div class="contact-icon" style="background: rgba(34, 197, 94, 0.1); color: var(--color-primary-green);">
-            <i class="fas fa-phone"></i>
-          </div>
-          <div class="contact-info">
-            <span class="contact-label">Teléfono</span>
-            <span class="contact-value">+57 333 722 2705</span>
-          </div>
-        </a>
-
-        <a href="https://github.com/1Zamuken1" target="_blank" rel="noopener noreferrer" class="contact-card glass-space" pRipple>
-          <div class="contact-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--color-accent-purple);">
-            <i class="fab fa-github"></i>
-          </div>
-          <div class="contact-info">
-            <span class="contact-label">GitHub</span>
-            <span class="contact-value">1Zamuken1</span>
-          </div>
-        </a>
-
-        <a href="https://linkedin.com/in/juan-barrios-a8a651274" target="_blank" rel="noopener noreferrer" class="contact-card glass-space" pRipple>
-          <div class="contact-icon" style="background: rgba(6, 182, 212, 0.1); color: var(--color-accent-cyan);">
-            <i class="fab fa-linkedin"></i>
-          </div>
-          <div class="contact-info">
-            <span class="contact-label">LinkedIn</span>
-            <span class="contact-value">Juan Barrios</span>
-          </div>
-        </a>
+    <div class="stitch-section-layout" id="contact" style="margin-top: var(--space-4xl);">
+      <div class="stitch-section-header">
+        <h2 class="font-code-md tracking-widest uppercase text-primary" style="font-size: 1.1rem; opacity: 0.7;">03 // CONTACT</h2>
       </div>
 
-      <!-- Availability Banner -->
-      <div class="availability-banner glass-space">
-        <i class="fas fa-briefcase"></i>
-        <p>
-          <strong>Disponible</strong> para iniciar etapa productiva mediante Contrato de Aprendizaje SENA.
-          Ubicación: <strong>Bogotá D.C., Colombia</strong>
+      <div class="stitch-section-content">
+        <p class="font-headline-md text-primary mb-8" style="font-size: 2rem;">
+          ¿Interesado en trabajar juntos?
         </p>
+
+        <div class="contact-grid">
+          <a href="https://mail.google.com/mail/?view=cm&fs=1&to=juanbarrios072@gmail.com" target="_blank" rel="noopener noreferrer" class="contact-item">
+            <div class="contact-icon">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <div class="contact-info">
+              <span class="contact-label font-code-md text-tertiary uppercase">Email</span>
+              <span class="contact-value font-body-lg text-primary">juanbarrios072&#64;gmail.com</span>
+            </div>
+            <i class="fas fa-arrow-right contact-arrow"></i>
+          </a>
+
+          <a href="tel:+573337222705" class="contact-item">
+            <div class="contact-icon">
+              <i class="fas fa-phone"></i>
+            </div>
+            <div class="contact-info">
+              <span class="contact-label font-code-md text-tertiary uppercase">Teléfono</span>
+              <span class="contact-value font-body-lg text-primary">+57 333 722 2705</span>
+            </div>
+            <i class="fas fa-arrow-right contact-arrow"></i>
+          </a>
+
+          <a href="https://github.com/1Zamuken1" target="_blank" rel="noopener noreferrer" class="contact-item">
+            <div class="contact-icon">
+              <i class="fab fa-github"></i>
+            </div>
+            <div class="contact-info">
+              <span class="contact-label font-code-md text-tertiary uppercase">GitHub</span>
+              <span class="contact-value font-body-lg text-primary">1Zamuken1</span>
+            </div>
+            <i class="fas fa-arrow-right contact-arrow"></i>
+          </a>
+
+          <a href="https://linkedin.com/in/juan-barrios-a8a651274" target="_blank" rel="noopener noreferrer" class="contact-item">
+            <div class="contact-icon">
+              <i class="fab fa-linkedin"></i>
+            </div>
+            <div class="contact-info">
+              <span class="contact-label font-code-md text-tertiary uppercase">LinkedIn</span>
+              <span class="contact-value font-body-lg text-primary">Juan Barrios</span>
+            </div>
+            <i class="fas fa-arrow-right contact-arrow"></i>
+          </a>
+        </div>
+
+        <!-- Availability Banner -->
+        <div class="availability-banner mt-8">
+          <i class="fas fa-briefcase text-primary"></i>
+          <p class="font-body-sm text-secondary">
+            <strong class="text-primary">Disponible</strong> para iniciar etapa productiva mediante Contrato de Aprendizaje SENA.<br>
+            Ubicación: <strong class="text-primary">Bogotá D.C., Colombia</strong>
+          </p>
+        </div>
       </div>
     </div>
   </div>
