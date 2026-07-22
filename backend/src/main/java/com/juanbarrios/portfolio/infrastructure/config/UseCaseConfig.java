@@ -30,4 +30,12 @@ public class UseCaseConfig {
     public ExperienceUseCase experienceUseCase(ExperienceRepositoryPort experienceRepositoryPort) {
         return new ExperienceUseCase(experienceRepositoryPort);
     }
+
+    @Bean
+    public com.juanbarrios.portfolio.application.usecase.AuthUseCase authUseCase(
+            com.juanbarrios.portfolio.domain.port.out.JwtPort jwtPort,
+            @org.springframework.beans.factory.annotation.Value("${admin.username}") String adminUsername,
+            @org.springframework.beans.factory.annotation.Value("${admin.password}") String adminPassword) {
+        return new com.juanbarrios.portfolio.application.usecase.AuthUseCase(jwtPort, adminUsername, adminPassword);
+    }
 }
