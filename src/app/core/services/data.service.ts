@@ -1,6 +1,6 @@
 import { Injectable, inject, isDevMode } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, shareReplay, tap } from 'rxjs';
+import { Observable, shareReplay, tap, catchError, map } from 'rxjs';
 import { Project } from '../../shared/models/project.model';
 import { SkillsData } from '../../shared/models/skill.model';
 
@@ -17,6 +17,29 @@ export class DataService {
   getProjects(): Observable<Project[]> {
     if (!this.projects$) {
       this.projects$ = this.http.get<Project[]>(`${this.apiUrl}/projects`).pipe(
+        catchError(() => {
+          // Fallback: si la API no está disponible (producción sin backend),
+          // cargar desde los archivos JSON estáticos
+          console.warn('API no disponible, cargando proyectos desde JSON estático.');
+          return this.http.get<any[]>('/assets/data/projects.json').pipe(
+            map(items => items.map(p => ({
+              id: p.id ?? 0,
+              name: p.name,
+              shortDescription: p.shortDescription,
+              fullDescription: p.fullDescription,
+              role: p.role ?? 'Desarrollador',
+              year: p.year ?? 2024,
+              status: p.status ?? 'Completed',
+              technologies: p.technologies ?? [],
+              features: p.features ?? [],
+              highlights: p.highlights ?? [],
+              githubUrl: p.links?.github ?? p.githubUrl ?? '',
+              liveUrl: p.links?.live ?? p.liveUrl ?? null,
+              imageUrl: p.image ?? p.imageUrl ?? null,
+              displayOrder: p.displayOrder ?? 0
+            } as Project)))
+          );
+        }),
         shareReplay(1)
       );
     }
