@@ -1,0 +1,93 @@
+<p-toast />
+
+<div class="form-header">
+  <h2 class="font-code-lg">{{ isEditMode ? 'Edit Project' : 'New Project' }}</h2>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="project-form" *ngIf="!loading">
+
+  <!-- Row 1: Name & Year -->
+  <div class="form-row">
+    <div class="form-group flex-2">
+      <label for="name">Name *</label>
+      <input pInputText id="name" formControlName="name" placeholder="Project name" />
+    </div>
+    <div class="form-group flex-1">
+      <label for="year">Year *</label>
+      <p-inputNumber id="year" formControlName="year" [useGrouping]="false" [min]="2000" [max]="2030" />
+    </div>
+  </div>
+
+  <!-- Row 2: Status & Role -->
+  <div class="form-row">
+    <div class="form-group flex-1">
+      <label for="status">Status *</label>
+      <p-select id="status" formControlName="status" [options]="statusOptions" optionLabel="label" optionValue="value" placeholder="Select status" />
+    </div>
+    <div class="form-group flex-1">
+      <label for="role">Role</label>
+      <input pInputText id="role" formControlName="role" placeholder="e.g. Full Stack Developer" />
+    </div>
+    <div class="form-group" style="width: 120px;">
+      <label for="displayOrder">Order</label>
+      <p-inputNumber id="displayOrder" formControlName="displayOrder" [min]="0" [max]="100" />
+    </div>
+  </div>
+
+  <!-- Short Description -->
+  <div class="form-group">
+    <label for="shortDescription">Short Description *</label>
+    <textarea pTextarea id="shortDescription" formControlName="shortDescription" rows="2" placeholder="Brief summary visible on the card"></textarea>
+  </div>
+
+  <!-- Full Description -->
+  <div class="form-group">
+    <label for="fullDescription">Full Description</label>
+    <textarea pTextarea id="fullDescription" formControlName="fullDescription" rows="5" placeholder="Detailed description shown in the modal"></textarea>
+  </div>
+
+  <!-- Technologies -->
+  <div class="form-group">
+    <label for="technologiesStr">Technologies (comma-separated)</label>
+    <input pInputText id="technologiesStr" formControlName="technologiesStr" placeholder="Angular, Spring Boot, etc." />
+  </div>
+
+  <!-- Features -->
+  <div class="form-group">
+    <label for="featuresStr">Features (comma-separated)</label>
+    <input pInputText id="featuresStr" formControlName="featuresStr" placeholder="Feature 1, Feature 2" />
+  </div>
+
+  <!-- Highlights -->
+  <div class="form-group">
+    <label for="highlightsStr">Highlights (comma-separated)</label>
+    <input pInputText id="highlightsStr" formControlName="highlightsStr" placeholder="Achievement 1, Achievement 2" />
+  </div>
+
+  <!-- URLs -->
+  <div class="form-row">
+    <div class="form-group flex-1">
+      <label for="githubUrl">GitHub URL</label>
+      <input pInputText id="githubUrl" formControlName="githubUrl" placeholder="https://github.com/..." />
+    </div>
+    <div class="form-group flex-1">
+      <label for="liveUrl">Live URL</label>
+      <input pInputText id="liveUrl" formControlName="liveUrl" placeholder="https://..." />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="imageUrl">Image URL</label>
+    <input pInputText id="imageUrl" formControlName="imageUrl" placeholder="https://..." />
+  </div>
+
+  <!-- Actions -->
+  <div class="form-actions">
+    <button pButton type="button" label="Cancel" class="p-button-text" (click)="cancel()"></button>
+    <button pButton type="submit" [label]="isEditMode ? 'Update Project' : 'Create Project'" [loading]="saving" [disabled]="form.invalid"></button>
+  </div>
+</form>
+
+<div *ngIf="loading" style="text-align: center; padding: 3rem;">
+  <p>Loading project data...</p>
+</div>

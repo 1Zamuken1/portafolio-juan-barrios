@@ -4,8 +4,8 @@
 
   <!-- Image / Gradient Header -->
   <div class="stitch-card-image-wrapper" (click)="viewMore.emit()">
-    @if (project.image) {
-      <img [src]="project.image" alt="{{ project.name }}" class="stitch-card-img" />
+    @if (project.imageUrl) {
+      <img [src]="project.imageUrl" alt="{{ project.name }}" class="stitch-card-img" />
     } @else {
       <div class="stitch-card-img-placeholder" [style.background]="cardBackground"></div>
     }
@@ -39,13 +39,13 @@
 
     <!-- Actions -->
     <div class="stitch-card-actions">
-      @if (project.links.github) {
-        <a [href]="project.links.github" target="_blank" rel="noopener noreferrer" class="stitch-link group-hover-gap">
+      @if (project.githubUrl) {
+        <a [href]="project.githubUrl" target="_blank" rel="noopener noreferrer" class="stitch-link group-hover-gap">
           GITHUB <i class="fab fa-github"></i>
         </a>
       }
-      @if (project.links.live) {
-        <a [href]="project.links.live" target="_blank" rel="noopener noreferrer" class="stitch-link group-hover-gap">
+      @if (project.liveUrl) {
+        <a [href]="project.liveUrl" target="_blank" rel="noopener noreferrer" class="stitch-link group-hover-gap">
           DEMO <i class="fas fa-external-link-alt"></i>
         </a>
       }

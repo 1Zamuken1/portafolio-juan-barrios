@@ -76,13 +76,13 @@
 
     <!-- Links -->
     <div class="modal-actions">
-      @if (project.links.github) {
-        <a [href]="project.links.github" target="_blank" rel="noopener noreferrer" class="stitch-link group-hover-gap">
+      @if (project.githubUrl) {
+        <a [href]="project.githubUrl" target="_blank" rel="noopener noreferrer" class="stitch-link group-hover-gap">
           GITHUB <i class="fab fa-github"></i>
         </a>
       }
-      @if (project.links.live) {
-        <a [href]="project.links.live" target="_blank" rel="noopener noreferrer" class="stitch-link group-hover-gap">
+      @if (project.liveUrl) {
+        <a [href]="project.liveUrl" target="_blank" rel="noopener noreferrer" class="stitch-link group-hover-gap">
           DEMO <i class="fas fa-external-link-alt"></i>
         </a>
       }
