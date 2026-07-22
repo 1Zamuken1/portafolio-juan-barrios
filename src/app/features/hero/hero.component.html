@@ -1,37 +1,42 @@
 <section class="hero" id="hero">
-  <!-- Subtle Background matching the rest of the site -->
+  <!-- Subtle Background matching the rest of the site (Stitch Celestial Motif) -->
   <div class="hero-bg">
+    <div class="celestial-orbit"></div>
     <div class="glow-orb glow-orb-primary"></div>
-    <div class="glow-orb glow-orb-accent"></div>
   </div>
 
   <div class="hero-content container">
     <div class="hero-layout">
       <!-- Left side: Text Content -->
-      <div class="hero-content">
-        <h1 class="hero-title">
-          <span class="greeting">Hola, soy</span><br />
-          <span class="name gradient-text">Juan Barrios</span>
+      <div class="hero-text-section">
+        <p class="hero-role font-code-md tracking-widest uppercase">Senior Backend Engineer</p>
+        <h1 class="hero-title font-display-lg text-primary mb-6">
+          Architecting <br />
+          <span class="opacity-dim">Scalable Systems.</span>
         </h1>
-        <h2 class="hero-subtitle">Backend Developer · Java • Spring Boot • Python</h2>
-        <p class="hero-description">
-          Desarrollo aplicaciones backend con Java (Spring Boot) y Python (Django), APIs REST y herramientas de automatización. Me interesa construir software escalable, con buena arquitectura y soluciones apoyadas por Inteligencia Artificial.
+        <div class="hero-subtitle mb-4">
+          <i class="fas fa-terminal"></i>
+          <span class="font-code-md">Java • Spring Boot • Python</span>
+          <span class="typewriter-cursor">|</span>
+        </div>
+        <p class="hero-description font-body-lg text-secondary max-w-md leading-relaxed">
+          Engineering high-concurrency distributed infrastructures. Precision-driven logic for the modern cloud ecosystem.
         </p>
 
         <!-- Action Buttons -->
-        <div class="hero-actions">
-          <button class="btn-glow" (click)="scrollTo('projects')" pRipple>
+        <div class="hero-actions mt-8">
+          <button class="btn-solid" (click)="scrollTo('projects')" pRipple>
             <i class="fas fa-code"></i>
-            Explorar Proyectos
+            VIEW PROJECTS
           </button>
-          <a href="JuanBarrios-CV.pdf" download class="btn-outline" pRipple>
+          <a href="JuanBarrios-CV.pdf" download class="btn-ghost" pRipple>
             <i class="fas fa-file-pdf"></i>
-            Descargar CV
+            CONTACT
           </a>
         </div>
-
+        
         <!-- Social Links -->
-        <div class="hero-social">
+        <div class="hero-social mt-6">
           <a href="https://github.com/1Zamuken1" target="_blank" rel="noopener noreferrer"
              class="social-icon" pTooltip="GitHub" tooltipPosition="bottom" aria-label="GitHub">
             <i class="fab fa-github"></i>
@@ -50,7 +55,7 @@
 
       <!-- Right side: Avatar & Visuals -->
       <div class="hero-visual-section animate-fade-in-scale" style="animation-delay: 0.2s">
-        <div class="hero-avatar-container glass">
+        <div class="hero-avatar-container">
           <div class="hero-avatar-ring"></div>
           <img
             src="assets/images/hero/profile.jpg"
@@ -72,5 +77,10 @@
         </div>
       </div>
     </div>
+  </div>
+  
+  <!-- Scroll Indicator -->
+  <div class="absolute bottom-10 left-margin-mobile animate-bounce opacity-30 scroll-indicator">
+    <i class="fas fa-arrow-down"></i>
   </div>
 </section>

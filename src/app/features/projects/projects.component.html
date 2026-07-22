@@ -1,7 +1,11 @@
 <section class="section" id="projects">
   <div class="container">
-    <h2 class="section-title">Proyectos Destacados</h2>
-    <p class="section-subtitle">Soluciones reales construidas con código limpio y arquitectura sólida</p>
+    <div class="stitch-projects-header" style="margin-bottom: var(--space-4xl);">
+      <h2 class="font-code-md tracking-widest uppercase text-primary" style="margin-bottom: var(--space-sm); font-size: 1.1rem; opacity: 0.7;">02 // ARCHITECTURE ARCHIVE</h2>
+      <p class="font-headline-md text-primary" style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 700;">
+        Selected Works
+      </p>
+    </div>
 
     <div class="projects-grid">
       @for (project of projects(); track project.id; let i = $index) {
