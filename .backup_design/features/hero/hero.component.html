@@ -1,0 +1,76 @@
+<section class="hero" id="hero">
+  <!-- Subtle Background matching the rest of the site -->
+  <div class="hero-bg">
+    <div class="glow-orb glow-orb-primary"></div>
+    <div class="glow-orb glow-orb-accent"></div>
+  </div>
+
+  <div class="hero-content container">
+    <div class="hero-layout">
+      <!-- Left side: Text Content -->
+      <div class="hero-content">
+        <h1 class="hero-title">
+          <span class="greeting">Hola, soy</span><br />
+          <span class="name gradient-text">Juan Barrios</span>
+        </h1>
+        <h2 class="hero-subtitle">Backend Developer · Java • Spring Boot • Python</h2>
+        <p class="hero-description">
+          Desarrollo aplicaciones backend con Java (Spring Boot) y Python (Django), APIs REST y herramientas de automatización. Me interesa construir software escalable, con buena arquitectura y soluciones apoyadas por Inteligencia Artificial.
+        </p>
+
+        <!-- Action Buttons -->
+        <div class="hero-actions">
+          <button class="btn-glow" (click)="scrollTo('projects')" pRipple>
+            <i class="fas fa-code"></i>
+            Explorar Proyectos
+          </button>
+          <a href="JuanBarrios-CV.pdf" download class="btn-outline" pRipple>
+            <i class="fas fa-file-pdf"></i>
+            Descargar CV
+          </a>
+        </div>
+
+        <!-- Social Links -->
+        <div class="hero-social">
+          <a href="https://github.com/1Zamuken1" target="_blank" rel="noopener noreferrer"
+             class="social-icon" pTooltip="GitHub" tooltipPosition="bottom" aria-label="GitHub">
+            <i class="fab fa-github"></i>
+          </a>
+          <a href="https://linkedin.com/in/juan-barrios-a8a651274" target="_blank" rel="noopener noreferrer"
+             class="social-icon" pTooltip="LinkedIn" tooltipPosition="bottom" aria-label="LinkedIn">
+            <i class="fab fa-linkedin"></i>
+          </a>
+          <a href="https://mail.google.com/mail/?view=cm&fs=1&to=juanbarrios072@gmail.com"
+             target="_blank" rel="noopener noreferrer"
+             class="social-icon" pTooltip="Email" tooltipPosition="bottom" aria-label="Email">
+            <i class="fas fa-envelope"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Right side: Avatar & Visuals -->
+      <div class="hero-visual-section animate-fade-in-scale" style="animation-delay: 0.2s">
+        <div class="hero-avatar-container glass">
+          <div class="hero-avatar-ring"></div>
+          <img
+            src="assets/images/hero/profile.jpg"
+            alt="Juan Esteban Barrios"
+            class="hero-avatar"
+            loading="eager"
+          />
+          
+          <!-- Floating mini badges -->
+          <div class="floating-badge badge-java animate-float" style="animation-delay: 0s">
+            <i class="devicon-java-plain"></i>
+          </div>
+          <div class="floating-badge badge-spring animate-float" style="animation-delay: 1.5s">
+            <i class="devicon-spring-plain"></i>
+          </div>
+          <div class="floating-badge badge-python animate-float" style="animation-delay: 3s">
+            <i class="devicon-python-plain"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

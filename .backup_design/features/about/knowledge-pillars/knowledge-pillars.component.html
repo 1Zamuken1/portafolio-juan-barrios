@@ -1,0 +1,76 @@
+<div class="pillars-intro">
+  <span>Lo que aplico hoy</span>
+  <i class="fas fa-arrow-right desktop-only"></i>
+  <i class="fas fa-arrow-down mobile-only"></i>
+  <span>Lo que estoy incorporando</span>
+</div>
+
+<div class="knowledge-pillars">
+
+  <!-- ══════════════ ARCHITECTURE BUILDING ══════════════ -->
+  <div class="pillar-section">
+    <h3 class="pillar-title">
+      <i class="fas fa-building"></i> Arquitectura
+    </h3>
+    <p class="pillar-subtitle"><strong>Mi enfoque técnico:</strong> Antes de programar defino responsabilidades, estructura y escalabilidad.</p>
+
+    <div class="building-wrapper">
+      <!-- Roof -->
+      <div class="building-roof">
+        <div class="roof-antenna"></div>
+      </div>
+
+      <!-- Floors -->
+      <div class="building-body">
+        @for (floor of architectureFloors; track $index) {
+          <div class="building-floor" [style.--floor-index]="$index">
+            @for (item of floor.items; track item) {
+              <div class="floor-block">
+                <span>{{ item }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Foundation -->
+      <div class="building-foundation">
+        <span class="foundation-text">Fundamentos de Diseño de Software</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ LEARNING STAIRCASE ══════════════ -->
+  <div class="pillar-section">
+    <h3 class="pillar-title">
+      <i class="fas fa-graduation-cap"></i> Actualmente aprendiendo
+    </h3>
+    <p class="pillar-subtitle">Próximos pasos en mi carrera</p>
+
+    <div class="staircase-wrapper">
+      <!-- Guide line -->
+      <div class="staircase-guide-line"></div>
+
+      @for (step of learningSteps; track step.name) {
+        <div class="stair-step" [style.--step-index]="$index">
+          <!-- Vertical riser -->
+          <div class="step-riser"></div>
+          <!-- Horizontal platform -->
+          <div class="step-platform">
+            <div class="step-content">
+              <i [class]="step.icon" class="step-icon"></i>
+              <span class="step-label">{{ step.name }}</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Arrow at the top -->
+      <div class="staircase-arrow" [style.--step-index]="learningSteps.length">
+        <i class="fas fa-arrow-up"></i>
+        <span>Roadmap Profesional</span>
+      </div>
+    </div>
+  </div>
+
+</div>

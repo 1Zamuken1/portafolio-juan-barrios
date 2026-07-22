@@ -1,0 +1,24 @@
+<section class="section" id="projects">
+  <div class="container">
+    <h2 class="section-title">Proyectos Destacados</h2>
+    <p class="section-subtitle">Soluciones reales construidas con código limpio y arquitectura sólida</p>
+
+    <div class="projects-grid">
+      @for (project of projects(); track project.id; let i = $index) {
+        <app-project-card
+          [project]="project"
+          [index]="i"
+          (viewMore)="openModal(project)"
+        />
+      }
+    </div>
+  </div>
+
+  <!-- Project Detail Modal -->
+  @if (selectedProject()) {
+    <app-project-modal
+      [project]="selectedProject()!"
+      (close)="closeModal()"
+    />
+  }
+</section>

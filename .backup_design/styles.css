@@ -1,0 +1,8 @@
+/* PrimeIcons */
+@import 'primeicons/primeicons.css';
+
+/* Custom Design System */
+@import 'app/styles/variables.css';
+@import 'app/styles/theme.css';
+@import 'app/styles/global.css';
+@import 'app/styles/animations.css';
