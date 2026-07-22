@@ -1,0 +1,25 @@
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2 class="font-code-md tracking-widest uppercase">Admin Panel</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-link" routerLink="projects" routerLinkActive="active">Projects</a>
+      <a class="nav-link disabled">Experience</a>
+      <a class="nav-link disabled">Skills</a>
+    </nav>
+    <div class="sidebar-footer">
+      <a routerLink="/" class="nav-link" style="margin-bottom: 0.5rem;">
+        <i class="pi pi-home"></i> View Portfolio
+      </a>
+      <button (click)="logout()" class="logout-btn font-code-sm uppercase">
+        <i class="pi pi-sign-out"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <main class="dashboard-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>
+
