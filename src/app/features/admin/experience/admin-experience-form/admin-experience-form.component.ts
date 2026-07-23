@@ -60,6 +60,8 @@ export class AdminExperienceFormComponent implements OnInit {
       period: ['', Validators.required],
       description: [''],
       achievementsStr: [''],
+      icon: ['fas fa-briefcase', Validators.required],
+      technologiesStr: [''],
       displayOrder: [0]
     });
   }
@@ -72,7 +74,8 @@ export class AdminExperienceFormComponent implements OnInit {
         if (exp) {
           this.form.patchValue({
             ...exp,
-            achievementsStr: exp.achievements?.join(', ') || ''
+            achievementsStr: exp.achievements?.join(', ') || '',
+            technologiesStr: exp.technologies?.join(', ') || ''
           });
         }
         this.loading.set(false);
@@ -95,9 +98,13 @@ export class AdminExperienceFormComponent implements OnInit {
       achievements: formValue.achievementsStr
         ? formValue.achievementsStr.split(',').map((s: string) => s.trim()).filter((s: string) => s)
         : [],
+      technologies: formValue.technologiesStr
+        ? formValue.technologiesStr.split(',').map((s: string) => s.trim()).filter((s: string) => s)
+        : []
     };
 
     delete (expData as any).achievementsStr;
+    delete (expData as any).technologiesStr;
 
     const operation = this.isEditMode
       ? this.dataService.updateExperience(this.experienceId!, expData)

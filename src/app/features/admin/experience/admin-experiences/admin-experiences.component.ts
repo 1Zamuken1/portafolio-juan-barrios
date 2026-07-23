@@ -35,7 +35,6 @@ export class AdminExperiencesComponent implements OnInit {
 
   loadExperiences(): void {
     this.loading.set(true);
-    this.dataService.refreshExperiences();
     this.dataService.getExperiences().subscribe({
       next: (experiences) => {
         this.experiences.set(experiences);

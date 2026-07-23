@@ -36,7 +36,6 @@ export class AdminSkillsComponent implements OnInit {
 
   loadSkills(): void {
     this.loading.set(true);
-    this.dataService.refreshAdminSkills();
     this.dataService.getAdminSkills().subscribe({
       next: (skills) => {
         this.skills.set(skills);

@@ -36,7 +36,6 @@ export class AdminProjectsComponent implements OnInit {
 
   loadProjects(): void {
     this.loading.set(true);
-    this.dataService.refreshProjects();
     this.dataService.getProjects().subscribe({
       next: (projects) => {
         this.projects.set(projects);

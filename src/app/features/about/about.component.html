@@ -84,7 +84,7 @@
               
               <div class="skill-planet glass"
                    #skillPlanet
-                   [style.--brand-color]="skill.brandColor"
+                   [style.--brand-color]="skill.color"
                    [style.--brand-color-light]="skill.brandColorLight"
                    [style.--brand-color-dark]="skill.brandColorDark"
                    (mouseenter)="onPlanetHover(true, skill)"
@@ -170,11 +170,11 @@
 
       <div class="stitch-section-content">
         <div class="experience-list">
-          @for (exp of experience; track exp.company) {
+          @for (exp of experience(); track exp.id) {
             <div class="experience-card">
               <div class="exp-header">
                 <div class="exp-icon-wrapper">
-                  <i [class]="exp.icon"></i>
+                  <i [class]="exp.icon || 'fas fa-briefcase'"></i>
                 </div>
                 <div class="exp-info">
                   <h4 class="exp-role font-headline-md text-primary" style="font-size: 1.25rem;">{{ exp.role }}</h4>

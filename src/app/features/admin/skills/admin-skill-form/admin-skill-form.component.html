@@ -34,9 +34,29 @@
 
     <!-- Color -->
     <div class="form-group flex-1">
-      <label for="color">Color Hexadecimal *</label>
+      <label for="color">Color Principal Hexadecimal *</label>
       <input pInputText id="color" formControlName="color" placeholder="Ej: #FF0000" />
     </div>
+  </div>
+
+  <div class="form-row">
+    <!-- Brand Color Light -->
+    <div class="form-group flex-1">
+      <label for="brandColorLight">Color Light (Hex)</label>
+      <input pInputText id="brandColorLight" formControlName="brandColorLight" placeholder="Ej: #FF5555" />
+    </div>
+
+    <!-- Brand Color Dark -->
+    <div class="form-group flex-1">
+      <label for="brandColorDark">Color Dark (Hex)</label>
+      <input pInputText id="brandColorDark" formControlName="brandColorDark" placeholder="Ej: #AA0000" />
+    </div>
+  </div>
+
+  <!-- Description -->
+  <div class="form-group">
+    <label for="description">Descripción</label>
+    <input pInputText id="description" formControlName="description" placeholder="Breve descripción" />
   </div>
 
   <!-- Display Order -->

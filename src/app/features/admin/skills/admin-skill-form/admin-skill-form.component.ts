@@ -67,6 +67,9 @@ export class AdminSkillFormComponent implements OnInit {
       category: ['Backend', Validators.required],
       icon: ['pi pi-star', Validators.required],
       color: ['#ffffff', Validators.required],
+      brandColorLight: [''],
+      brandColorDark: [''],
+      description: [''],
       displayOrder: [0]
     });
   }
