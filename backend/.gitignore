@@ -1,3 +1,8 @@
+### SQLite dev database (never commit) ###
+*.db
+*.db-shm
+*.db-wal
+
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
