@@ -5,12 +5,13 @@ Esta es la wiki interna y conjunto de reglas del proyecto. **Para cualquier agen
 ## 1. Project Overview
 Este repositorio contiene el portafolio personal de Juan Barrios, un Backend Developer especializado en Java (Spring Boot) y Python (Django). El proyecto evolucionó de ser un portafolio estático a una aplicación Fullstack dinámica (Monorepo).
 
-## 2. Frontend (Angular 18)
+## 2. Frontend (Angular 22)
 - **Ubicación**: Se encuentra en la raíz del repositorio (`/`).
-- **Arquitectura**: Angular 18 con Standalone Components. 
+- **Arquitectura**: Angular 22 con Standalone Components. 
 - **Estilos**: Vanilla CSS puro con variables nativas (`var(--color)`). **NO usar TailwindCSS** a menos que se indique explícitamente. Se hace un uso intensivo de animaciones CSS (Starfield, Glassmorphism).
 - **Animaciones Complejas**: Uso de GSAP (`gsap`, `ScrollTrigger`) para animaciones de scroll y revelado.
 - **Scroll Suave**: Uso de la librería `Lenis` para smooth scrolling. (Nota: Si hay problemas de scroll en modales, usar el atributo `data-lenis-prevent`).
+- **Change Detection**: Usa `zone.js` con `provideZoneChangeDetection()` para detección automática de cambios. **NO usar modo Zoneless** (`provideZonelessChangeDetection`), ya que el proyecto depende de Observables/RxJS y no de Signals puros. El modo Zoneless requiere `cdr.detectChanges()` manual en cada callback async, lo cual es frágil y propenso a bugs silenciosos (spinners infinitos sin errores).
 - **Estado de los Datos**: 
   - *Fase Estática (Legacy)*: El servicio `DataService` consumía archivos JSON estáticos en `/public/data/`.
   - *Fase Dinámica (Actual/Futura)*: El servicio `DataService` interactúa con la API REST del backend para obtener la información. El frontend cuenta con un `/admin` dashboard protegido.
@@ -39,3 +40,10 @@ El repositorio funciona como un monorepo no estricto:
 - **No uses placehoders**: Si se necesitan imágenes de prueba, genéralas.
 - Al modificar CSS o componentes de UI, asegúrate de mantener el soporte para interacciones táctiles en móviles y no romper el layout responsivo.
 - En el backend, **NUNCA** mezcles lógica de negocio (dominio) dentro de los controladores o entidades de JPA. Respeta la separación de capas (Hexagonal).
+
+## 6. Package Manager
+- **USAR EXCLUSIVAMENTE `pnpm`** para instalar, actualizar o eliminar dependencias del frontend. **NUNCA usar `npm`** para gestión de paquetes.
+  - ✅ `pnpm install`, `pnpm add <paquete>`, `pnpm remove <paquete>`
+  - ❌ `npm install`, `npm i <paquete>`, `npm uninstall <paquete>`
+- Los scripts de ejecución sí se pueden correr con `npm run <script>` o `pnpm run <script>` indistintamente.
+- Para el backend (Maven/Gradle), usar los wrappers incluidos (`./mvnw`, `./gradlew`).
