@@ -1,0 +1,60 @@
+<p-toast />
+<p-confirmDialog />
+
+<div class="admin-section-header">
+  <h2 class="font-code-lg">Experiencia</h2>
+  <button pButton label="+ Nueva Experiencia" class="p-button-sm" (click)="createNew()"></button>
+</div>
+
+<div *ngIf="loading" class="loading-state" style="padding: 3rem; text-align: center;">
+  <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+  <p style="margin-top: 1rem;">Cargando experiencias...</p>
+</div>
+
+<div *ngIf="!loading">
+  <p-table 
+    [value]="experiences" 
+    [paginator]="true"
+    [rows]="10"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} experiencias"
+    styleClass="p-datatable-sm p-datatable-striped"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 60px">ID</th>
+        <th>Empresa</th>
+        <th>Rol</th>
+        <th>Período</th>
+        <th style="width: 80px">Orden</th>
+        <th style="width: 180px">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-exp>
+      <tr>
+        <td>{{ exp.id }}</td>
+        <td>
+          <strong>{{ exp.company }}</strong>
+        </td>
+        <td>{{ exp.role }}</td>
+        <td>{{ exp.period }}</td>
+        <td>{{ exp.displayOrder }}</td>
+        <td>
+          <div class="action-buttons">
+            <button pButton icon="pi pi-pencil" class="p-button-sm p-button-text p-button-info" (click)="editExperience(exp)" pTooltip="Editar"></button>
+            <button pButton icon="pi pi-trash" class="p-button-sm p-button-text p-button-danger" (click)="confirmDelete(exp)" pTooltip="Eliminar"></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 2rem;">
+          <p>No hay experiencias. Haz clic en <strong>+ Nueva Experiencia</strong> para crear una.</p>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

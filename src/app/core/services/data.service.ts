@@ -2,7 +2,8 @@ import { Injectable, inject, isDevMode } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, shareReplay, tap, catchError, map } from 'rxjs';
 import { Project } from '../../shared/models/project.model';
-import { SkillsData } from '../../shared/models/skill.model';
+import { Experience } from '../../shared/models/experience.model';
+import { AdminSkill, SkillsData } from '../../shared/models/skill.model';
 
 @Injectable({ providedIn: 'root' })
 export class DataService {
@@ -12,14 +13,18 @@ export class DataService {
 
   /** Cached observables — only one HTTP request per resource */
   private projects$: Observable<Project[]> | null = null;
+  private experiences$: Observable<Experience[]> | null = null;
+  private adminSkills$: Observable<AdminSkill[]> | null = null;
   private skills$: Observable<SkillsData> | null = null;
+
+  // ═══════════════════════════════════════════
+  //  PROJECTS
+  // ═══════════════════════════════════════════
 
   getProjects(): Observable<Project[]> {
     if (!this.projects$) {
       this.projects$ = this.http.get<Project[]>(`${this.apiUrl}/projects`).pipe(
         catchError(() => {
-          // Fallback: si la API no está disponible (producción sin backend),
-          // cargar desde los archivos JSON estáticos
           console.warn('API no disponible, cargando proyectos desde JSON estático.');
           return this.http.get<any[]>('/assets/data/projects.json').pipe(
             map(items => items.map(p => ({
@@ -67,6 +72,80 @@ export class DataService {
       tap(() => this.refreshProjects())
     );
   }
+
+  // ═══════════════════════════════════════════
+  //  EXPERIENCES
+  // ═══════════════════════════════════════════
+
+  getExperiences(): Observable<Experience[]> {
+    if (!this.experiences$) {
+      this.experiences$ = this.http.get<Experience[]>(`${this.apiUrl}/experiences`).pipe(
+        shareReplay(1)
+      );
+    }
+    return this.experiences$;
+  }
+
+  refreshExperiences(): void {
+    this.experiences$ = null;
+  }
+
+  createExperience(experience: Experience): Observable<Experience> {
+    return this.http.post<Experience>(`${this.apiUrl}/experiences`, experience).pipe(
+      tap(() => this.refreshExperiences())
+    );
+  }
+
+  updateExperience(id: number, experience: Experience): Observable<Experience> {
+    return this.http.put<Experience>(`${this.apiUrl}/experiences/${id}`, experience).pipe(
+      tap(() => this.refreshExperiences())
+    );
+  }
+
+  deleteExperience(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/experiences/${id}`).pipe(
+      tap(() => this.refreshExperiences())
+    );
+  }
+
+  // ═══════════════════════════════════════════
+  //  SKILLS (Admin — flat list from backend)
+  // ═══════════════════════════════════════════
+
+  getAdminSkills(): Observable<AdminSkill[]> {
+    if (!this.adminSkills$) {
+      this.adminSkills$ = this.http.get<AdminSkill[]>(`${this.apiUrl}/skills`).pipe(
+        shareReplay(1)
+      );
+    }
+    return this.adminSkills$;
+  }
+
+  refreshAdminSkills(): void {
+    this.adminSkills$ = null;
+  }
+
+  createSkill(skill: AdminSkill): Observable<AdminSkill> {
+    return this.http.post<AdminSkill>(`${this.apiUrl}/skills`, skill).pipe(
+      tap(() => this.refreshAdminSkills())
+    );
+  }
+
+  updateSkill(id: number, skill: AdminSkill): Observable<AdminSkill> {
+    return this.http.put<AdminSkill>(`${this.apiUrl}/skills/${id}`, skill).pipe(
+      tap(() => this.refreshAdminSkills())
+    );
+  }
+
+  deleteSkill(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/skills/${id}`).pipe(
+      tap(() => this.refreshAdminSkills())
+    );
+  }
+
+  // ═══════════════════════════════════════════
+  //  SKILLS (Public — legacy grouped JSON)
+  // ═══════════════════════════════════════════
 
   getSkills(): Observable<SkillsData> {
     if (!this.skills$) {
