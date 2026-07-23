@@ -9,7 +9,7 @@ import { AdminSkill, SkillsData } from '../../shared/models/skill.model';
 export class DataService {
   private http = inject(HttpClient);
 
-  private apiUrl = isDevMode() ? 'http://localhost:8080/api' : '/api';
+  private apiUrl = 'http://localhost:8080/api';
 
   /** Cached observables — only one HTTP request per resource */
   private projects$: Observable<Project[]> | null = null;
@@ -22,33 +22,7 @@ export class DataService {
   // ═══════════════════════════════════════════
 
   getProjects(): Observable<Project[]> {
-    if (!this.projects$) {
-      this.projects$ = this.http.get<Project[]>(`${this.apiUrl}/projects`).pipe(
-        catchError(() => {
-          console.warn('API no disponible, cargando proyectos desde JSON estático.');
-          return this.http.get<any[]>('/assets/data/projects.json').pipe(
-            map(items => items.map(p => ({
-              id: p.id ?? 0,
-              name: p.name,
-              shortDescription: p.shortDescription,
-              fullDescription: p.fullDescription,
-              role: p.role ?? 'Desarrollador',
-              year: p.year ?? 2024,
-              status: p.status ?? 'Completed',
-              technologies: p.technologies ?? [],
-              features: p.features ?? [],
-              highlights: p.highlights ?? [],
-              githubUrl: p.links?.github ?? p.githubUrl ?? '',
-              liveUrl: p.links?.live ?? p.liveUrl ?? null,
-              imageUrl: p.image ?? p.imageUrl ?? null,
-              displayOrder: p.displayOrder ?? 0
-            } as Project)))
-          );
-        }),
-        shareReplay(1)
-      );
-    }
-    return this.projects$;
+    return this.http.get<Project[]>(`${this.apiUrl}/projects`);
   }
 
   refreshProjects(): void {
@@ -78,12 +52,7 @@ export class DataService {
   // ═══════════════════════════════════════════
 
   getExperiences(): Observable<Experience[]> {
-    if (!this.experiences$) {
-      this.experiences$ = this.http.get<Experience[]>(`${this.apiUrl}/experiences`).pipe(
-        shareReplay(1)
-      );
-    }
-    return this.experiences$;
+    return this.http.get<Experience[]>(`${this.apiUrl}/experiences`);
   }
 
   refreshExperiences(): void {
@@ -113,12 +82,7 @@ export class DataService {
   // ═══════════════════════════════════════════
 
   getAdminSkills(): Observable<AdminSkill[]> {
-    if (!this.adminSkills$) {
-      this.adminSkills$ = this.http.get<AdminSkill[]>(`${this.apiUrl}/skills`).pipe(
-        shareReplay(1)
-      );
-    }
-    return this.adminSkills$;
+    return this.http.get<AdminSkill[]>(`${this.apiUrl}/skills`);
   }
 
   refreshAdminSkills(): void {

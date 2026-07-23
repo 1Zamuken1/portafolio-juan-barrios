@@ -15,8 +15,7 @@ export class AuthService {
   isAuthenticated = signal<boolean>(this.hasToken());
 
   login(credentials: any) {
-    // Assuming backend is running on 8080 during dev.
-    const apiUrl = isDevMode() ? 'http://localhost:8080/api' : '/api';
+    const apiUrl = 'http://localhost:8080/api';
     return this.http.post<{token: string}>(`${apiUrl}/auth/login`, credentials).pipe(
       tap(res => {
         if (res && res.token) {
