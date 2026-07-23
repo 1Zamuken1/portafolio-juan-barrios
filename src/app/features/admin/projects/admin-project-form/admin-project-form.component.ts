@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -35,8 +35,8 @@ export class AdminProjectFormComponent implements OnInit {
   form!: FormGroup;
   isEditMode = false;
   projectId: number | null = null;
-  loading = false;
-  saving = false;
+  loading = signal(false);
+  saving = signal(false);
 
   statusOptions = [
     { label: 'Draft', value: 'Draft' },
@@ -82,7 +82,7 @@ export class AdminProjectFormComponent implements OnInit {
   }
 
   private loadProject(id: number): void {
-    this.loading = true;
+    this.loading.set(true);
     this.dataService.getProjects().subscribe({
       next: (projects) => {
         const project = projects.find(p => p.id === id);
@@ -94,10 +94,10 @@ export class AdminProjectFormComponent implements OnInit {
             highlightsStr: project.highlights?.join(', ') || ''
           });
         }
-        this.loading = false;
+        this.loading.set(false);
       },
       error: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load project' });
       }
     });
@@ -106,7 +106,7 @@ export class AdminProjectFormComponent implements OnInit {
   onSubmit(): void {
     if (this.form.invalid) return;
 
-    this.saving = true;
+    this.saving.set(true);
     const formValue = this.form.value;
     
     const projectData: Project = {
@@ -135,7 +135,7 @@ export class AdminProjectFormComponent implements OnInit {
         setTimeout(() => this.router.navigate(['/admin/dashboard/projects']), 1000);
       },
       error: () => {
-        this.saving = false;
+        this.saving.set(false);
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save project' });
       }
     });

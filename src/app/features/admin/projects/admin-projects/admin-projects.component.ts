@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DataService } from '../../../../core/services/data.service';
@@ -22,8 +22,8 @@ import { ConfirmationService, MessageService } from 'primeng/api';
   styleUrl: './admin-projects.component.css'
 })
 export class AdminProjectsComponent implements OnInit {
-  projects: Project[] = [];
-  loading = true;
+  projects = signal<Project[]>([]);
+  loading = signal(true);
 
   private dataService = inject(DataService);
   private router = inject(Router);
@@ -35,15 +35,15 @@ export class AdminProjectsComponent implements OnInit {
   }
 
   loadProjects(): void {
-    this.loading = true;
+    this.loading.set(true);
     this.dataService.refreshProjects();
     this.dataService.getProjects().subscribe({
       next: (projects) => {
-        this.projects = projects;
-        this.loading = false;
+        this.projects.set(projects);
+        this.loading.set(false);
       },
       error: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load projects' });
       }
     });

@@ -28,17 +28,17 @@
         >
       </div>
 
-      <div *ngIf="error" class="error-message">
-        {{ error }}
+      <div *ngIf="error()" class="error-message">
+        {{ error() }}
       </div>
       
       <button 
         type="submit" 
         class="stitch-button w-full"
-        [disabled]="loginForm.invalid || loading"
+        [disabled]="loginForm.invalid || loading()"
       >
-        <span *ngIf="!loading">Sign In</span>
-        <span *ngIf="loading">Signing In...</span>
+        <span *ngIf="!loading()">Sign In</span>
+        <span *ngIf="loading()">Signing In...</span>
       </button>
     </form>
     

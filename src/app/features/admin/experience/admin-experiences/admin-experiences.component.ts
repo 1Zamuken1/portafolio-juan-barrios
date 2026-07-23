@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DataService } from '../../../../core/services/data.service';
@@ -21,8 +21,8 @@ import { ConfirmationService, MessageService } from 'primeng/api';
   styleUrl: './admin-experiences.component.css'
 })
 export class AdminExperiencesComponent implements OnInit {
-  experiences: Experience[] = [];
-  loading = true;
+  experiences = signal<Experience[]>([]);
+  loading = signal(true);
 
   private dataService = inject(DataService);
   private router = inject(Router);
@@ -34,16 +34,16 @@ export class AdminExperiencesComponent implements OnInit {
   }
 
   loadExperiences(): void {
-    this.loading = true;
+    this.loading.set(true);
     this.dataService.refreshExperiences();
     this.dataService.getExperiences().subscribe({
       next: (experiences) => {
-        this.experiences = experiences;
-        this.loading = false;
+        this.experiences.set(experiences);
+        this.loading.set(false);
       },
       error: () => {
-        this.loading = false;
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las experiencias' });
+        this.loading.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load experiences' });
       }
     });
   }

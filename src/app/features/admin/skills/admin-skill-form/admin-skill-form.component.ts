@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -33,8 +33,8 @@ export class AdminSkillFormComponent implements OnInit {
   form!: FormGroup;
   isEditMode = false;
   skillId: number | null = null;
-  loading = false;
-  saving = false;
+  loading = signal(false);
+  saving = signal(false);
 
   categoryOptions = [
     { label: 'Frontend', value: 'Frontend' },
@@ -72,17 +72,17 @@ export class AdminSkillFormComponent implements OnInit {
   }
 
   private loadSkill(id: number): void {
-    this.loading = true;
+    this.loading.set(true);
     this.dataService.getAdminSkills().subscribe({
       next: (skills) => {
         const skill = skills.find(s => s.id === id);
         if (skill) {
           this.form.patchValue(skill);
         }
-        this.loading = false;
+        this.loading.set(false);
       },
       error: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la habilidad' });
       }
     });
@@ -91,7 +91,7 @@ export class AdminSkillFormComponent implements OnInit {
   onSubmit(): void {
     if (this.form.invalid) return;
 
-    this.saving = true;
+    this.saving.set(true);
     const skillData: AdminSkill = this.form.value;
 
     const operation = this.isEditMode
@@ -108,7 +108,7 @@ export class AdminSkillFormComponent implements OnInit {
         setTimeout(() => this.router.navigate(['/admin/dashboard/skills']), 1000);
       },
       error: () => {
-        this.saving = false;
+        this.saving.set(false);
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la habilidad' });
       }
     });

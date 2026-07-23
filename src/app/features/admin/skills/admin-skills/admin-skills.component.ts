@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DataService } from '../../../../core/services/data.service';
@@ -22,8 +22,8 @@ import { ConfirmationService, MessageService } from 'primeng/api';
   styleUrl: './admin-skills.component.css'
 })
 export class AdminSkillsComponent implements OnInit {
-  skills: AdminSkill[] = [];
-  loading = true;
+  skills = signal<AdminSkill[]>([]);
+  loading = signal(true);
 
   private dataService = inject(DataService);
   private router = inject(Router);
@@ -35,16 +35,16 @@ export class AdminSkillsComponent implements OnInit {
   }
 
   loadSkills(): void {
-    this.loading = true;
+    this.loading.set(true);
     this.dataService.refreshAdminSkills();
     this.dataService.getAdminSkills().subscribe({
       next: (skills) => {
-        this.skills = skills;
-        this.loading = false;
+        this.skills.set(skills);
+        this.loading.set(false);
       },
       error: () => {
-        this.loading = false;
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las habilidades' });
+        this.loading.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load skills' });
       }
     });
   }

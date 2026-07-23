@@ -4,12 +4,12 @@
   <h2 class="font-code-lg">{{ isEditMode ? 'Editar' : 'Nueva' }} Habilidad</h2>
 </div>
 
-<div *ngIf="loading" class="loading-state" style="padding: 3rem; text-align: center;">
+<div *ngIf="loading()" class="loading-state" style="padding: 3rem; text-align: center;">
   <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
   <p style="margin-top: 1rem;">Cargando...</p>
 </div>
 
-<form *ngIf="!loading" [formGroup]="form" (ngSubmit)="onSubmit()" class="admin-form">
+<form *ngIf="!loading()" [formGroup]="form" (ngSubmit)="onSubmit()" class="admin-form">
   
   <div class="form-row">
     <!-- Name -->
@@ -48,6 +48,6 @@
   <!-- Actions -->
   <div class="form-actions">
     <button pButton type="button" label="Cancelar" class="p-button-outlined p-button-secondary" (click)="cancel()"></button>
-    <button pButton type="submit" [label]="isEditMode ? 'Actualizar' : 'Crear'" [loading]="saving" [disabled]="form.invalid"></button>
+    <button pButton type="submit" [label]="isEditMode ? 'Actualizar' : 'Crear'" [loading]="saving()" [disabled]="form.invalid"></button>
   </div>
 </form>
