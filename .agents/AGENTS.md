@@ -11,7 +11,7 @@ Este repositorio contiene el portafolio personal de Juan Barrios, un Backend Dev
 - **Estilos**: Vanilla CSS puro con variables nativas (`var(--color)`). **NO usar TailwindCSS** a menos que se indique explícitamente. Se hace un uso intensivo de animaciones CSS (Starfield, Glassmorphism).
 - **Animaciones Complejas**: Uso de GSAP (`gsap`, `ScrollTrigger`) para animaciones de scroll y revelado.
 - **Scroll Suave**: Uso de la librería `Lenis` para smooth scrolling. (Nota: Si hay problemas de scroll en modales, usar el atributo `data-lenis-prevent`).
-- **Change Detection**: Usa `zone.js` con `provideZoneChangeDetection()` para detección automática de cambios. **NO usar modo Zoneless** (`provideZonelessChangeDetection`), ya que el proyecto depende de Observables/RxJS y no de Signals puros. El modo Zoneless requiere `cdr.detectChanges()` manual en cada callback async, lo cual es frágil y propenso a bugs silenciosos (spinners infinitos sin errores).
+- **Change Detection**: Usa `provideZonelessChangeDetection()` (modo Zoneless). Todas las variables de estado reactivas en los componentes de admin y la vista pública usan **Angular Signals** (`signal()`, `.set()`, `.update()`). **NO** inyectar `ChangeDetectorRef` ni usar `cdr.detectChanges()`. Los Signals notifican automáticamente al framework cuándo repintar.
 - **Estado de los Datos**: 
   - *Fase Estática (Legacy)*: El servicio `DataService` consumía archivos JSON estáticos en `/public/data/`.
   - *Fase Dinámica (Actual/Futura)*: El servicio `DataService` interactúa con la API REST del backend para obtener la información. El frontend cuenta con un `/admin` dashboard protegido.
@@ -41,9 +41,20 @@ El repositorio funciona como un monorepo no estricto:
 - Al modificar CSS o componentes de UI, asegúrate de mantener el soporte para interacciones táctiles en móviles y no romper el layout responsivo.
 - En el backend, **NUNCA** mezcles lógica de negocio (dominio) dentro de los controladores o entidades de JPA. Respeta la separación de capas (Hexagonal).
 
-## 6. Package Manager
+## 6. Git Workflow y Commits
+- **Ramas:** Todo el desarrollo activo se hace sobre la rama `develop`.
+- **Commits:**
+  - Deben ser atómicos (un solo propósito lógico por commit).
+  - En español.
+  - Usar convenciones convencionales (`feat:`, `fix:`, `chore:`, `refactor:`, etc.).
+  - Longitud media-corta y descriptivos.
+
+## 7. Package Manager
 - **USAR EXCLUSIVAMENTE `pnpm`** para instalar, actualizar o eliminar dependencias del frontend. **NUNCA usar `npm`** para gestión de paquetes.
   - ✅ `pnpm install`, `pnpm add <paquete>`, `pnpm remove <paquete>`
   - ❌ `npm install`, `npm i <paquete>`, `npm uninstall <paquete>`
 - Los scripts de ejecución sí se pueden correr con `npm run <script>` o `pnpm run <script>` indistintamente.
 - Para el backend (Maven/Gradle), usar los wrappers incluidos (`./mvnw`, `./gradlew`).
+
+## 7. Roadmap / Ideas Futuras
+- **Rediseño de sección de Proyectos ("VSCode Explorer")**: Se planea reemplazar la grid actual de project cards por una interfaz visual inspirada en VSCode, donde cada "carpeta" represente un proyecto y al expandirla muestre detalles, tecnologías, etc. Esto será una evolución futura de la UI pública, no una prioridad inmediata. Cuando se implemente, mantener la estética espacial/glassmorphism existente.
