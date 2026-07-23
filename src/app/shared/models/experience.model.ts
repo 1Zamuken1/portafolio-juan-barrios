@@ -5,5 +5,7 @@ export interface Experience {
   period: string;
   description: string;
   achievements: string[];
+  icon: string;
+  technologies: string[];
   displayOrder: number;
 }

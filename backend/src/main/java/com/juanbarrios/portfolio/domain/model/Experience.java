@@ -14,18 +14,23 @@ public class Experience {
     private String period;
     private String description;
     private List<String> achievements;
+    private String icon;
+    private List<String> technologies;
     private int displayOrder;
 
     public Experience() {}
 
     public Experience(Long id, String company, String role, String period,
-                      String description, List<String> achievements, int displayOrder) {
+                      String description, List<String> achievements,
+                      String icon, List<String> technologies, int displayOrder) {
         this.id = id;
         this.company = company;
         this.role = role;
         this.period = period;
         this.description = description;
         this.achievements = achievements;
+        this.icon = icon;
+        this.technologies = technologies;
         this.displayOrder = displayOrder;
     }
 
@@ -47,6 +52,12 @@ public class Experience {
 
     public List<String> getAchievements() { return achievements; }
     public void setAchievements(List<String> achievements) { this.achievements = achievements; }
+
+    public String getIcon() { return icon; }
+    public void setIcon(String icon) { this.icon = icon; }
+
+    public List<String> getTechnologies() { return technologies; }
+    public void setTechnologies(List<String> technologies) { this.technologies = technologies; }
 
     public int getDisplayOrder() { return displayOrder; }
     public void setDisplayOrder(int displayOrder) { this.displayOrder = displayOrder; }
