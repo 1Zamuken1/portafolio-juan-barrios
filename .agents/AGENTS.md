@@ -68,7 +68,54 @@ El repositorio funciona como un monorepo no estricto:
 - Al modificar CSS o componentes de UI, asegúrate de mantener el soporte para interacciones táctiles en móviles y no romper el layout responsivo.
 - En el backend, **NUNCA** mezcles lógica de negocio (dominio) dentro de los controladores o entidades de JPA. Respeta la separación de capas (Hexagonal).
 
-## 6. Git Workflow y Commits
+## 6. Despliegue del Backend en Render (Free Tier)
+
+### Estructura de despliegue
+- **Frontend** → Vercel (desde raíz del repo)
+- **Backend** → Render (Free Tier, Docker-based) — `https://portafolio-juan-barrios.onrender.com`
+
+### Archivos clave para Render
+| Archivo | Ubicación | Propósito |
+|---------|-----------|-----------|
+| `backend/Dockerfile` | `backend/Dockerfile` | Define la imagen Docker del backend |
+| `backend/application-render.properties` | backend/src/main/resources/ | Profile `render`: usa `PORT`, HikariCP separado |
+| `render.yaml` | raíz del repo | Blueprint para deploy (no usado en manual, pero sirve como referencia) |
+
+### Variables de entorno requeridas en Render (Web Service)
+| Key | Value |
+|-----|-------|
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://<host>:5432/<db>` |
+| `SPRING_DATASOURCE_USERNAME` | `<user>` |
+| `SPRING_DATASOURCE_PASSWORD` | `<password>` |
+| `SPRING_DATASOURCE_DRIVER-CLASS-NAME` | `org.postgresql.Driver` |
+| `SPRING_PROFILES_ACTIVE` | `render` |
+| `JAVA_OPTS` | `-Xms256m -Xmx384m` |
+
+> ⚠️ NO usar `spring.datasource.url=jdbc:${DATABASE_URL}` en `application-render.properties` — el driver PostgreSQL JDBC no parsea credenciales embebidas en la URL. Usar las 4 vars `SPRING_DATASOURCE_*` separadas.
+
+### Root Directory
+Al crear el servicio en Render, establecer **Root Directory** como `backend`. El **Dockerfile Path** apunta a `backend/Dockerfile` (relativo a repo root) o simplemente `Dockerfile` si el root es `backend`.
+
+### Problemas encontrados y soluciones
+
+| # | Problema | Causa | Solución |
+|---|----------|-------|----------|
+| 1 | `Driver org.postgresql.Driver claims to not accept jdbcUrl, postgresql://...` | `spring.datasource.url=${DATABASE_URL}` expandía `DATABASE_URL` (formato `postgresql://`) sin prefijo `jdbc:` | Cambiar a `jdbc:${DATABASE_URL}` en `application-prod.properties` o mejor, usar `SPRING_DATASOURCE_URL` sin credenciales embebidas |
+| 2 | Mismo error con `jdbc:postgresql://user:password@host/db` | HikariCP/PG Driver no parsea bien credenciales embebidas en URL (`user:password@host`) | **No** embutir credenciales en la URL. Usar vars separadas `SPRING_DATASOURCE_USERNAME` y `SPRING_DATASOURCE_PASSWORD` |
+| 3 | Perfil `prod` en vez de `render` | `SPRING_PROFILES_ACTIVE=render` no llegaba al contenedor Docker (build cache de Render) | Limpiar build cache en Render y redeploy; también verificar que la variable esté configurada antes de la build |
+| 4 | Render detecta Node.js en vez de Docker | Railway detectó `package.json` en raíz como proyecto Node | Configurar Build Method como **Docker** y Dockerfile Path como `backend/Dockerfile` |
+| 5 | `Root Directory` no encontrado en UI de Render | Render v2 lo llama "Build Source → Docker settings" | En Docker settings dentro del builder, sí está la opción de Root Directory bajo **Advanced** |
+| 6 | `postgresql://...` URL invalida para JDBC | PostgreSQL JDBC requiere formato `jdbc:postgresql://host:port/db` | Armar la URL JDBC manualmente como env var `SPRING_DATASOURCE_URL` |
+
+### Pasos de deploy (resumen ejecutivo)
+1. Crear PostgreSQL en Render (Free tier) → copiar credenciales
+2. Dashboard → New+ → Web Service → conectar repo
+3. Build Method: Docker | Dockerfile Path: `backend/Dockerfile` | Root Directory: `backend`
+4. Agregar 6 env vars (`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `SPRING_DATASOURCE_DRIVER-CLASS-NAME`, `SPRING_PROFILES_ACTIVE=render`, `JAVA_OPTS`)
+5. Manual Deploy → esperar ~3 min
+6. Verificar `https://portafolio-juan-barrios.onrender.com/api/projects` → debe retornar 200
+
+## 7. Git Workflow y Commits
 - **Ramas:** Todo el desarrollo activo se hace sobre la rama `develop`.
 - **Commits:**
   - Deben ser atómicos (un solo propósito lógico por commit).
@@ -76,12 +123,12 @@ El repositorio funciona como un monorepo no estricto:
   - Usar convenciones convencionales (`feat:`, `fix:`, `chore:`, `refactor:`, etc.).
   - Longitud media-corta y descriptivos.
 
-## 7. Package Manager
+## 8. Package Manager
 - **USAR EXCLUSIVAMENTE `pnpm`** para instalar, actualizar o eliminar dependencias del frontend. **NUNCA usar `npm`** para gestión de paquetes.
   - ✅ `pnpm install`, `pnpm add <paquete>`, `pnpm remove <paquete>`
   - ❌ `npm install`, `npm i <paquete>`, `npm uninstall <paquete>`
 - Los scripts de ejecución sí se pueden correr con `npm run <script>` o `pnpm run <script>` indistintamente.
 - Para el backend (Maven/Gradle), usar los wrappers incluidos (`./mvnw`, `./gradlew`).
 
-## 7. Roadmap / Ideas Futuras
+## 9. Roadmap / Ideas Futuras
 - **Rediseño de sección de Proyectos ("VSCode Explorer")**: Se planea reemplazar la grid actual de project cards por una interfaz visual inspirada en VSCode, donde cada "carpeta" represente un proyecto y al expandirla muestre detalles, tecnologías, etc. Esto será una evolución futura de la UI pública, no una prioridad inmediata. Cuando se implemente, mantener la estética espacial/glassmorphism existente.
