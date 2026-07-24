@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy, inject, signal, NgZone, ViewChild, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataService } from '../../core/services/data.service';
-import { SkillCategory, Skill } from '../../shared/models/skill.model';
+import { AdminSkill } from '../../shared/models/skill.model';
+import { Experience } from '../../shared/models/experience.model';
 import { TabsModule } from 'primeng/tabs';
 import { TooltipModule } from 'primeng/tooltip';
 import { TimelineModule } from 'primeng/timeline';
@@ -24,7 +25,7 @@ export class AboutComponent implements OnInit, OnDestroy {
   @ViewChild('skillsRing') ringEl!: ElementRef<HTMLElement>;
   @ViewChildren('skillPlanet') planetsEl!: QueryList<ElementRef<HTMLElement>>;
 
-  flatSkills = signal<(Skill & { angle: number; category: string })[]>([]);
+  flatSkills = signal<(AdminSkill & { angle: number })[]>([]);
   activeTab = signal(0);
 
   // Hovered skill info (shown in center)
@@ -43,29 +44,15 @@ export class AboutComponent implements OnInit, OnDestroy {
   private prevClientX = 0;
   private frameDelta = 0;
 
-  /** Experience timeline data */
-  experience = [
-    {
-      company: 'Fundación Universitaria Konrad Lorenz',
-      role: 'Asistente Webmaster',
-      period: 'Oct 2022 — Abr 2023',
-      icon: 'fas fa-globe',
-      description: 'Gestión del sitio web institucional, optimización SEO, mejoras de accesibilidad, desarrollo en WordPress y refactorización de código legacy.',
-      achievements: [
-        'Primer resultado en motores de búsqueda para palabras clave principales',
-        'Implementación de estándares WCAG',
-        'Refactorización completa del sitio Konrad Editores'
-      ],
-      technologies: ['WordPress', 'PHP', 'JavaScript', 'SEO', 'HTML5', 'CSS3']
-    }
-  ];
+  experience = signal<Experience[]>([]);
 
   ngOnInit(): void {
-    this.dataService.getSkills().subscribe(data => {
-      const allSkills: (Skill & { category: string })[] = [];
-      Object.values(data).forEach((cat: any) => {
-        cat.skills.forEach((s: Skill) => allSkills.push({ ...s, category: cat.category }));
-      });
+    this.dataService.getExperiences().subscribe(data => {
+      this.experience.set(data.sort((a, b) => a.displayOrder - b.displayOrder));
+    });
+
+    this.dataService.getAdminSkills().subscribe(data => {
+      const allSkills = data.sort((a, b) => a.displayOrder - b.displayOrder);
 
       const total = allSkills.length;
       const skillsWithAngles = allSkills.map((skill, index) => ({
@@ -167,7 +154,7 @@ export class AboutComponent implements OnInit, OnDestroy {
   }
 
   // --- Hover ---
-  onPlanetHover(hovered: boolean, skill?: Skill & { category: string }) {
+  onPlanetHover(hovered: boolean, skill?: AdminSkill) {
     this.planetHovered = hovered;
     if (hovered) {
       this.velocity = 0;
@@ -175,7 +162,7 @@ export class AboutComponent implements OnInit, OnDestroy {
     // Update the center label (run inside zone so signal triggers change detection)
     this.zone.run(() => {
       if (hovered && skill) {
-        this.hoveredSkill.set({ name: skill.name, category: skill.category, brandColor: skill.brandColor, brandColorLight: skill.brandColorLight, brandColorDark: skill.brandColorDark, description: skill.description });
+        this.hoveredSkill.set({ name: skill.name, category: skill.category, brandColor: skill.color, brandColorLight: skill.brandColorLight, brandColorDark: skill.brandColorDark, description: skill.description });
       } else {
         this.hoveredSkill.set(null);
       }

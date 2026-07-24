@@ -4,7 +4,7 @@
   <h2 class="font-code-lg">{{ isEditMode ? 'Edit Project' : 'New Project' }}</h2>
 </div>
 
-<form [formGroup]="form" (ngSubmit)="onSubmit()" class="project-form" *ngIf="!loading">
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="project-form" *ngIf="!loading()">
 
   <!-- Row 1: Name & Year -->
   <div class="form-row">
@@ -84,10 +84,10 @@
   <!-- Actions -->
   <div class="form-actions">
     <button pButton type="button" label="Cancel" class="p-button-text" (click)="cancel()"></button>
-    <button pButton type="submit" [label]="isEditMode ? 'Update Project' : 'Create Project'" [loading]="saving" [disabled]="form.invalid"></button>
+    <button pButton type="submit" [label]="isEditMode ? 'Update Project' : 'Create Project'" [loading]="saving()" [disabled]="form.invalid"></button>
   </div>
 </form>
 
-<div *ngIf="loading" style="text-align: center; padding: 3rem;">
+<div *ngIf="loading()" style="text-align: center; padding: 3rem;">
   <p>Loading project data...</p>
 </div>

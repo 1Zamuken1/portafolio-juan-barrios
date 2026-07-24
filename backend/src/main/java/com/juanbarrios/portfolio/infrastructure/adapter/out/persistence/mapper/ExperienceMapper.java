@@ -24,6 +24,8 @@ public class ExperienceMapper {
                 entity.getPeriod(),
                 entity.getDescription(),
                 splitToList(entity.getAchievements()),
+                entity.getIcon(),
+                splitToList(entity.getTechnologies()),
                 entity.getDisplayOrder()
         );
     }
@@ -37,6 +39,8 @@ public class ExperienceMapper {
         entity.setPeriod(domain.getPeriod());
         entity.setDescription(domain.getDescription());
         entity.setAchievements(joinFromList(domain.getAchievements()));
+        entity.setIcon(domain.getIcon());
+        entity.setTechnologies(joinFromList(domain.getTechnologies()));
         entity.setDisplayOrder(domain.getDisplayOrder());
         return entity;
     }

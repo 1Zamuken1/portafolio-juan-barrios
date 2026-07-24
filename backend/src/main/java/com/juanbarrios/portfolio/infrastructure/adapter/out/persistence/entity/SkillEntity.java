@@ -23,6 +23,12 @@ public class SkillEntity {
     @Column(name = "display_order")
     private int displayOrder;
 
+    private String brandColorLight;
+    private String brandColorDark;
+
+    @Column(length = 500)
+    private String description;
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -41,4 +47,13 @@ public class SkillEntity {
 
     public int getDisplayOrder() { return displayOrder; }
     public void setDisplayOrder(int displayOrder) { this.displayOrder = displayOrder; }
+
+    public String getBrandColorLight() { return brandColorLight; }
+    public void setBrandColorLight(String brandColorLight) { this.brandColorLight = brandColorLight; }
+
+    public String getBrandColorDark() { return brandColorDark; }
+    public void setBrandColorDark(String brandColorDark) { this.brandColorDark = brandColorDark; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 }

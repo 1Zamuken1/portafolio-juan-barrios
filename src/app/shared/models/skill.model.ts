@@ -5,6 +5,9 @@ export interface AdminSkill {
   category: string;
   icon: string;
   color: string;
+  brandColorLight?: string;
+  brandColorDark?: string;
+  description?: string;
   displayOrder: number;
 }
 

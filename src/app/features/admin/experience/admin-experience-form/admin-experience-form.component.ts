@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -33,8 +33,8 @@ export class AdminExperienceFormComponent implements OnInit {
   form!: FormGroup;
   isEditMode = false;
   experienceId: number | null = null;
-  loading = false;
-  saving = false;
+  loading = signal(false);
+  saving = signal(false);
 
   private fb = inject(FormBuilder);
   private dataService = inject(DataService);
@@ -60,25 +60,28 @@ export class AdminExperienceFormComponent implements OnInit {
       period: ['', Validators.required],
       description: [''],
       achievementsStr: [''],
+      icon: ['fas fa-briefcase', Validators.required],
+      technologiesStr: [''],
       displayOrder: [0]
     });
   }
 
   private loadExperience(id: number): void {
-    this.loading = true;
+    this.loading.set(true);
     this.dataService.getExperiences().subscribe({
       next: (experiences) => {
         const exp = experiences.find(e => e.id === id);
         if (exp) {
           this.form.patchValue({
             ...exp,
-            achievementsStr: exp.achievements?.join(', ') || ''
+            achievementsStr: exp.achievements?.join(', ') || '',
+            technologiesStr: exp.technologies?.join(', ') || ''
           });
         }
-        this.loading = false;
+        this.loading.set(false);
       },
       error: () => {
-        this.loading = false;
+        this.loading.set(false);
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la experiencia' });
       }
     });
@@ -87,7 +90,7 @@ export class AdminExperienceFormComponent implements OnInit {
   onSubmit(): void {
     if (this.form.invalid) return;
 
-    this.saving = true;
+    this.saving.set(true);
     const formValue = this.form.value;
 
     const expData: Experience = {
@@ -95,9 +98,13 @@ export class AdminExperienceFormComponent implements OnInit {
       achievements: formValue.achievementsStr
         ? formValue.achievementsStr.split(',').map((s: string) => s.trim()).filter((s: string) => s)
         : [],
+      technologies: formValue.technologiesStr
+        ? formValue.technologiesStr.split(',').map((s: string) => s.trim()).filter((s: string) => s)
+        : []
     };
 
     delete (expData as any).achievementsStr;
+    delete (expData as any).technologiesStr;
 
     const operation = this.isEditMode
       ? this.dataService.updateExperience(this.experienceId!, expData)
@@ -113,7 +120,7 @@ export class AdminExperienceFormComponent implements OnInit {
         setTimeout(() => this.router.navigate(['/admin/dashboard/experience']), 1000);
       },
       error: () => {
-        this.saving = false;
+        this.saving.set(false);
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la experiencia' });
       }
     });

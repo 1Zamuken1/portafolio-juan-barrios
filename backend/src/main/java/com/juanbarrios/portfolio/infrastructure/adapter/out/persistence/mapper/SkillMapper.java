@@ -16,6 +16,9 @@ public class SkillMapper {
                 entity.getCategory(),
                 entity.getIcon(),
                 entity.getColor(),
+                entity.getBrandColorLight(),
+                entity.getBrandColorDark(),
+                entity.getDescription(),
                 entity.getDisplayOrder()
         );
     }
@@ -28,6 +31,9 @@ public class SkillMapper {
         entity.setCategory(domain.getCategory());
         entity.setIcon(domain.getIcon());
         entity.setColor(domain.getColor());
+        entity.setBrandColorLight(domain.getBrandColorLight());
+        entity.setBrandColorDark(domain.getBrandColorDark());
+        entity.setDescription(domain.getDescription());
         entity.setDisplayOrder(domain.getDisplayOrder());
         return entity;
     }

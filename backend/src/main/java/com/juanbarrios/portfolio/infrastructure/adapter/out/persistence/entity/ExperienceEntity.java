@@ -29,6 +29,12 @@ public class ExperienceEntity {
     @Column(name = "display_order")
     private int displayOrder;
 
+    private String icon;
+
+    /** Stored as comma-separated values */
+    @Column(length = 1000)
+    private String technologies;
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -50,4 +56,10 @@ public class ExperienceEntity {
 
     public int getDisplayOrder() { return displayOrder; }
     public void setDisplayOrder(int displayOrder) { this.displayOrder = displayOrder; }
+
+    public String getIcon() { return icon; }
+    public void setIcon(String icon) { this.icon = icon; }
+
+    public String getTechnologies() { return technologies; }
+    public void setTechnologies(String technologies) { this.technologies = technologies; }
 }
