@@ -2,6 +2,33 @@
 
 Esta es la wiki interna y conjunto de reglas del proyecto. **Para cualquier agente de IA que lea esto:** Analiza esta arquitectura antes de proponer cambios o crear nuevo código.
 
+## 0. Agent Skills Installed
+Skills en `.agents/skills/` que este agente debe cargar según la tarea:
+
+### Frontend (Angular 22)
+- `angular-developer` — Official Angular skill (Angular 22, Standalone, Signals, Zoneless)
+- `primeng-developer` — PrimeNG component library (v21.x)
+- `ui-craft` — Design discipline: jerarquía, spacing, color, profundidad
+
+### Backend (Spring Boot 3 - Hexagonal)
+- `spring-explore` — Explorar estructura del proyecto Spring Boot
+- `spring-planning` — Planificar implementaciones
+- `spring-data-jpa` — JPA entities, repositories, proyecciones
+- `crud-rest-controller` — REST controllers con CRUD
+- `dto-creator` — DTOs (Java records, clases)
+- `mapper-creator` — Mappers con MapStruct
+- `spring-security-configuration` — Configuración Spring Security
+- `kafka-configuration` — Configuración Kafka
+
+### Calidad y Debugging
+- `codefmt` — Formateo de código
+- `run-tests` — Ejecutar tests
+- `coverage` — Medir cobertura
+- `java-debug` — Debugging con IntelliJ Debug MCP
+
+### Git
+- `git-workflow` — Convenciones de ramas y commits (ver sección 6)
+
 ## 1. Project Overview
 Este repositorio contiene el portafolio personal de Juan Barrios, un Backend Developer especializado en Java (Spring Boot) y Python (Django). El proyecto evolucionó de ser un portafolio estático a una aplicación Fullstack dinámica (Monorepo).
 
