@@ -8,6 +8,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TimelineModule } from 'primeng/timeline';
 import { RippleModule } from 'primeng/ripple';
 import { KnowledgePillarsComponent } from './knowledge-pillars/knowledge-pillars.component';
+import { environment } from '../../../environments/environment';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -47,11 +48,19 @@ export class AboutComponent implements OnInit, OnDestroy {
   experience = signal<Experience[]>([]);
 
   ngOnInit(): void {
-    this.dataService.getExperiences().subscribe(data => {
+    const useStatic = environment.production && environment.useStaticData;
+    const exp$ = useStatic
+      ? this.dataService.getStaticExperiences()
+      : this.dataService.getExperiences();
+    const skills$ = useStatic
+      ? this.dataService.getStaticSkillsFlat()
+      : this.dataService.getAdminSkills();
+
+    exp$.subscribe(data => {
       this.experience.set(data.sort((a, b) => a.displayOrder - b.displayOrder));
     });
 
-    this.dataService.getAdminSkills().subscribe(data => {
+    skills$.subscribe(data => {
       const allSkills = data.sort((a, b) => a.displayOrder - b.displayOrder);
 
       const total = allSkills.length;
@@ -78,15 +87,15 @@ export class AboutComponent implements OnInit, OnDestroy {
 
         gsap.fromTo('.skills-3d-scene',
           { y: 80, opacity: 0, scale: 0.9 },
-          { 
+          {
             y: 0, opacity: 1, scale: 1, duration: 1.5, ease: 'power3.out',
-            scrollTrigger: { 
-              trigger: '.skills-section', 
+            scrollTrigger: {
+              trigger: '.skills-section',
               start: 'top 80%',
               onEnter: () => {
-                this.velocity = 12; // Initial fast spin that decelerates
+                this.velocity = 12;
               }
-            } 
+            }
           }
         );
 

@@ -1,16 +1,58 @@
 import { Injectable, inject, isDevMode } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, of, tap } from 'rxjs';
 import { Project } from '../../shared/models/project.model';
 import { Experience } from '../../shared/models/experience.model';
-import { AdminSkill } from '../../shared/models/skill.model';
+import { AdminSkill, SkillCategory, Skill } from '../../shared/models/skill.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class DataService {
   private http = inject(HttpClient);
-
   private apiUrl = environment.apiUrl;
+
+  // ═══════════════════════════════════════════
+  //  STATIC DATA (JSON from assets — for production mirror)
+  // ═══════════════════════════════════════════
+
+  private assetsUrl = '/assets/data';
+
+  getStaticProjects(): Observable<Project[]> {
+    return this.http.get<Project[]>(`${this.assetsUrl}/projects.json`);
+  }
+
+  getStaticExperiences(): Observable<Experience[]> {
+    return this.http.get<Experience[]>(`${this.assetsUrl}/experiences.json`);
+  }
+
+  getStaticSkills(): Observable<SkillCategory[]> {
+    return this.http.get<SkillCategory[]>(`${this.assetsUrl}/skills.json`);
+  }
+
+  getStaticSkillsFlat(): Observable<AdminSkill[]> {
+    return this.getStaticSkills().pipe(
+      tap((categories) => {
+        const flat: AdminSkill[] = [];
+        let order = 1;
+        categories.forEach((cat) => {
+          cat.skills.forEach((s) => {
+            flat.push({
+              id: flat.length + 1,
+              name: s.name,
+              category: cat.category,
+              icon: s.icon ?? '',
+              color: s.brandColor ?? cat.color,
+              brandColorLight: s.brandColorLight,
+              brandColorDark: s.brandColorDark,
+              description: s.description ?? '',
+              displayOrder: order++
+            });
+          });
+        });
+        return flat;
+      })
+    );
+  }
 
   // ═══════════════════════════════════════════
   //  PROJECTS
