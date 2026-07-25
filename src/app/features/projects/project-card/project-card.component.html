@@ -23,11 +23,11 @@
   <!-- Content -->
   <div class="stitch-card-content">
     <div class="stitch-card-tags">
-      @for (tech of project.technologies.slice(0, 5); track tech) {
+      @for (tech of (project.technologies || []).slice(0, 5); track tech) {
         <span class="stitch-tag font-code-md">{{ tech }}</span>
       }
-      @if (project.technologies.length > 5) {
-        <span class="stitch-tag font-code-md">+{{ project.technologies.length - 5 }}</span>
+      @if ((project.technologies || []).length > 5) {
+        <span class="stitch-tag font-code-md">+{{ (project.technologies || []).length - 5 }}</span>
       }
     </div>
 
