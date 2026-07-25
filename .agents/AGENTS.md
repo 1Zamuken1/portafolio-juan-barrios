@@ -107,6 +107,15 @@ Al crear el servicio en Render, establecer **Root Directory** como `backend`. El
 | 5 | `Root Directory` no encontrado en UI de Render | Render v2 lo llama "Build Source → Docker settings" | En Docker settings dentro del builder, sí está la opción de Root Directory bajo **Advanced** |
 | 6 | `postgresql://...` URL invalida para JDBC | PostgreSQL JDBC requiere formato `jdbc:postgresql://host:port/db` | Armar la URL JDBC manualmente como env var `SPRING_DATASOURCE_URL` |
 
+### Solución al cold start de Render (tier free)
+El tier free de Render poné el backend en "sleep" tras 15 min de inactividad, generando un cold start de 30-60s. Para evitar que los visitantes del sitio público sufran esta latencia, se usa una **estrategia de espejo estático**:
+
+- **Vercel (frontend público)** → Sirve los datos desde un archivo JSON estático en `/public/data/` (o similar). Nunca hace peticiones al backend en producción. Es instantáneo y no depende de Render.
+- **Render (backend)** → Solo se accede desde el panel de admin (`/admin`) en rutas protegidas. El admin despierta a Render bajo demanda cuando necesita CRUD real.
+- **Flujo**: Admin → accede a `/admin` → requests van directo a Render → actualiza datos → el JSON estático en Vercel se regenera (o se actualiza manualmente). Visitantes → siempre ven Vercel (datos estáticos), nunca tocan Render.
+
+Esto es deliberado: en un portafolio, los visitantes no necesitan datos en tiempo real del backend, necesitan ver el contenido. El admin sí necesita escribir/leer del backend.
+
 ### Pasos de deploy (resumen ejecutivo)
 1. Crear PostgreSQL en Render (Free tier) → copiar credenciales
 2. Dashboard → New+ → Web Service → conectar repo
