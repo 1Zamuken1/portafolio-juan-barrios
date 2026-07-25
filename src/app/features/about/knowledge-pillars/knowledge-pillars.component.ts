@@ -11,5 +11,5 @@ import { CommonModule } from '@angular/common';
 export class KnowledgePillarsComponent {
   architectureFloors: { items: string[] }[] = [];
 
-  learningSteps = [];
+  learningSteps: { name: string; icon: string }[] = [];
 }
