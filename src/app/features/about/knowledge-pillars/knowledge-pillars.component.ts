@@ -9,18 +9,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './knowledge-pillars.component.css',
 })
 export class KnowledgePillarsComponent {
-  architectureFloors = [
-    { items: ['Arquitectura Hexagonal'] },
-    { items: ['MVC', 'REST APIs'] },
-    { items: ['Inyección de Dependencias', 'JPA / Hibernate'] },
-    { items: ['JWT', 'SOLID', 'Clean Code'] },
-  ];
+  architectureFloors: { items: string[] }[] = [];
 
-  learningSteps = [
-    { name: 'Docker', icon: 'fab fa-docker' },
-    { name: 'CI/CD', icon: 'fas fa-infinity' },
-    { name: 'AWS', icon: 'fab fa-aws' },
-    { name: 'Spring Cloud', icon: 'fas fa-cloud' },
-    { name: 'Kubernetes', icon: 'fas fa-dharmachakra' },
-  ];
+  learningSteps = [];
 }
