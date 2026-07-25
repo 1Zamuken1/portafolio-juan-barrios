@@ -291,12 +291,12 @@
 
 .planet-icon {
   font-size: 2.2rem;
-  color: var(--brand-color-dark, var(--brand-color));
-  filter: drop-shadow(0 0 8px var(--brand-color-dark, var(--brand-color)));
+  color: #ffffff;
+  filter: drop-shadow(0 0 8px rgba(0,0,0,0.5));
 }
 
 :host-context([data-theme="light"]) .planet-icon {
-  color: var(--brand-color-light, var(--brand-color));
+  color: #1a1a2e;
   filter: drop-shadow(0 0 5px rgba(0,0,0,0.15));
 }
 
