@@ -40,9 +40,9 @@ Este repositorio contiene el portafolio personal de Juan Barrios, un Backend Dev
 - **Scroll Suave**: Uso de la librería `Lenis` para smooth scrolling. (Nota: Si hay problemas de scroll en modales, usar el atributo `data-lenis-prevent`).
 - **Change Detection**: Usa `provideZonelessChangeDetection()` (modo Zoneless). Todas las variables de estado reactivas en los componentes de admin y la vista pública usan **Angular Signals** (`signal()`, `.set()`, `.update()`). **NO** inyectar `ChangeDetectorRef` ni usar `cdr.detectChanges()`. Los Signals notifican automáticamente al framework cuándo repintar.
 - **Estado de los Datos**: 
-  - *Fase Estática (Legacy)*: El servicio `DataService` consumía archivos JSON estáticos en `/public/data/`.
-  - *Fase Dinámica (Actual/Futura)*: El servicio `DataService` interactúa con la API REST del backend para obtener la información. El frontend cuenta con un `/admin` dashboard protegido.
-- **Despliegue**: Vercel (Configurado para apuntar a la raíz del repositorio).
+  - *Producción (Vercel)*: El frontend consume datos estáticos desde `src/assets/data/*.json` para evitar cold starts de Render. `environment.prod.ts` tiene `useStaticData: true`. Los componentes públicos (Projects, About) leen del JSON local; solo el panel admin llama al backend de Render.
+  - *Fase Dinámica (Admin)*: El panel `/admin` hace requests reales a la API REST del backend en Render para CRUD completo.
+- **Despliegue**: Vercel (desde raíz del repo). URL producción: `https://portafolio-juan-barrios.vercel.app` (alias de `https://portafolio-juan-barrios-8en5oeoug-1zamuken1.vercel.app`).
 
 ## 3. Backend (Spring Boot 3 - Arquitectura Hexagonal)
 - **Ubicación**: Carpeta `/backend` dentro de la raíz.
@@ -71,7 +71,7 @@ El repositorio funciona como un monorepo no estricto:
 ## 6. Despliegue del Backend en Render (Free Tier)
 
 ### Estructura de despliegue
-- **Frontend** → Vercel (desde raíz del repo)
+- **Frontend** → Vercel (desde raíz del repo) — `https://portafolio-juan-barrios.vercel.app`
 - **Backend** → Render (Free Tier, Docker-based) — `https://portafolio-juan-barrios.onrender.com`
 
 ### Archivos clave para Render
@@ -79,7 +79,8 @@ El repositorio funciona como un monorepo no estricto:
 |---------|-----------|-----------|
 | `backend/Dockerfile` | `backend/Dockerfile` | Define la imagen Docker del backend |
 | `backend/application-render.properties` | backend/src/main/resources/ | Profile `render`: usa `PORT`, HikariCP separado |
-| `render.yaml` | raíz del repo | Blueprint para deploy (no usado en manual, pero sirve como referencia) |
+| `render.yaml` | raíz del repo | Blueprint para deploy |
+| `src/assets/data/*.json` | raíz del repo | Datos estáticos para el frontend en producción |
 
 ### Variables de entorno requeridas en Render (Web Service)
 | Key | Value |
@@ -110,11 +111,35 @@ Al crear el servicio en Render, establecer **Root Directory** como `backend`. El
 ### Solución al cold start de Render (tier free)
 El tier free de Render poné el backend en "sleep" tras 15 min de inactividad, generando un cold start de 30-60s. Para evitar que los visitantes del sitio público sufran esta latencia, se usa una **estrategia de espejo estático**:
 
-- **Vercel (frontend público)** → Sirve los datos desde un archivo JSON estático en `/public/data/` (o similar). Nunca hace peticiones al backend en producción. Es instantáneo y no depende de Render.
+- **Vercel (frontend público)** → Sirve los datos desde `src/assets/data/*.json` que se despliegan como assets estáticos. Nunca hace peticiones al backend en producción. Es instantáneo y no depende de Render.
 - **Render (backend)** → Solo se accede desde el panel de admin (`/admin`) en rutas protegidas. El admin despierta a Render bajo demanda cuando necesita CRUD real.
-- **Flujo**: Admin → accede a `/admin` → requests van directo a Render → actualiza datos → el JSON estático en Vercel se regenera (o se actualiza manualmente). Visitantes → siempre ven Vercel (datos estáticos), nunca tocan Render.
+- **Flujo**: Admin → accede a `/admin` → requests van directo a Render → actualiza datos → el JSON estático en Vercel se regenera desde la rama `develop` (al hacer push se regenera el build de Vercel). Visitantes → siempre ven Vercel (datos estáticos), nunca tocan Render.
 
-Esto es deliberado: en un portafolio, los visitantes no necesitan datos en tiempo real del backend, necesitan ver el contenido. El admin sí necesita escribir/leer del backend.
+Implementación técnica:
+- `environment.prod.ts` tiene `useStaticData: true` y el `apiUrl` apunta a Render.
+- `DataService.getStaticProjects()`, `getStaticExperiences()`, `getStaticSkills()` consumen de `src/assets/data/*.json` vía `HttpClient`.
+- `DataService.getStaticSkillsFlat()` transforma `SkillCategory[]` → `AdminSkill[]` flat para el componente `AboutComponent`.
+- Los componentes públicos (`ProjectsComponent`, `AboutComponent`) verifican `environment.production && environment.useStaticData` y usan los métodos `getStatic*()` en ese caso.
+
+### Pasos de deploy (resumen ejecutivo)
+
+#### Backend (Render)
+1. Crear PostgreSQL en Render (Free tier) → copiar credenciales
+2. Dashboard → New+ → Web Service → conectar repo
+3. Build Method: Docker | Dockerfile Path: `backend/Dockerfile` | Root Directory: `backend`
+4. Agregar 6 env vars (`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `SPRING_DATASOURCE_DRIVER-CLASS-NAME`, `SPRING_PROFILES_ACTIVE=render`, `JAVA_OPTS`)
+5. Manual Deploy → esperar ~3 min
+6. Verificar `https://portafolio-juan-barrios.onrender.com/api/projects` → debe retornar 200
+
+#### Frontend (Vercel)
+1. Tener un Vercel token: `vercel login` o生成 en https://vercel.com/settings/tokens
+2. `export VERCEL_TOKEN="vercel_xxx..."`
+3. `npx vercel --prod --yes` desde la raíz del repo
+4. Vercel detecta `vercel.json` → build con `ng build` → despliega en `dist/portafolio-juan-barrios/browser/`
+5. Verificar `https://portafolio-juan-barrios.vercel.app` → debe mostrar el sitio con datos estáticos
+
+### Despliegue desde Vercel MCP (alternativa)
+Si no se tiene token CLI, se puede usar el MCP de Vercel directamente desde openCode listando el proyecto existente y haciendo deploy vía la interfaz de Vercel, o subiendo el build output como artifact.
 
 ### Pasos de deploy (resumen ejecutivo)
 1. Crear PostgreSQL en Render (Free tier) → copiar credenciales
