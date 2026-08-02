@@ -42,6 +42,9 @@ Este repositorio contiene el portafolio personal de Juan Barrios, un Backend Dev
 - **Estado de los Datos**: 
   - *Producción (Vercel)*: El frontend consume datos estáticos desde `src/assets/data/*.json` para evitar cold starts de Render. `environment.prod.ts` tiene `useStaticData: true`. Los componentes públicos (Projects, About) leen del JSON local; solo el panel admin llama al backend de Render.
   - *Fase Dinámica (Admin)*: El panel `/admin` hace requests reales a la API REST del backend en Render para CRUD completo.
+- **Componente About (Skills Ring 3D)**: El componente `AboutComponent` renderiza un anillo 3D de planetas rotando con las tecnologías. Cada planeta es una `<div>` posicionada con `transform: rotateY(angle) translateZ(radius)`. Usa `requestAnimationFrame` (`startLoop()`) para rotación continua, drag handlers (`_onPointerDown/Move/Up`) para interacción manual, y `hoveredSkill()` signal para mostrar la tarjeta de descripción al hacer hover. Los skills vienen aplanados de `getStaticSkillsFlat()` como `AdminSkill[]`.
+- **Iconos del Ring**: Usa la librería `devicon` (v2.17.0) para los iconos de tecnología. Los iconos son **monochrome** (sin clase `colored`) para garantizar visibilidad en ambos temas: `color: #ffffff` en modo oscuro, `color: #1a1a2e` en modo claro. Esto se define en `.planet-icon` dentro de `about.component.css`. El color del planeta (glow/borde) lo da `--brand-color` del skill.
+- **skills.json**: Es un **array** de `SkillCategory[]` (no objeto con claves), con 18 skills en 4 categorías. Cada skill tiene: `id`, `name`, `icon` (clase devicon sin `colored`), `brandColor`, `brandColorLight`, `description`.
 - **Despliegue**: Vercel (desde raíz del repo). URL producción: `https://portafolio-juan-barrios.vercel.app` (alias de `https://portafolio-juan-barrios-8en5oeoug-1zamuken1.vercel.app`).
 
 ## 3. Backend (Spring Boot 3 - Arquitectura Hexagonal)
@@ -164,5 +167,167 @@ Si no se tiene token CLI, se puede usar el MCP de Vercel directamente desde open
 - Los scripts de ejecución sí se pueden correr con `npm run <script>` o `pnpm run <script>` indistintamente.
 - Para el backend (Maven/Gradle), usar los wrappers incluidos (`./mvnw`, `./gradlew`).
 
-## 9. Roadmap / Ideas Futuras
-- **Rediseño de sección de Proyectos ("VSCode Explorer")**: Se planea reemplazar la grid actual de project cards por una interfaz visual inspirada en VSCode, donde cada "carpeta" represente un proyecto y al expandirla muestre detalles, tecnologías, etc. Esto será una evolución futura de la UI pública, no una prioridad inmediata. Cuando se implemente, mantener la estética espacial/glassmorphism existente.
+## 10. Session Log — 2026-07-25: Static Skills Ring + Devicon Icons
+
+### Objetivo
+Restaurar el Stack Tecnológico 3D ring en `about` page y hacer que funcione sin backend (static JSON mirror + devicon icons).
+
+### Cambios realizados
+
+#### 1. About component restaurado
+- Se restauró el ring 3D desde commit `7ca877a`: `flatSkills` signal, `startLoop()`, `applyTransforms()`, drag handlers, hover handler.
+- `ngOnInit` usa `useStatic` flag: en producción llama a `getStaticExperiences()` y `getStaticSkillsFlat()` en vez de backend API.
+
+#### 2. skills.json reestructurado
+- Se cambió de formato objeto `{frontend: {...}, backend: {...}}` a **array** `[...]` para que `HttpClient.get<SkillCategory[]>()` funcione correctamente.
+- Contiene 18 skills en 4 categorías: Frontend (3), Backend (6), Arquitectura (4), DevOps (5).
+- Cada skill tiene campos: `id`, `name`, `icon` (clase devicon sin `colored`), `brandColor`, `brandColorLight`, `description`.
+
+#### 3. Devicon icons instalados y configurados
+- `pnpm add devicon@2.17.0` agregó la librería.
+- `devicon.min.css` añadido a `styles` en `angular.json`.
+- Todos los `icon` en skills.json usan clases devicon (ej: `devicon-angularjs-plain`, `devicon-spring-original-wordmark`).
+
+#### 4. Fix: iconos monochrome visibles en ambos temas
+- Se eliminó la clase `colored` de todos los iconos devicon para evitar que el color de marca anule el color del tema.
+- `.planet-icon` usa `color: #ffffff` en tema oscuro y `color: #1a1a2e` en modo claro.
+- `brandColorLight` añadido a cada skill para mejor soporte en tema claro.
+- Vercel `brandColor` cambiado de `#000000` a `#FFFFFF`.
+
+#### 5. Fix: Patrones Diseño icon
+- Cambiado de `devicon-uml-plain` (no existe en devicon) a `devicon-unifiedmodelinglanguage-plain`.
+
+### Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `src/app/features/about/about.component.ts` | `flatSkills` signal, `ngOnInit` con `useStatic`, drag/hover/loop |
+| `src/app/features/about/about.component.html` | ring 3D con `<i class="planet-icon" [ngClass]="skill.icon">` |
+| `src/app/features/about/about.component.css` | `.planet-icon` monochrome, glows, hover card |
+| `src/assets/data/skills.json` | 18 skills como array `SkillCategory[]`, devicon classes sin `colored`, `brandColorLight` |
+| `src/app/core/services/data.service.ts` | `getStaticSkillsFlat()` transforma `SkillCategory[]` → `AdminSkill[]` |
+| `angular.json` | `devicon.min.css` en styles |
+
+### Comandos clave
+```bash
+pnpm add devicon@2.17.0
+npx ng build --configuration production
+$env:VERCEL_TOKEN="<tu-vercel-token>"; npx vercel --prod --force --yes
+```
+
+### Commits
+| Hash | Mensaje | Rama |
+|------|---------|------|
+| `c96b77e` | `feat: about component static data mirror` | master, develop |
+| `7e7db5c` | `fix: skills.json as array` | master, develop |
+| `b4add7f` | `feat: devicon icons for skills ring` | master, develop |
+| `faa9cfa` | `fix: icons monochrome visibles en ambos temas + Patrones Diseño icon` | master, develop |
+
+## 12. Session Log — 2026-07-30: Admin Panel Integration + Contact Form
+
+### Objetivo 1: Admin Panel Funcional con Integración Real
+Integrar el panel admin (`/admin`) con el backend en Render para CRUD real de projects, experiences y skills.
+
+### Cambios realizados
+
+#### 1. Backend en Render — Verificado y funcionando
+- `GET /api/projects` → 200 (retorna array de proyectos)
+- `GET /api/skills` → 200 (retorna 18 skills)
+- `GET /api/experiences` → 200 (retorna 1 experience)
+- `POST /api/auth/login` → 200 con JWT token (`admin`/`password123`)
+- JDBC URL funciona sin prefijo `jdbc:` — `DATABASE_URL` de Render es parseada correctamente por el driver PostgreSQL
+- El profile `render` usa `application-render.properties` que hereda datasource de `application.properties` (SQLite en dev, PostgreSQL en prod vía `DATABASE_URL`)
+
+#### 2. Base de datos sembrada (seed)
+- Se creó `seed_render.py` (script temporal, ya eliminado) para poblar la BD de Render con los datos de los JSON estáticos
+- Datos sembrados: 4 projects, 18 skills, 1 experience
+- Todos los endpoints CRUD verificados funcionando
+
+#### 3. Frontend admin — Integración verificada
+- Login JWT funcional en producción (verificado con Playwright)
+- Dashboard admin muestra los 4 proyectos del backend
+- Navegación entre sections (Projects, Experience, Skills) funciona
+- Los componentes admin ya usan `dataService.getProjects()`, `getExperiences()`, `getAdminSkills()` (API real, no estática)
+- `JwtInterceptor` inyecta token en requests del admin automáticamente
+- `authGuard` protege rutas admin correctamente
+
+### Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `backend/application-render.properties` | (sin cambios — funciona como está) |
+| `backend/render.yaml` | (sin cambios — DATABASE_URL funciona) |
+
+### Verificación con Playwright
+- Login `admin`/`password123` → redirige a `/admin/dashboard/projects`
+- Tabla de proyectos muestra 4 entries
+- CRUD UI lista para operar (New, Edit, Delete buttons presentes)
+
+---
+
+### Objetivo 2: Contacto Funcional
+Añadir formulario de contacto funcional en la sección About page usando EmailJS con configuración runtime.
+
+### Cambios realizados
+
+#### 1. Configuración runtime via `public/config.json`
+- Se creó `public/config.json` con las claves de EmailJS (no se sube al repo, está en `.gitignore`)
+- Se creó `ConfigService` (`src/app/core/services/config.service.ts`) que carga `config.json` en runtime y lo cachea en un signal
+- Los `environment.ts` ahora tienen valores vacíos para EmailJS (placeholders)
+- El `about.component.ts` usa `ConfigService` en lugar de `environment.emailjs` para obtener las claves
+
+#### 2. Formulario de contacto implementado
+- `about.component.ts`: Agregado `FormGroup` con ReactiveForms (name, email, subject, message), `sendContactForm()` method con EmailJS integration, `MessageService` para toast feedback
+- `about.component.html`: Reemplazado contact-grid estático con formulario funcional + links alternativos debajo
+- `about.component.css`: Estilos del formulario — glassmorphism inputs, responsive 2-column grid, button states, alternative links section
+
+#### 3. EmailJS configurado
+- `pnpm add @emailjs/browser@4.4.1` instalado
+- Template de EmailJS actualizado: Subject usa `{{subject}}`, content usa `{{name}}`, `{{message}}`, `{{time}}`
+
+### Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `public/config.json` | Nuevo — config EmailJS runtime (NO se sube al repo) |
+| `src/app/core/services/config.service.ts` | Nuevo — ConfigService para cargar config.json |
+| `src/app/features/about/about.component.ts` | ConfigService, FormGroup, sendContactForm(), EmailJS |
+| `src/app/features/about/about.component.html` | Contact form + preserved static links |
+| `src/app/features/about/about.component.css` | Form styles, responsive grid |
+| `src/environments/environment.ts` | emailjs placeholders vacíos |
+| `src/environments/environment.prod.ts` | emailjs placeholders vacíos |
+| `package.json` + `pnpm-lock.yaml` | `@emailjs/browser 4.4.1` added |
+| `.gitignore` | `public/config.json` agregado |
+
+### ⚠️ Configuración pendiente en servidor
+Para que el formulario funcione en producción, subir `public/config.json` al servidor con las claves reales de EmailJS:
+```json
+{
+  "emailjs": {
+    "publicKey": "WVHsNt_gi_mvdR5G8",
+    "serviceId": "service_nbv1s2f",
+    "templateId": "template_r2ludor"
+  }
+}
+```
+
+---
+
+### Estado del plan — Qué falta
+
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| 1 | Admin panel funcional con integración real | ✅ Completado |
+| 2 | Contacto funcional (formulario + EmailJS) | ✅ Implementado, pendiente configurar EmailJS keys |
+| 3 | VSCode Explorer para Projects | 🔲 Pendiente |
+| 4 | Responsive/mobile polish | 🔲 Pendiente (como acordado, se ve después) |
+| 5 | Performance / SEO (lazy loading, meta tags, sitemap, OG tags) | 🔲 Pendiente |
+
+### Comandos clave
+```bash
+# Seed de datos en Render
+python seed_render.py  # (script temporal, ya eliminado)
+
+# Build verificado
+npx ng build --configuration development
+
+# Deploy frontend
+$env:VERCEL_TOKEN="..."; npx vercel --prod --yes
+```
