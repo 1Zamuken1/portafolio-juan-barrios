@@ -215,50 +215,89 @@
           ¿Interesado en trabajar juntos?
         </p>
 
-        <div class="contact-grid">
-          <a href="https://mail.google.com/mail/?view=cm&fs=1&to=juanbarrios072@gmail.com" target="_blank" rel="noopener noreferrer" class="contact-item">
-            <div class="contact-icon">
-              <i class="fas fa-envelope"></i>
-            </div>
-            <div class="contact-info">
-              <span class="contact-label font-code-md text-tertiary uppercase">Email</span>
-              <span class="contact-value font-body-lg text-primary">juanbarrios072&#64;gmail.com</span>
-            </div>
-            <i class="fas fa-arrow-right contact-arrow"></i>
-          </a>
+        <p-toast />
 
-          <a href="tel:+573337222705" class="contact-item">
-            <div class="contact-icon">
-              <i class="fas fa-phone"></i>
+        <form [formGroup]="contactForm" (ngSubmit)="sendContactForm()" class="contact-form" novalidate>
+          <div class="form-grid">
+            <div class="form-field">
+              <label class="field-label font-code-md text-tertiary uppercase">Nombre *</label>
+              <p-inputText id="contact-name" formControlName="name" placeholder="Tu nombre" class="w-full" />
+              <p-message *ngIf="contactForm.get('name')?.invalid && contactForm.get('name')?.touched" severity="error" [text]="'El nombre es obligatorio'" />
             </div>
-            <div class="contact-info">
-              <span class="contact-label font-code-md text-tertiary uppercase">Teléfono</span>
-              <span class="contact-value font-body-lg text-primary">+57 333 722 2705</span>
-            </div>
-            <i class="fas fa-arrow-right contact-arrow"></i>
-          </a>
 
-          <a href="https://github.com/1Zamuken1" target="_blank" rel="noopener noreferrer" class="contact-item">
-            <div class="contact-icon">
-              <i class="fab fa-github"></i>
+            <div class="form-field">
+              <label class="field-label font-code-md text-tertiary uppercase">Email *</label>
+              <p-inputText id="contact-email" type="email" formControlName="email" placeholder="tu@email.com" class="w-full" />
+              <p-message *ngIf="contactForm.get('email')?.invalid && contactForm.get('email')?.touched" severity="error" [text]="'Email válido es obligatorio'" />
             </div>
-            <div class="contact-info">
-              <span class="contact-label font-code-md text-tertiary uppercase">GitHub</span>
-              <span class="contact-value font-body-lg text-primary">1Zamuken1</span>
-            </div>
-            <i class="fas fa-arrow-right contact-arrow"></i>
-          </a>
+          </div>
 
-          <a href="https://linkedin.com/in/juan-barrios-a8a651274" target="_blank" rel="noopener noreferrer" class="contact-item">
-            <div class="contact-icon">
-              <i class="fab fa-linkedin"></i>
-            </div>
-            <div class="contact-info">
-              <span class="contact-label font-code-md text-tertiary uppercase">LinkedIn</span>
-              <span class="contact-value font-body-lg text-primary">Juan Barrios</span>
-            </div>
-            <i class="fas fa-arrow-right contact-arrow"></i>
-          </a>
+          <div class="form-field">
+            <label class="field-label font-code-md text-tertiary uppercase">Asunto *</label>
+            <p-inputText id="contact-subject" formControlName="subject" placeholder="Asunto del mensaje" class="w-full" />
+            <p-message *ngIf="contactForm.get('subject')?.invalid && contactForm.get('subject')?.touched" severity="error" [text]="'El asunto es obligatorio'" />
+          </div>
+
+          <div class="form-field">
+            <label class="field-label font-code-md text-tertiary uppercase">Mensaje *</label>
+            <p-textarea id="contact-message" formControlName="message" placeholder="Cuéntame en qué puedo ayudarte..." rows="5" class="w-full" />
+            <p-message *ngIf="contactForm.get('message')?.invalid && contactForm.get('message')?.touched" severity="error" [text]="'El mensaje debe tener al menos 10 caracteres'" />
+          </div>
+
+          <div class="form-actions">
+            <p-button type="submit" label="Enviar mensaje" icon="fas fa-paper-plane" [loading]="submitting()" [disabled]="submitting()" />
+            <p-message *ngIf="submitError()" severity="error" [text]="submitError()" />
+            <p-message *ngIf="submitted()" severity="success" text="¡Mensaje enviado! Gracias por escribirme." />
+          </div>
+        </form>
+
+        <div class="contact-alt-links mt-8">
+          <p class="font-code-md text-tertiary uppercase mb-4" style="font-size: 0.85rem; opacity: 0.7;">O escríbeme directamente</p>
+          <div class="contact-grid">
+            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=juanbarrios072@gmail.com" target="_blank" rel="noopener noreferrer" class="contact-item">
+              <div class="contact-icon">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <div class="contact-info">
+                <span class="contact-label font-code-md text-tertiary uppercase">Email</span>
+                <span class="contact-value font-body-lg text-primary">juanbarrios072&#64;gmail.com</span>
+              </div>
+              <i class="fas fa-arrow-right contact-arrow"></i>
+            </a>
+
+            <a href="tel:+573337222705" class="contact-item">
+              <div class="contact-icon">
+                <i class="fas fa-phone"></i>
+              </div>
+              <div class="contact-info">
+                <span class="contact-label font-code-md text-tertiary uppercase">Teléfono</span>
+                <span class="contact-value font-body-lg text-primary">+57 333 722 2705</span>
+              </div>
+              <i class="fas fa-arrow-right contact-arrow"></i>
+            </a>
+
+            <a href="https://github.com/1Zamuken1" target="_blank" rel="noopener noreferrer" class="contact-item">
+              <div class="contact-icon">
+                <i class="fab fa-github"></i>
+              </div>
+              <div class="contact-info">
+                <span class="contact-label font-code-md text-tertiary uppercase">GitHub</span>
+                <span class="contact-value font-body-lg text-primary">1Zamuken1</span>
+              </div>
+              <i class="fas fa-arrow-right contact-arrow"></i>
+            </a>
+
+            <a href="https://linkedin.com/in/juan-barrios-a8a651274" target="_blank" rel="noopener noreferrer" class="contact-item">
+              <div class="contact-icon">
+                <i class="fab fa-linkedin"></i>
+              </div>
+              <div class="contact-info">
+                <span class="contact-label font-code-md text-tertiary uppercase">LinkedIn</span>
+                <span class="contact-value font-body-lg text-primary">Juan Barrios</span>
+              </div>
+              <i class="fas fa-arrow-right contact-arrow"></i>
+            </a>
+          </div>
         </div>
 
         <!-- Availability Banner -->

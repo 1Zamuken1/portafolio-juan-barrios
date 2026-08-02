@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, signal, NgZone, ViewChild, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DataService } from '../../core/services/data.service';
 import { AdminSkill } from '../../shared/models/skill.model';
 import { Experience } from '../../shared/models/experience.model';
@@ -7,21 +8,33 @@ import { TabsModule } from 'primeng/tabs';
 import { TooltipModule } from 'primeng/tooltip';
 import { TimelineModule } from 'primeng/timeline';
 import { RippleModule } from 'primeng/ripple';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { ButtonModule } from 'primeng/button';
+import { MessageModule } from 'primeng/message';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { KnowledgePillarsComponent } from './knowledge-pillars/knowledge-pillars.component';
+import { ConfigService } from '../../core/services/config.service';
 import { environment } from '../../../environments/environment';
+import emailjs from '@emailjs/browser';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 @Component({
   selector: 'app-about',
   standalone: true,
-  imports: [CommonModule, TabsModule, TooltipModule, TimelineModule, RippleModule, KnowledgePillarsComponent],
+  imports: [CommonModule, TabsModule, TooltipModule, TimelineModule, RippleModule, KnowledgePillarsComponent, ReactiveFormsModule, InputTextModule, TextareaModule, ButtonModule, MessageModule, ToastModule],
   templateUrl: './about.component.html',
-  styleUrl: './about.component.css'
+  styleUrl: './about.component.css',
+  providers: [MessageService]
 })
 export class AboutComponent implements OnInit, OnDestroy {
   private dataService = inject(DataService);
   private zone = inject(NgZone);
+  private messageService = inject(MessageService);
+  private configService = inject(ConfigService);
+  private fb = inject(FormBuilder);
 
   @ViewChild('skillsRing') ringEl!: ElementRef<HTMLElement>;
   @ViewChildren('skillPlanet') planetsEl!: QueryList<ElementRef<HTMLElement>>;
@@ -46,8 +59,14 @@ export class AboutComponent implements OnInit, OnDestroy {
   private frameDelta = 0;
 
   experience = signal<Experience[]>([]);
+  contactForm!: FormGroup;
+  submitting = signal(false);
+  submitted = signal(false);
+  submitError = signal<string | undefined>(undefined);
 
   ngOnInit(): void {
+    this.initContactForm();
+    this.configService.loadConfig();
     const useStatic = environment.production && environment.useStaticData;
     const exp$ = useStatic
       ? this.dataService.getStaticExperiences()
@@ -110,6 +129,56 @@ export class AboutComponent implements OnInit, OnDestroy {
         );
       }, 100);
     });
+  }
+
+  private initContactForm(): void {
+    this.contactForm = this.fb.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      subject: ['', Validators.required],
+      message: ['', [Validators.required, Validators.minLength(10)]]
+    });
+  }
+
+  sendContactForm(): void {
+    if (this.contactForm.invalid) {
+      this.contactForm.markAllAsTouched();
+      return;
+    }
+
+    this.submitting.set(true);
+        this.submitError.set(undefined);
+
+    const { name, email, subject, message } = this.contactForm.value;
+
+    const templateParams = {
+      name: name,
+      from_email: email,
+      subject: subject,
+      message: message,
+      to_email: 'juanbarrios072@gmail.com',
+      time: new Date().toLocaleString('es-CO')
+    };
+
+    const cfg = this.configService.getConfig();
+    if (!cfg?.emailjs?.publicKey || !cfg?.emailjs?.serviceId || !cfg?.emailjs?.templateId) {
+      this.submitting.set(false);
+      this.submitError.set('EmailJS no está configurado. Contacta al administrador.');
+      return;
+    }
+
+    emailjs.send(cfg.emailjs.serviceId, cfg.emailjs.templateId, templateParams, cfg.emailjs.publicKey)
+      .then(() => {
+        this.submitting.set(false);
+        this.submitted.set(true);
+        this.contactForm.reset();
+        this.messageService.add({ severity: 'success', summary: 'Enviado', detail: '¡Gracias! Tu mensaje ha sido enviado.' });
+      })
+      .catch((err: unknown) => {
+        this.submitting.set(false);
+        this.submitError.set('No se pudo enviar el mensaje. Intenta de nuevo más tarde.');
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al enviar el mensaje.' });
+      });
   }
 
   ngOnDestroy(): void {
