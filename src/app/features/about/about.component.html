@@ -1,314 +1,178 @@
-<section class="section" id="about">
-  <!-- Starfield Background -->
-  <div class="starfield">
-    <div class="stars stars-sm"></div>
-    <div class="stars stars-md"></div>
-    <div class="stars stars-lg"></div>
-    <div class="comet comet-1"></div>
-    <div class="comet comet-2"></div>
-    <div class="comet comet-3"></div>
+<!-- IDE Tab Header (internal to the editor pane) -->
+<div class="about-editor">
+
+  <!-- Document Header (mimics file tab) -->
+  <div class="doc-tab-bar">
+    <div class="doc-tab active">
+      <i class="pi pi-file"></i>
+      <span>about.md</span>
+    </div>
+    <div class="doc-tab">
+      <i class="pi pi-server"></i>
+      <span>skills.json</span>
+    </div>
+    <div class="doc-tab">
+      <i class="pi pi-history"></i>
+      <span>experience.log</span>
+    </div>
   </div>
 
-  <div class="container">
+  <!-- Scrollable document content -->
+  <div class="doc-body">
 
-    <!-- ---- Interactive 3D Skills Ring (Stack Tecnológico) ---- -->
-    <div class="skills-section gsap-reveal" id="skills">
-      <h3 class="subsection-title skills-title">
-        <i class="fas fa-code"></i> Stack Tecnológico
-      </h3>
-      <p class="ring-subtitle">
-        Selecciono cada herramienta por su capacidad para resolver problemas complejos y construir soluciones escalables.
-      </p>
-      <p class="ring-hint">
-        <i class="fas fa-hand-pointer"></i> Arrastra para explorar
-      </p>
-
-      <div class="skills-3d-scene"
-           (mousedown)="onDragStart($event)"
-           (mousemove)="onDragMove($event)"
-           (mouseup)="onDragEnd()"
-           (mouseleave)="onDragEnd()"
-           (touchstart)="onDragStart($event)"
-           (touchmove)="onDragMove($event)"
-           (touchend)="onDragEnd()"
-           (click)="onPlanetHover(false)">
-
-        <!-- Space Particles -->
-        <div class="space-particles">
-          <div class="particle p-1"></div>
-          <div class="particle p-2"></div>
-          <div class="particle p-3"></div>
-          <div class="particle p-4"></div>
-          <div class="particle p-5"></div>
+    <!-- PROFILE HEADER -->
+    <section class="profile-section glass-card">
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar">
+          <span class="avatar-initials">JB</span>
+          <div class="online-dot"></div>
         </div>
-
-        <!-- Central glow -->
-        <div class="ring-glow"></div>
-        
-        <!-- Central Core (Hidden when hovering a skill) -->
-        <div class="ring-core" [class.hidden]="hoveredSkill()">
-          <span class="core-text">BACKEND<br>DEVELOPER</span>
-        </div>
-        
-        <!-- Central Text Display -->
-        <div class="center-skill-display" [class.visible]="hoveredSkill()">
-          <span class="skill-category">{{ hoveredSkill()?.category }}</span>
-          <span class="skill-name" 
-                [style.--brand-color]="hoveredSkill()?.brandColor"
-                [style.--brand-color-light]="hoveredSkill()?.brandColorLight"
-                [style.--brand-color-dark]="hoveredSkill()?.brandColorDark">
-            {{ hoveredSkill()?.name }}
+      </div>
+      <div class="profile-info">
+        <h1 class="profile-name">
+          <span class="syntax-comment">// </span>
+          <span class="text-primary-accent">Juan Barrios</span>
+        </h1>
+        <p class="profile-role">Backend Developer <span class="syntax-punct">//</span> Java · Spring Boot · Python</p>
+        <div class="profile-badges">
+          <span class="badge badge-online">
+            <span class="pulse-dot"></span>
+            Status: Online
           </span>
-          <span class="skill-description">{{ hoveredSkill()?.description }}</span>
+          <span class="badge badge-location">
+            <i class="pi pi-map-marker"></i>
+            Colombia
+          </span>
+          <span class="badge badge-sena">
+            <i class="pi pi-shield"></i>
+            SENA
+          </span>
         </div>
-           
-        <div class="skills-ring" #skillsRing>
-          <!-- Orbital Track -->
-          <div class="orbital-track"></div>
-          <div class="orbital-track secondary-track"></div>
-          <div class="orbital-track tertiary-track"></div>
-          
-          <!-- Secondary Conceptual Orbit -->
-          <div class="conceptual-orbit">
-            <span class="concept-tag tag-1">Clean Code</span>
-            <span class="concept-tag tag-2">SOLID</span>
-            <span class="concept-tag tag-3">REST APIs</span>
-            <span class="concept-tag tag-4">Arquitectura</span>
-            <span class="concept-tag tag-5">Git Flow</span>
-          </div>
-          
-          @for (skill of flatSkills(); track skill.id) {
-            <div class="skill-wrapper"
-                 [style.--angle]="skill.angle + 'deg'"
-                 [style.transform]="'rotateZ(' + skill.angle + 'deg) translateX(280px)'">
-              
-              <div class="skill-planet glass"
-                   #skillPlanet
-                   [style.--brand-color]="skill.color"
-                   [style.--brand-color-light]="skill.brandColorLight"
-                   [style.--brand-color-dark]="skill.brandColorDark"
-                   (mouseenter)="onPlanetHover(true, skill)"
-                   (mouseleave)="onPlanetHover(false)"
-                   (click)="onPlanetHover(true, skill); $event.stopPropagation()">
-                <i class="planet-icon" [ngClass]="skill.icon"></i>
-              </div>
-              
+      </div>
+    </section>
+
+    <!-- TECH STACK (JSON syntax style) -->
+    <section class="doc-section">
+      <div class="section-header">
+        <span class="section-symbol">#</span>
+        <h2 class="section-title">Tech Stack</h2>
+        <span class="section-subtitle">skills.json</span>
+      </div>
+
+      <div class="code-block glass-card">
+        <div class="code-line"><span class="json-brace">&#123;</span></div>
+
+        @for (cat of categories(); track cat) {
+          <div class="code-line code-group">
+            <span class="json-key">"{{ cat.toLowerCase() }}"</span>
+            <span class="json-colon">:</span>
+            <span class="json-bracket">[</span>
+            <div class="tech-badges">
+              @for (skill of skillsByCategory()[cat]; track skill.id) {
+                <span
+                  class="tech-badge"
+                  [style.border-color]="skill.color + '55'"
+                  [style.background]="skill.color + '15'"
+                >
+                  <i [class]="skill.icon" [style.color]="skill.color"></i>
+                  <span [style.color]="skill.color">{{ skill.name }}</span>
+                </span>
+              }
             </div>
-          }
-        </div>
-      </div>
-
-      <!-- Ring Stats -->
-      <div class="ring-stats">
-        <span class="ring-stat-badge">20+ Tecnologías</span>
-        <span class="ring-stat-badge">5 Proyectos</span>
-        <span class="ring-stat-badge">Backend Principal</span>
-        <span class="ring-stat-badge">IA Integrada</span>
-      </div>
-    </div>
-
-    <!-- ---- About Me ---- -->
-    <div class="stitch-section-layout">
-      <div class="stitch-section-header">
-        <h2 class="font-code-md tracking-widest uppercase text-primary" style="font-size: 1.1rem; opacity: 0.7;">01 // IDENTIDAD</h2>
-      </div>
-      
-      <div class="stitch-section-content">
-        <h3 class="font-headline-md text-primary leading-tight mb-8" style="font-size: 2rem; font-weight: 600;">
-          Construyo los cimientos invisibles que impulsan grandes experiencias.
-        </h3>
-        
-        <div class="about-text-block">
-          <p class="about-text">
-            Soy Tecnólogo en Análisis y Desarrollo de Software del SENA con enfoque en desarrollo backend
-            utilizando <strong>Java (Spring Boot)</strong> y <strong>Python (Django)</strong>.
-          </p>
-          <p class="about-text">
-            Tengo experiencia desarrollando aplicaciones web completas, APIs REST, herramientas de
-            automatización, aplicaciones de escritorio y soluciones orientadas a resolver problemas reales.
-          </p>
-          <p class="about-text">
-            Me interesa especialmente el diseño de software, la arquitectura de aplicaciones, la automatización
-            de procesos y la integración responsable de <strong>Inteligencia Artificial</strong> como herramienta
-            de productividad.
-          </p>
-
-          <div class="about-philosophy glass" style="border-left: 3px solid var(--border-strong);">
-            <p>
-              Disfruto diseñar soluciones antes de escribir código. Mi enfoque consiste en analizar el problema,
-              definir la arquitectura y seleccionar las tecnologías adecuadas antes de la primera línea de código.
-            </p>
+            <span class="json-bracket">]</span>
+            @if (!$last) {<span class="json-comma">,</span>}
           </div>
-        </div>
+        }
 
-        <!-- Quick Stats -->
-        <div class="about-stats" style="margin-top: 3rem;">
-          <div class="stat-card">
-            <span class="stat-number font-headline-md text-primary" style="font-size: 2.5rem;">5+</span>
-            <span class="stat-label font-code-md text-tertiary">PROYECTOS</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-number font-headline-md text-primary" style="font-size: 2.5rem;">15+</span>
-            <span class="stat-label font-code-md text-tertiary">TECNOLOGÍAS</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-number font-headline-md text-primary" style="font-size: 2.5rem;">B2</span>
-            <span class="stat-label font-code-md text-tertiary">INGLÉS</span>
-          </div>
-        </div>
+        <div class="code-line"><span class="json-brace">&#125;</span></div>
       </div>
-    </div>
+    </section>
 
-    <!-- Architecture & Learning Component -->
-    <app-knowledge-pillars />
-
-    <!-- ---- Experience ---- -->
-    <div class="stitch-section-layout" id="experience" style="margin-top: var(--space-4xl);">
-      <div class="stitch-section-header">
-        <h2 class="font-code-md tracking-widest uppercase text-primary" style="font-size: 1.1rem; opacity: 0.7;">02 // EXPERIENCIA</h2>
+    <!-- EXPERIENCE TIMELINE -->
+    <section class="doc-section">
+      <div class="section-header">
+        <span class="section-symbol">#</span>
+        <h2 class="section-title">Experience</h2>
+        <span class="section-subtitle">experience.log</span>
       </div>
 
-      <div class="stitch-section-content">
-        <div class="experience-list">
-          @for (exp of experience(); track exp.id) {
-            <div class="experience-card">
-              <div class="exp-header">
-                <div class="exp-icon-wrapper">
-                  <i [class]="exp.icon || 'fas fa-briefcase'"></i>
-                </div>
-                <div class="exp-info">
-                  <h4 class="exp-role font-headline-md text-primary" style="font-size: 1.25rem;">{{ exp.role }}</h4>
-                  <p class="exp-company font-mono text-secondary" style="font-size: 0.9rem;">{{ exp.company }}</p>
-                  <span class="exp-period font-mono text-tertiary" style="font-size: 0.8rem;">{{ exp.period }}</span>
-                </div>
+      <div class="timeline">
+        @for (exp of experience(); track exp.id) {
+          <div class="timeline-item">
+            <div class="timeline-marker">
+              <div class="timeline-dot"></div>
+            </div>
+            <div class="timeline-content glass-card">
+              <div class="timeline-meta">
+                <span class="timeline-period syntax-comment">// {{ exp.period }}</span>
+                <span class="timeline-company">&#64;{{ exp.company }}</span>
               </div>
-              <p class="exp-description font-body-sm text-secondary leading-relaxed mt-4 mb-6">{{ exp.description }}</p>
-              
-              <div class="exp-achievements">
-                @for (achievement of exp.achievements; track achievement) {
-                  <div class="achievement-item">
-                    <i class="fas fa-check"></i>
-                    <span class="font-body-sm text-secondary">{{ achievement }}</span>
-                  </div>
+              <h3 class="timeline-role">{{ exp.role }}</h3>
+              <p class="timeline-desc">{{ exp.description }}</p>
+              <div class="timeline-achievements">
+                @for (ach of exp.achievements; track ach) {
+                  <span class="ach-item">
+                    <span class="syntax-punct">- </span>{{ ach }}
+                  </span>
                 }
               </div>
-              
-              <div class="exp-techs mt-6">
+              <div class="timeline-techs">
                 @for (tech of exp.technologies; track tech) {
-                  <span class="stitch-tag font-code-md">{{ tech }}</span>
+                  <span class="tech-pill">{{ tech }}</span>
                 }
               </div>
             </div>
-          }
+          </div>
+        }
+      </div>
+    </section>
+
+
+
+    <!-- CONTACT (terminal style) -->
+    <section class="doc-section contact-section">
+      <div class="section-header">
+        <span class="section-symbol">#</span>
+        <h2 class="section-title">Contact</h2>
+        <span class="section-subtitle">contact.sh</span>
+      </div>
+
+      <div class="terminal-card glass-card">
+        <div class="terminal-bar">
+          <span class="terminal-dot red"></span>
+          <span class="terminal-dot yellow"></span>
+          <span class="terminal-dot green"></span>
+          <span class="terminal-title">bash — contact.sh</span>
         </div>
-      </div>
-    </div>
-
-    <!-- ---- Contact ---- -->
-    <div class="stitch-section-layout" id="contact" style="margin-top: var(--space-4xl);">
-      <div class="stitch-section-header">
-        <h2 class="font-code-md tracking-widest uppercase text-primary" style="font-size: 1.1rem; opacity: 0.7;">03 // CONTACTO</h2>
-      </div>
-
-      <div class="stitch-section-content">
-        <p class="font-headline-md text-primary mb-8" style="font-size: 2rem;">
-          ¿Interesado en trabajar juntos?
-        </p>
-
-        <p-toast />
-
-        <form [formGroup]="contactForm" (ngSubmit)="sendContactForm()" class="contact-form" novalidate>
-          <div class="form-grid">
-            <div class="form-field">
-              <label class="field-label font-code-md text-tertiary uppercase">Nombre *</label>
-              <p-inputText id="contact-name" formControlName="name" placeholder="Tu nombre" class="w-full" />
-              <p-message *ngIf="contactForm.get('name')?.invalid && contactForm.get('name')?.touched" severity="error" [text]="'El nombre es obligatorio'" />
-            </div>
-
-            <div class="form-field">
-              <label class="field-label font-code-md text-tertiary uppercase">Email *</label>
-              <p-inputText id="contact-email" type="email" formControlName="email" placeholder="tu@email.com" class="w-full" />
-              <p-message *ngIf="contactForm.get('email')?.invalid && contactForm.get('email')?.touched" severity="error" [text]="'Email válido es obligatorio'" />
-            </div>
+        <div class="terminal-body">
+          <div class="terminal-line">
+            <span class="prompt">$</span>
+            <span class="cmd">echo</span>
+            <span class="str">"Disponible para proyectos"</span>
           </div>
-
-          <div class="form-field">
-            <label class="field-label font-code-md text-tertiary uppercase">Asunto *</label>
-            <p-inputText id="contact-subject" formControlName="subject" placeholder="Asunto del mensaje" class="w-full" />
-            <p-message *ngIf="contactForm.get('subject')?.invalid && contactForm.get('subject')?.touched" severity="error" [text]="'El asunto es obligatorio'" />
+          <div class="terminal-output">Disponible para proyectos</div>
+          <div class="terminal-line">
+            <span class="prompt">$</span>
+            <span class="cmd">open</span>
+            <span class="str">./links/</span>
           </div>
-
-          <div class="form-field">
-            <label class="field-label font-code-md text-tertiary uppercase">Mensaje *</label>
-            <p-textarea id="contact-message" formControlName="message" placeholder="Cuéntame en qué puedo ayudarte..." rows="5" class="w-full" />
-            <p-message *ngIf="contactForm.get('message')?.invalid && contactForm.get('message')?.touched" severity="error" [text]="'El mensaje debe tener al menos 10 caracteres'" />
-          </div>
-
-          <div class="form-actions">
-            <p-button type="submit" label="Enviar mensaje" icon="fas fa-paper-plane" [loading]="submitting()" [disabled]="submitting()" />
-            <p-message *ngIf="submitError()" severity="error" [text]="submitError()" />
-            <p-message *ngIf="submitted()" severity="success" text="¡Mensaje enviado! Gracias por escribirme." />
-          </div>
-        </form>
-
-        <div class="contact-alt-links mt-8">
-          <p class="font-code-md text-tertiary uppercase mb-4" style="font-size: 0.85rem; opacity: 0.7;">O escríbeme directamente</p>
-          <div class="contact-grid">
-            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=juanbarrios072@gmail.com" target="_blank" rel="noopener noreferrer" class="contact-item">
-              <div class="contact-icon">
-                <i class="fas fa-envelope"></i>
-              </div>
-              <div class="contact-info">
-                <span class="contact-label font-code-md text-tertiary uppercase">Email</span>
-                <span class="contact-value font-body-lg text-primary">juanbarrios072&#64;gmail.com</span>
-              </div>
-              <i class="fas fa-arrow-right contact-arrow"></i>
+          <div class="contact-links">
+            <a href="https://github.com/1Zamuken1" target="_blank" class="contact-link">
+              <i class="pi pi-github"></i>
+              <span>github.com/1Zamuken1</span>
             </a>
-
-            <a href="tel:+573337222705" class="contact-item">
-              <div class="contact-icon">
-                <i class="fas fa-phone"></i>
-              </div>
-              <div class="contact-info">
-                <span class="contact-label font-code-md text-tertiary uppercase">Teléfono</span>
-                <span class="contact-value font-body-lg text-primary">+57 333 722 2705</span>
-              </div>
-              <i class="fas fa-arrow-right contact-arrow"></i>
+            <a href="https://www.linkedin.com/in/juan-barrios-dev" target="_blank" class="contact-link">
+              <i class="pi pi-linkedin"></i>
+              <span>linkedin.com/in/juan-barrios-dev</span>
             </a>
-
-            <a href="https://github.com/1Zamuken1" target="_blank" rel="noopener noreferrer" class="contact-item">
-              <div class="contact-icon">
-                <i class="fab fa-github"></i>
-              </div>
-              <div class="contact-info">
-                <span class="contact-label font-code-md text-tertiary uppercase">GitHub</span>
-                <span class="contact-value font-body-lg text-primary">1Zamuken1</span>
-              </div>
-              <i class="fas fa-arrow-right contact-arrow"></i>
-            </a>
-
-            <a href="https://linkedin.com/in/juan-barrios-a8a651274" target="_blank" rel="noopener noreferrer" class="contact-item">
-              <div class="contact-icon">
-                <i class="fab fa-linkedin"></i>
-              </div>
-              <div class="contact-info">
-                <span class="contact-label font-code-md text-tertiary uppercase">LinkedIn</span>
-                <span class="contact-value font-body-lg text-primary">Juan Barrios</span>
-              </div>
-              <i class="fas fa-arrow-right contact-arrow"></i>
+            <a href="mailto:juanfelipebarriosm@gmail.com" class="contact-link">
+              <i class="pi pi-at"></i>
+              <span>juanfelipebarriosm@gmail.com</span>
             </a>
           </div>
         </div>
-
-        <!-- Availability Banner -->
-        <div class="availability-banner mt-8">
-          <i class="fas fa-briefcase text-primary"></i>
-          <p class="font-body-sm text-secondary">
-            <strong class="text-primary">Disponible</strong> para iniciar etapa productiva mediante Contrato de Aprendizaje SENA.<br>
-            Ubicación: <strong class="text-primary">Bogotá D.C., Colombia</strong>
-          </p>
-        </div>
       </div>
-    </div>
+    </section>
+
   </div>
-</section>
+</div>
