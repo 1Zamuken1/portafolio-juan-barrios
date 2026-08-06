@@ -92,112 +92,143 @@
       </div>
 
       <div class="sidebar-content">
-
-        <!-- Home section -->
-        @if (activeMenu() === 'home') {
-          <div class="sidebar-section">
-            <div class="section-header">
-              <i class="pi pi-chevron-down text-xs"></i>
-              <span>WORKSPACE</span>
-            </div>
-            <div class="section-list">
-              <a class="list-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                <i class="pi pi-file" style="color: #4ec9b0; font-size: 0.85rem;"></i>
-                README.md
-              </a>
-            </div>
+        <!-- Unified WORKSPACE Tree -->
+        <div class="sidebar-section">
+          <div class="section-header">
+            <i class="pi pi-chevron-down text-xs"></i>
+            <span>WORKSPACE</span>
           </div>
-        }
-
-        <!-- Projects section -->
-        @if (activeMenu() === 'projects') {
-          <div class="sidebar-section">
-            <div class="section-header">
-              <i class="pi pi-chevron-down text-xs"></i>
-              <span>PROJECTS</span>
-            </div>
-            <div class="section-list">
-              @for (project of projects(); track project.id) {
-                <div class="sidebar-folder">
-                  <div class="folder-header" (click)="toggleFolder(project.id.toString())">
-                    <i class="pi" [ngClass]="expandedFolders().has(project.id.toString()) ? 'pi-chevron-down' : 'pi-chevron-right'" style="font-size: 0.6rem;"></i>
-                    <i class="pi pi-folder" style="color: #e8b74a; font-size: 0.85rem;"></i>
-                    <span class="folder-name">{{ project.name.toLowerCase().replace(' ', '-') }}</span>
-                  </div>
-                  @if (expandedFolders().has(project.id.toString())) {
-                    <div class="folder-contents">
-                      <a class="list-item nested-item"
-                         [routerLink]="['/projects', project.id]"
-                         fragment="readme"
-                         [class.active]="activeProjectId() === project.id.toString() && activeFragment() === 'readme'">
-                        <i class="pi pi-file" style="color: #4ec9b0; font-size: 0.85rem;"></i>
-                        readme.md
-                      </a>
-                      <a class="list-item nested-item"
-                         [routerLink]="['/projects', project.id]"
-                         fragment="stack"
-                         [class.active]="activeProjectId() === project.id.toString() && activeFragment() === 'stack'">
-                        <i class="pi pi-code" style="color: #e8a94a; font-size: 0.85rem;"></i>
-                        stack.json
-                      </a>
-                      <a class="list-item nested-item"
-                         [routerLink]="['/projects', project.id]"
-                         fragment="features"
-                         [class.active]="activeProjectId() === project.id.toString() && activeFragment() === 'features'">
-                        <i class="pi pi-file" style="color: #569cd6; font-size: 0.85rem;"></i>
-                        features.ts
-                      </a>
-                      <a class="list-item nested-item"
-                         [routerLink]="['/projects', project.id]"
-                         fragment="metrics"
-                         [class.active]="activeProjectId() === project.id.toString() && activeFragment() === 'metrics'">
-                        <i class="pi pi-table" style="color: #a599e9; font-size: 0.85rem;"></i>
-                        metrics.csv
-                      </a>
-                    </div>
-                  }
+          <div class="section-list">
+            
+            <!-- About Folder -->
+            <div class="sidebar-folder">
+              <div class="folder-header" (click)="toggleFolder('about')">
+                <i class="pi" [ngClass]="expandedFolders().has('about') ? 'pi-chevron-down' : 'pi-chevron-right'" style="font-size: 0.6rem;"></i>
+                <i class="pi pi-folder" style="color: #e8b74a; font-size: 0.85rem;"></i>
+                <span class="folder-name">about</span>
+              </div>
+              @if (expandedFolders().has('about')) {
+                <div class="folder-contents">
+                  <a class="list-item nested-item" routerLink="/" [class.active]="activeTabId() === '/'">
+                    <i class="pi pi-info-circle" style="color: #4ec9b0; font-size: 0.85rem;"></i>
+                    README.md
+                  </a>
                 </div>
-              } @empty {
-                <span class="list-item text-muted">
-                  <i class="pi pi-spin pi-spinner"></i> Loading...
-                </span>
               }
             </div>
-          </div>
-        }
 
-        <!-- About section -->
-        @if (activeMenu() === 'about') {
-          <div class="sidebar-section">
-            <div class="section-header">
-              <i class="pi pi-chevron-down text-xs"></i>
-              <span>ABOUT</span>
+            <!-- Projects Folder -->
+            <div class="sidebar-folder">
+              <div class="folder-header" (click)="toggleFolder('projects')">
+                <i class="pi" [ngClass]="expandedFolders().has('projects') ? 'pi-chevron-down' : 'pi-chevron-right'" style="font-size: 0.6rem;"></i>
+                <i class="pi pi-folder" style="color: #e8b74a; font-size: 0.85rem;"></i>
+                <span class="folder-name">projects</span>
+              </div>
+              @if (expandedFolders().has('projects')) {
+                <div class="folder-contents">
+                  @for (project of projects(); track project.id) {
+                    <!-- Project Subfolder -->
+                    <div class="sidebar-folder">
+                      <div class="folder-header nested-item" (click)="toggleFolder(projectFolderKey(project))">
+                        <i class="pi" [ngClass]="expandedFolders().has(projectFolderKey(project)) ? 'pi-chevron-down' : 'pi-chevron-right'" style="font-size: 0.6rem;"></i>
+                        <i class="pi pi-folder" style="color: #e8b74a; font-size: 0.85rem;"></i>
+                        <span class="folder-name">{{ project.name.toLowerCase().replace(' ', '-') }}</span>
+                      </div>
+                      @if (expandedFolders().has(projectFolderKey(project))) {
+                        <div class="folder-contents">
+                          <a class="list-item nested-item-2" [routerLink]="['/projects', project.id]" fragment="readme" [class.active]="activeTabId() === '/projects/' + project.id + '#readme' || activeTabId() === '/projects/' + project.id">
+                            <i class="pi pi-file" style="color: #4ec9b0; font-size: 0.85rem;"></i>
+                            readme.md
+                          </a>
+                          <a class="list-item nested-item-2" [routerLink]="['/projects', project.id]" fragment="stack" [class.active]="activeTabId() === '/projects/' + project.id + '#stack'">
+                            <i class="pi pi-code" style="color: #e8a94a; font-size: 0.85rem;"></i>
+                            stack.json
+                          </a>
+                          <a class="list-item nested-item-2" [routerLink]="['/projects', project.id]" fragment="features" [class.active]="activeTabId() === '/projects/' + project.id + '#features'">
+                            <i class="pi pi-file" style="color: #569cd6; font-size: 0.85rem;"></i>
+                            features.ts
+                          </a>
+                          <a class="list-item nested-item-2" [routerLink]="['/projects', project.id]" fragment="metrics" [class.active]="activeTabId() === '/projects/' + project.id + '#metrics'">
+                            <i class="pi pi-table" style="color: #a599e9; font-size: 0.85rem;"></i>
+                            metrics.csv
+                          </a>
+                          @if (project.architectureFlow) {
+                            <a class="list-item nested-item-2" [routerLink]="['/projects', project.id]" fragment="architecture" [class.active]="activeTabId() === '/projects/' + project.id + '#architecture'">
+                              <i class="pi pi-sitemap" style="color: #fca311; font-size: 0.85rem;"></i>
+                              architecture.drawio
+                            </a>
+                          }
+                          @if (project.challenges) {
+                            <a class="list-item nested-item-2" [routerLink]="['/projects', project.id]" fragment="challenges" [class.active]="activeTabId() === '/projects/' + project.id + '#challenges'">
+                              <i class="pi pi-exclamation-triangle" style="color: #f72585; font-size: 0.85rem;"></i>
+                              challenges.md
+                            </a>
+                          }
+                        </div>
+                      }
+                    </div>
+                  } @empty {
+                    <span class="list-item text-muted nested-item">
+                      <i class="pi pi-spin pi-spinner"></i> Loading...
+                    </span>
+                  }
+                </div>
+              }
             </div>
-            <div class="section-list">
-              <a class="list-item" routerLink="/about" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                <i class="pi pi-code" style="color: #e8a94a; font-size: 0.85rem;"></i>
-                profile.json
-              </a>
-            </div>
-          </div>
-        }
 
-        <!-- Contact section -->
-        @if (activeMenu() === 'contact') {
-          <div class="sidebar-section">
-            <div class="section-header">
-              <i class="pi pi-chevron-down text-xs"></i>
-              <span>CONTACT</span>
+            <!-- Experience Folder -->
+            <div class="sidebar-folder">
+              <div class="folder-header" (click)="toggleFolder('experience')">
+                <i class="pi" [ngClass]="expandedFolders().has('experience') ? 'pi-chevron-down' : 'pi-chevron-right'" style="font-size: 0.6rem;"></i>
+                <i class="pi pi-folder" style="color: #e8b74a; font-size: 0.85rem;"></i>
+                <span class="folder-name">experience</span>
+              </div>
+              @if (expandedFolders().has('experience')) {
+                <div class="folder-contents">
+                  <a class="list-item nested-item" routerLink="/about" fragment="experience" [class.active]="activeTabId() === '/about#experience'">
+                    <i class="pi pi-calendar" style="color: #e8a94a; font-size: 0.85rem;"></i>
+                    timeline.json
+                  </a>
+                </div>
+              }
             </div>
-            <div class="section-list">
-              <a class="list-item" routerLink="/contact" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                <i class="pi pi-file" style="color: #569cd6; font-size: 0.85rem;"></i>
-                send-message.ts
-              </a>
-            </div>
-          </div>
-        }
 
+            <!-- Skills Folder -->
+            <div class="sidebar-folder">
+              <div class="folder-header" (click)="toggleFolder('skills')">
+                <i class="pi" [ngClass]="expandedFolders().has('skills') ? 'pi-chevron-down' : 'pi-chevron-right'" style="font-size: 0.6rem;"></i>
+                <i class="pi pi-folder" style="color: #e8b74a; font-size: 0.85rem;"></i>
+                <span class="folder-name">skills</span>
+              </div>
+              @if (expandedFolders().has('skills')) {
+                <div class="folder-contents">
+                  <a class="list-item nested-item" routerLink="/about" fragment="stack" [class.active]="activeTabId() === '/about#stack'">
+                    <i class="pi pi-database" style="color: #e8a94a; font-size: 0.85rem;"></i>
+                    tech-stack.yml
+                  </a>
+                </div>
+              }
+            </div>
+
+            <!-- Contact Folder -->
+            <div class="sidebar-folder">
+              <div class="folder-header" (click)="toggleFolder('contact')">
+                <i class="pi" [ngClass]="expandedFolders().has('contact') ? 'pi-chevron-down' : 'pi-chevron-right'" style="font-size: 0.6rem;"></i>
+                <i class="pi pi-folder" style="color: #e8b74a; font-size: 0.85rem;"></i>
+                <span class="folder-name">contact</span>
+              </div>
+              @if (expandedFolders().has('contact')) {
+                <div class="folder-contents">
+                  <a class="list-item nested-item" routerLink="/contact" [class.active]="activeTabId() === '/contact'">
+                    <i class="pi pi-envelope" style="color: #569cd6; font-size: 0.85rem;"></i>
+                    links.md
+                  </a>
+                </div>
+              }
+            </div>
+
+          </div>
+        </div>
       </div>
     </aside>
 
@@ -211,18 +242,26 @@
           <i class="pi pi-bars"></i>
         </button>
 
-        <!-- Active Tab -->
-        <div class="tab active">
-          <i [class]="currentTab().icon" [style.color]="currentTab().iconColor"></i>
-          <span>{{ currentTab().label }}</span>
-          <span class="tab-close">×</span>
+        <div class="tabs-scroll-container">
+          @for (tab of openTabs(); track tab.id) {
+            <div class="tab" 
+                 [class.active]="activeTabId() === tab.id"
+                 [routerLink]="tab.route"
+                 [fragment]="tab.fragment">
+              <i [class]="tab.icon" [style.color]="tab.iconColor"></i>
+              <span>{{ tab.label }}</span>
+              <span class="tab-close" (click)="closeTab(tab.id, $event)">×</span>
+            </div>
+          }
         </div>
 
-        <!-- Breadcrumb -->
-        <div class="tab-breadcrumb">
+        <!-- Breadcrumb (using the active tab) -->
+        <div class="tab-breadcrumb hide-mobile">
           <span>portafolio-juan-barrios</span>
           <i class="pi pi-angle-right"></i>
-          <span>{{ currentTab().label }}</span>
+          @if (openTabs().length > 0) {
+            <span>{{ openTabs()[openTabs().length - 1].label }}</span>
+          }
         </div>
       </header>
 
@@ -249,7 +288,7 @@
           <span class="status-item hide-mobile">TypeScript</span>
           <span class="status-item status-available">
             <span class="availability-dot"></span>
-            Available for hire
+            Looking for SENA Apprenticeship
           </span>
         </div>
       </footer>
@@ -272,7 +311,7 @@
       <div class="profile-panel-body">
         <div class="profile-status">
           <span class="availability-dot"></span>
-          <span>Available for hire</span>
+          <span>Looking for SENA Apprenticeship</span>
         </div>
         <div class="profile-links">
           <a href="https://github.com/1Zamuken1" target="_blank" rel="noopener noreferrer" class="profile-link">

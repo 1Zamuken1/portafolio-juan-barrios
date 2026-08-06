@@ -355,6 +355,10 @@
   padding-left: 2.2rem;
 }
 
+.nested-item-2 {
+  padding-left: 3.5rem;
+}
+
 
 /* ================================================
    EDITOR AREA
@@ -370,28 +374,38 @@
 
 /* ---- Editor Tabs ---- */
 .editor-tabs {
-  height: 2.5rem;
-  background-color: var(--vscode-sidebar-bg);
-  border-bottom: 1px solid var(--vscode-border);
   display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  gap: 0;
-  overflow: hidden;
+  background: var(--vscode-bg);
+  min-height: 35px;
+  max-height: 35px;
+  overflow: visible;
+  position: relative;
+  z-index: 10;
+}
+
+.tabs-scroll-container {
+  display: flex;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.tabs-scroll-container::-webkit-scrollbar {
+  display: none;
 }
 
 .tab-sidebar-toggle {
-  background: none;
+  background: transparent;
   border: none;
-  color: var(--vscode-text-muted);
-  cursor: pointer;
-  padding: 0 0.75rem;
-  height: 100%;
-  font-size: 0.85rem;
-  display: none; /* Hidden on desktop by default */
+  color: var(--vscode-fg-muted);
+  width: 35px;
+  height: 35px;
+  display: flex;
   align-items: center;
-  border-right: 1px solid var(--vscode-border-light);
-  transition: color 0.15s, background 0.15s;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
@@ -404,41 +418,43 @@
   }
 }
 
-.tab-sidebar-toggle:hover {
-  color: var(--vscode-text-main);
-  background: rgba(255,255,255,0.04);
-}
-
 .tab {
-  height: 100%;
-  padding: 0 1rem;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  padding: 0 1rem;
+  background: rgba(30, 30, 63, 0.5);
+  border-right: 1px solid var(--vscode-border);
+  color: var(--vscode-fg-muted);
   cursor: pointer;
-  font-size: 0.8rem;
-  color: var(--vscode-text-muted);
-  border-right: 1px solid var(--vscode-border-light);
-  font-family: 'Inter', sans-serif;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  min-width: 120px;
+  max-width: 200px;
+  height: 100%;
+  flex-shrink: 0;
   white-space: nowrap;
-  transition: background 0.15s;
-  background-color: var(--vscode-tab-bg-inactive);
 }
 
 .tab.active {
-  color: var(--vscode-text-main);
-  background-color: var(--vscode-tab-bg-active);
-  border-top: 2px solid var(--vscode-primary);
+  background: var(--vscode-bg-active);
+  border-top: 1px solid var(--vscode-accent);
+  color: var(--vscode-fg);
 }
 
 .tab-close {
-  margin-left: 0.25rem;
-  font-size: 1rem;
-  opacity: 0.4;
-  line-height: 1;
-  transition: opacity 0.15s;
+  margin-left: auto;
+  opacity: 0;
+  border-radius: 3px;
+  padding: 0 4px;
 }
-.tab:hover .tab-close { opacity: 0.8; }
+
+.tab:hover .tab-close, .tab.active .tab-close {
+  opacity: 1;
+}
+
+.tab-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
 
 .tab-breadcrumb {
   display: flex;
