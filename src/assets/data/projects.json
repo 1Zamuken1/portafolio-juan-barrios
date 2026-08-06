@@ -1,1 +1,177 @@
-[{"id":1,"name":"Gastu Django","slug":"gastu-django","type":"Web Application","shortDescription":"Sistema de gestión financiera personal desarrollado como proyecto formativo del SENA.","fullDescription":"Sistema de gestión financiera personal desarrollado como proyecto formativo del SENA. Incluye dashboard financiero interactivo, análisis de gastos/ingresos, categorización automática con IA, exportación de reportes en PDF/Excel/CSV, autenticación con Google OAuth, WebSockets para notificaciones en tiempo real, y un agente de IA que genera recomendaciones personalizadas usando Gemini AI API.","imageUrl":"/assets/images/projects/gastu-django.png","features":["Dashboard financiero interactivo con gráficos en tiempo real","Gestión de ingresos, egresos y ahorros","Categorización automática de transacciones","Exportación a PDF, Excel y CSV","Autenticación con Google OAuth","Agente IA para recomendaciones financieras personalizadas","Notificaciones automáticas via WebSockets","Análisis predictivo de gastos"],"role":"Líder técnico y diseño visual","year":2026,"status":"Production","links":{"github":"https://github.com/1Zamuken1/GastuDjango","live":"https://gastu.onrender.com/"},"highlights":["Integración con autenticación Google OAuth","Arquitectura modular escalable","Exportación multiformato","Compatibilidad SQLite/PostgreSQL","Agente IA integrado para recomendaciones financieras"],"keywords":["finanzas","IA","fullstack","Django","producción"],"metrics":{"performance":"95/100 Lighthouse","accessibility":"A (WCAG)","responsiveBreakpoints":3,"apiEndpoints":12},"displayOrder":1},{"id":2,"name":"SGVA Assistant","slug":"sgva-assistant","type":"Desktop Application","shortDescription":"Herramienta de automatización para búsqueda inteligente de ofertas de prácticas SENA.","fullDescription":"Aplicación de escritorio que automatiza la búsqueda y análisis de ofertas de prácticas del portal SGVA del SENA. Utiliza automatización web con Playwright para extraer datos automáticamente, procesa ofertas con IA (Groq API) para análisis inteligente, mantiene base de datos local en JSON para reutilizar información, y exporta resultados a Excel y Markdown para fácil lectura.","imageUrl":"/assets/images/projects/sgva-assistant.png","features":["Automatización web con Playwright para scraping","Procesamiento inteligente de ofertas con Groq AI","Base de datos local JSON para caché","Exportación a Excel con formato profesional","Exportación a Markdown optimizada","Interfaz moderna y fácil de usar","Modo de bajo rendimiento para máquinas lentas","Ejecutable distribuible (.exe, .dmg, .AppImage)","Actualización de datos con un click","Filtrado de ofertas por criterios"],"role":"Desarrollador único","year":2026,"status":"Active Development","links":{"github":"https://github.com/1Zamuken1/SGVA-Assistant"},"highlights":["Automatización real de procesos manuales","Uso práctico en búsqueda de prácticas SENA","Integración con APIs externas (Groq)","Reduce tiempo de búsqueda en 80%"],"keywords":["automatización","web scraping","IA","desktop","productividad","Electron"],"metrics":{"automationLevel":"High","timeReductionPercent":80,"dataPointsProcessed":1000},"displayOrder":2},{"id":3,"name":"Seona","slug":"seona","type":"Desktop Tool","shortDescription":"Analizador profesional de SEO On-Page para proyectos en desarrollo local.","fullDescription":"Herramienta de escritorio para análisis automático de SEO técnico en proyectos desarrollados localmente. Detecta automáticamente el framework utilizado (Django, Angular, Thymeleaf, HTML), realiza análisis completo de meta tags, rendimiento, accesibilidad, CSS, JavaScript, y genera reportes detallados en JSON y Markdown optimizados para lectura por modelos de IA.","imageUrl":"/assets/images/projects/seona.png","features":["Detección automática de framework (Django, Angular, Thymeleaf, HTML)","Análisis SEO técnico completo","Scoring 0-100 con detalles de mejora","5 analizadores especializados (Meta, Performance, Accessibility, CSS, JS)","Generación de reportes JSON estructurados","Exportación a Markdown para lectura humana","Optimizado para lectura por modelos de IA","Interfaz moderna con tema claro/oscuro","Ejecución local sin datos enviados a la nube","Ejecutable distribuible"],"role":"Desarrollador único","year":2026,"status":"Published","links":{"github":"https://github.com/1Zamuken1/Seona"},"highlights":["Versión 0.1.0 publicada y distribuible","Ejecutable distribuible (92.4MB)","Producto único en el mercado colombiano","Herramienta utilizada en producción personal"],"keywords":["SEO","análisis","herramienta","desktop","productividad","Electron","React"],"metrics":{"detectedFrameworks":4,"analyzersCount":5,"reportFormats":2,"versionPublished":"0.1.0"},"displayOrder":3},{"id":4,"name":"Salsamentaría","slug":"salsamentaria","type":"Web Application","shortDescription":"Sistema e-commerce completo con dashboard administrativo y gestión de inventario.","fullDescription":"Proyecto académico de calidad de software que implementa un sistema e-commerce integral para una salsamentaría local. Incluye autenticación con JWT, roles diferenciados (administrador/cliente), gestión completa de productos, control de inventario en tiempo real, carrito de compras funcional, checkout seguro, y dashboard administrativo con reportes, gráficos y estadísticas de ventas.","imageUrl":"/assets/images/projects/salsamentaria.png","features":["Autenticación y autorización con JWT","Sistema de roles (ADMIN, CLIENTE)","CRUD completo de productos","Gestión de inventario con alertas","Carrito de compras persistente","Checkout seguro con validaciones","Dashboard administrativo completo","Gráficos de ventas e ingresos","Validación de stock automática","Historial de órdenes del usuario"],"role":"Desarrollador único","year":2025,"status":"Completed","links":{"github":"https://github.com/1Zamuken1/taller_calidad_software_Salsamentaria"},"highlights":["Cumple 100% de requerimientos del proyecto","Analizado con SonarQube y Codacy","Fullstack real (backend Spring + frontend Angular)","Proyecto académico de calidad de software"],"keywords":["e-commerce","fullstack","Java","Spring","Angular","académico","JWT"],"metrics":{"endpoints":12,"angularComponents":8,"codeReviews":2,"sonarQubeRating":"A"},"displayOrder":4}]
+[
+  {
+    "id": 1,
+    "name": "Gastu Django",
+    "slug": "gastu-django",
+    "type": "Web Application",
+    "shortDescription": "GastuApp - Sistema de gestión financiera personal con IA.",
+    "fullDescription": "GastuApp es un sistema de gestión financiera con Inteligencia Artificial. Usa Django y Tailwind CSS con bases de datos PostgreSQL y SQLite. Gemini Flash y Groq analizan los gastos y generan recomendaciones financieras. Soporta OAuth, y exportación a Excel, PDF y CSV.",
+    "imageUrl": "/assets/images/projects/gastu-django.png",
+    "features": [
+      "Autenticación mixta (Email/Contraseña y Google OAuth)",
+      "Agente de IA para recomendaciones (Gemini Flash con fallback a Groq)",
+      "Soporte dual de base de datos (SQLite/PostgreSQL)",
+      "Exportación avanzada multiformato (Excel, PDF, CSV)",
+      "Panel de administración estilizado con Tailwind CSS",
+      "Arquitectura modular separada por responsabilidades de negocio"
+    ],
+    "role": "Fullstack Developer",
+    "year": 2026,
+    "status": "Production",
+    "links": {
+      "github": "https://github.com/1Zamuken1/GastuDjango",
+      "live": "https://gastu.onrender.com/"
+    },
+    "highlights": [
+      "Implementación de Agentes de IA en producción",
+      "Gestión de migraciones colaborativas en base de datos PostgreSQL",
+      "Módulo de exportación con openpyxl y reportlab",
+      "Login social con django-allauth"
+    ],
+    "keywords": ["finanzas", "IA", "fullstack", "Django", "PostgreSQL", "OAuth"],
+    "techStack": [
+      { "name": "Python", "icon": "devicon-python-plain" },
+      { "name": "Django", "icon": "devicon-django-plain" },
+      { "name": "PostgreSQL", "icon": "devicon-postgresql-plain" },
+      { "name": "SQLite", "icon": "devicon-sqlite-plain" },
+      { "name": "Tailwind CSS", "icon": "devicon-tailwindcss-original" },
+      { "name": "Gemini AI", "icon": "devicon-google-plain" }
+    ],
+    "metrics": {
+      "performance": "Óptimo",
+      "db_support": "SQLite/PostgreSQL",
+      "ai_models": "Gemini/Llama3"
+    },
+    "displayOrder": 1
+  },
+  {
+    "id": 2,
+    "name": "SGVA Assistant",
+    "slug": "sgva-assistant",
+    "type": "Desktop Application",
+    "shortDescription": "Automatización y análisis de ofertas del portal SGVA con Inteligencia Artificial.",
+    "fullDescription": "Aplicación de escritorio en Node.js y Electron para buscar prácticas del SENA. Automatiza el web scraping con Playwright y extrae datos clave con Groq (Llama 3). Cuenta con caché JSON para ahorrar llamadas a API y un modo ligero para PCs antiguas.",
+    "imageUrl": "/assets/images/projects/sgva-assistant.png",
+    "features": [
+      "Web scraping y automatización de navegador con Playwright",
+      "Procesamiento NLP para extraer entidades clave usando Groq AI",
+      "Exportación automática de ofertas a Excel y Markdown",
+      "Modo 'Bajo Rendimiento' sin animaciones para hardware antiguo",
+      "UI basada en Glassmorphism (Vanilla HTML/CSS/JS)",
+      "Base de datos persistente en JSON local"
+    ],
+    "role": "Arquitecto de Automatización",
+    "year": 2026,
+    "status": "Active Development",
+    "links": {
+      "github": "https://github.com/1Zamuken1/SGVA-Assistant"
+    },
+    "highlights": [
+      "Automatización de login y sorteo de modales web (Playwright)",
+      "Ahorro drástico de tiempo de búsqueda manual",
+      "Estructuración de datos no-tabulares mediante Prompts de IA",
+      "Sistema de caché local para evitar redundancia de tokens API"
+    ],
+    "keywords": ["automatización", "web scraping", "IA", "Electron", "Playwright", "Groq"],
+    "techStack": [
+      { "name": "Node.js", "icon": "devicon-nodejs-plain" },
+      { "name": "Electron", "icon": "devicon-electron-original" },
+      { "name": "Playwright", "icon": "devicon-playwright-plain" },
+      { "name": "JavaScript", "icon": "devicon-javascript-plain" },
+      { "name": "HTML/CSS", "icon": "devicon-html5-plain" },
+      { "name": "Groq AI", "icon": "devicon-thealgorithms-plain" }
+    ],
+    "metrics": {
+      "automationLevel": "High",
+      "timeReductionPercent": 80,
+      "dataPointsProcessed": 1000
+    },
+    "displayOrder": 2
+  },
+  {
+    "id": 3,
+    "name": "Seona",
+    "slug": "seona",
+    "type": "Desktop Tool",
+    "shortDescription": "Herramienta de análisis SEO On-Page profundo para múltiples frameworks locales.",
+    "fullDescription": "Auditor SEO profundo de aplicaciones locales. Seona identifica el stack (Django, Angular, Thymeleaf) y ejecuta 5 motores en paralelo para analizar métricas. Renderiza SPA usando Playwright y genera reportes en formato JSON/Markdown listos para integrarse con IAs.",
+    "imageUrl": "/assets/images/projects/seona.png",
+    "features": [
+      "Detección inteligente de frameworks de frontend y backend",
+      "Motor headless con Playwright para SPA y parseo estático (Cheerio)",
+      "Auditoría SEO en 5 dimensiones (Meta, Técnico, Contenido, CSS, Performance)",
+      "Exportación de reportes estructurados a JSON y Markdown",
+      "UI con Zustand, Recharts, Radix UI y Tailwind CSS"
+    ],
+    "role": "Desarrollador y Analista SEO",
+    "year": 2026,
+    "status": "Published",
+    "links": {
+      "github": "https://github.com/1Zamuken1/Seona"
+    },
+    "highlights": [
+      "Manejo de estados complejos y vistas con Zustand y React 18",
+      "Arquitectura modular de parsers y motores de renderizado",
+      "Exportación de auditorías optimizadas para lectura de modelos de IA",
+      "Detección de anti-patrones en CSS Frameworks (Tailwind/Bootstrap)"
+    ],
+    "keywords": ["SEO", "análisis", "React", "TypeScript", "Vite", "Electron"],
+    "techStack": [
+      { "name": "React", "icon": "devicon-react-original" },
+      { "name": "TypeScript", "icon": "devicon-typescript-plain" },
+      { "name": "Vite", "icon": "devicon-vitejs-plain" },
+      { "name": "Electron", "icon": "devicon-electron-original" },
+      { "name": "Playwright", "icon": "devicon-playwright-plain" },
+      { "name": "Tailwind CSS", "icon": "devicon-tailwindcss-original" }
+    ],
+    "metrics": {
+      "detectedFrameworks": 4,
+      "analyzersCount": 5,
+      "reportFormats": 2
+    },
+    "displayOrder": 3
+  },
+  {
+    "id": 4,
+    "name": "Salsamentaría",
+    "slug": "salsamentaria",
+    "type": "Web Application",
+    "shortDescription": "E-commerce B2B con gestión de inventarios y dashboard estadístico.",
+    "fullDescription": "E-commerce B2B enfocado en rendimiento y calidad de código. API REST en Java Spring Boot con JWT y UI en Angular 20. Maneja inventario reactivo y un dashboard interactivo de administración. Todo el código fue evaluado con métricas estrictas de SonarQube.",
+    "imageUrl": "/assets/images/projects/salsamentaria.png",
+    "features": [
+      "Autenticación segura basada en tokens (JWT) y Spring Security",
+      "Panel de administración interactivo con gráficas de ventas (Chart.js)",
+      "Sistema de inventarios reactivo (control de stock al vuelo)",
+      "Gestión completa (CRUD) de categorías, productos y órdenes",
+      "Código auditado mediante SonarQube y Codacy (Calidad de Software)"
+    ],
+    "role": "Backend / Frontend Developer",
+    "year": 2025,
+    "status": "Completed",
+    "links": {
+      "github": "https://github.com/1Zamuken1/taller_calidad_software_Salsamentaria"
+    },
+    "highlights": [
+      "Implementación de métricas de calidad de código y análisis estático",
+      "Comunicación REST eficiente entre Java y Angular",
+      "Sistema de estados de ventas (Pendiente, Completado, Cancelado)",
+      "Restauración transaccional de inventario post-cancelación"
+    ],
+    "keywords": ["e-commerce", "Java", "Spring Boot", "Angular", "JWT", "MySQL"],
+    "techStack": [
+      { "name": "Java", "icon": "devicon-java-plain" },
+      { "name": "Spring Boot", "icon": "devicon-spring-original" },
+      { "name": "Angular", "icon": "devicon-angularjs-plain" },
+      { "name": "MySQL", "icon": "devicon-mysql-original" },
+      { "name": "JWT", "icon": "devicon-json-plain" },
+      { "name": "SonarQube", "icon": "devicon-sonarqube-plain" }
+    ],
+    "metrics": {
+      "endpoints": 12,
+      "roles": 2,
+      "sonarQubeRating": "A"
+    },
+    "displayOrder": 4
+  }
+]
