@@ -1,0 +1,228 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+/* ================================================
+   README EDITOR LAYOUT
+   ================================================ */
+.readme-editor {
+  display: flex;
+  height: 100%;
+  min-height: calc(100vh - 7rem);
+  background: transparent;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  padding: 1.5rem 0;
+  gap: 0;
+}
+
+/* ---- Line Numbers ---- */
+.line-numbers {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 0 1.25rem 0 1rem;
+  gap: 0;
+  min-width: 3.5rem;
+  color: rgba(100, 120, 160, 0.35);
+  font-size: 0.82rem;
+  line-height: 1.9rem;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.line-numbers span {
+  display: block;
+}
+
+/* ---- Content ---- */
+.readme-content {
+  flex: 1;
+  padding: 0 2rem 3rem 0;
+  max-width: 800px;
+}
+
+/* ---- Markdown Lines ---- */
+.md-line {
+  line-height: 1.9rem;
+  min-height: 1.9rem;
+  white-space: pre-wrap;
+  animation: fade-in-line 0.3s ease forwards;
+}
+
+@keyframes fade-in-line {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.md-blank { min-height: 1.9rem; }
+
+/* ---- Heading styles ---- */
+.md-h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+}
+
+.md-h1::before { content: ''; color: #569cd6; }
+
+.md-h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #FAD000;
+}
+
+/* ---- Text ---- */
+.md-text {
+  color: #A599E9;
+  font-size: 0.88rem;
+}
+
+.md-bold {
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* ---- List items ---- */
+.md-list-item {
+  color: #A599E9;
+  font-size: 0.88rem;
+  padding-left: 1.25rem;
+  position: relative;
+}
+
+.md-list-item::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: #A855F7;
+}
+
+/* ---- Code fence ---- */
+.md-code-fence {
+  color: rgba(86, 156, 214, 0.5);
+  font-size: 0.78rem;
+}
+
+/* ================================================
+   BADGES
+   ================================================ */
+.badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.7rem;
+  border-radius: 1rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.03em;
+  border: 1px solid;
+  white-space: nowrap;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.badge-java    { background: rgba(248,152,32,0.12); border-color: rgba(248,152,32,0.4); color: #f89820; }
+.badge-spring  { background: rgba(109,179,63,0.12);  border-color: rgba(109,179,63,0.4);  color: #6db33f; }
+.badge-python  { background: rgba(70,130,180,0.12);  border-color: rgba(70,130,180,0.4);  color: #4682b4; }
+.badge-angular { background: rgba(221,0,49,0.12);    border-color: rgba(221,0,49,0.4);    color: #dd0031; }
+.badge-docker  { background: rgba(36,150,237,0.12);  border-color: rgba(36,150,237,0.4);  color: #2496ed; }
+.badge-available { background: rgba(74,222,128,0.12); border-color: rgba(74,222,128,0.4); color: #4ade80; }
+
+/* ================================================
+   TERMINAL BLOCK
+   ================================================ */
+.terminal-block {
+  background: rgba(30, 30, 63, 0.8);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  margin: 0.25rem 0;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  min-height: 8rem;
+}
+
+.terminal-line {
+  display: block;
+  animation: term-fade 0.2s ease;
+}
+
+@keyframes term-fade {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.terminal-command {
+  color: #A5FF90;
+}
+
+.terminal-output {
+  color: #A599E9;
+  padding-left: 1rem;
+}
+
+.terminal-cursor {
+  display: inline-block;
+  color: #A855F7;
+  animation: blink 1s step-end infinite;
+  font-size: 0.85rem;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ================================================
+   LINKS
+   ================================================ */
+.links-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.md-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: #9EFFFF;
+  text-decoration: none;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid rgba(158, 255, 255, 0.25);
+  border-radius: 0.4rem;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.md-link:hover {
+  color: #FFFFFF;
+  border-color: rgba(158, 255, 255, 0.5);
+  background: rgba(158, 255, 255, 0.1);
+}
+
+.md-link-primary {
+  color: #FAD000;
+  border-color: rgba(250, 208, 0, 0.3);
+  background: rgba(250, 208, 0, 0.08);
+}
+
+.md-link-primary:hover {
+  color: #FFFFFF;
+  border-color: rgba(250, 208, 0, 0.6);
+  background: rgba(250, 208, 0, 0.15);
+}

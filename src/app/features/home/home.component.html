@@ -1,18 +1,18 @@
-<app-navbar />
+<!-- "Welcome.md" equivalent in the editor -->
+<div class="editor-canvas">
+  <div class="breadcrumb">
+    <span>home</span>
+    <i class="pi pi-chevron-right text-[10px]"></i>
+    <span class="text-primary">welcome.md</span>
+  </div>
 
-<main>
-  <app-hero />
-  <hr class="section-divider" />
-  <app-projects />
-  <hr class="section-divider" />
-  <app-about />
-</main>
-
-<app-footer />
-
-<!-- Scroll to Top -->
-<p-scrolltop
-  [threshold]="300"
-  icon="fas fa-arrow-up"
-  styleClass="scroll-top-btn"
-/>
+  <div class="glass-card flex-1 overflow-y-auto" style="min-height: calc(100vh - 8rem);">
+    <div class="window-bar">
+      <span class="window-title text-main">welcome.md</span>
+    </div>
+    
+    <div class="p-8">
+      <app-hero />
+    </div>
+  </div>
+</div>

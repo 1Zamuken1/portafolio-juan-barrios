@@ -1,0 +1,108 @@
+<div class="readme-editor">
+
+  <!-- Line numbers column -->
+  <div class="line-numbers" aria-hidden="true">
+    @for (n of lineNumbers; track n) {
+      <span>{{ n }}</span>
+    }
+  </div>
+
+  <!-- Markdown content column -->
+  <div class="readme-content">
+
+    <!-- H1 -->
+    <div class="md-line">
+      <span class="md-h1"># Juan Barrios</span>
+    </div>
+    <div class="md-line md-blank"></div>
+
+    <!-- Badges row -->
+    <div class="md-line badges-row">
+      <span class="badge badge-java">☕ Java</span>
+      <span class="badge badge-spring">🌿 Spring Boot</span>
+      <span class="badge badge-python">🐍 Python</span>
+      <span class="badge badge-angular">🅰️ Angular</span>
+      <span class="badge badge-docker">🐳 Docker</span>
+      <span class="badge badge-available">🟢 Available for hire</span>
+    </div>
+    <div class="md-line md-blank"></div>
+
+    <!-- H2 About -->
+    <div class="md-line">
+      <span class="md-h2">## Sobre mí</span>
+    </div>
+    <div class="md-line md-blank"></div>
+    <div class="md-line">
+      <span class="md-text">Backend Developer especializado en <span class="md-bold">Java (Spring Boot)</span></span>
+    </div>
+    <div class="md-line">
+      <span class="md-text">y <span class="md-bold">Python (Django)</span>. Arquitecturas hexagonales, APIs REST</span>
+    </div>
+    <div class="md-line">
+      <span class="md-text">y soluciones escalables con enfoque en calidad de código.</span>
+    </div>
+    <div class="md-line md-blank"></div>
+
+    <!-- H2 Stack -->
+    <div class="md-line">
+      <span class="md-h2">## Tech Stack</span>
+    </div>
+    <div class="md-line md-blank"></div>
+    <div class="md-line">
+      <span class="md-list-item"><span class="md-bold">Backend:</span> Java · Spring Boot 3 · Python · Django</span>
+    </div>
+    <div class="md-line">
+      <span class="md-list-item"><span class="md-bold">Frontend:</span> Angular 22 · TypeScript · PrimeNG</span>
+    </div>
+    <div class="md-line">
+      <span class="md-list-item"><span class="md-bold">DevOps:</span> Docker · GitHub Actions · Render · Vercel</span>
+    </div>
+    <div class="md-line">
+      <span class="md-list-item"><span class="md-bold">DB:</span> PostgreSQL · SQLite · JPA/Hibernate</span>
+    </div>
+    <div class="md-line md-blank"></div>
+
+    <!-- Terminal block -->
+    <div class="md-line">
+      <span class="md-code-fence">```bash</span>
+    </div>
+
+    <div class="terminal-block">
+      @for (line of displayedLines; track $index) {
+        <div class="terminal-line" [class.terminal-command]="line.startsWith('$')" [class.terminal-output]="line.startsWith('>')">
+          {{ line }}
+        </div>
+      }
+      @if (!typingDone) {
+        <span class="terminal-cursor">█</span>
+      }
+    </div>
+
+    <div class="md-line">
+      <span class="md-code-fence">```</span>
+    </div>
+    <div class="md-line md-blank"></div>
+
+    <!-- H2 Links -->
+    <div class="md-line">
+      <span class="md-h2">## Contacto</span>
+    </div>
+    <div class="md-line md-blank"></div>
+    <div class="md-line links-row">
+      <a href="https://github.com/1Zamuken1" target="_blank" rel="noopener noreferrer" class="md-link">
+        <i class="pi pi-github"></i> GitHub
+      </a>
+      <a href="https://linkedin.com/in/juan-barrios-a8a651274" target="_blank" rel="noopener noreferrer" class="md-link">
+        <i class="pi pi-linkedin"></i> LinkedIn
+      </a>
+      <a href="mailto:juanbarrios072@gmail.com" class="md-link">
+        <i class="pi pi-envelope"></i> Email
+      </a>
+      <a routerLink="/contact" class="md-link md-link-primary">
+        <i class="pi pi-send"></i> Send message →
+      </a>
+    </div>
+
+  </div>
+
+</div>

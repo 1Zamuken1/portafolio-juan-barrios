@@ -1,9 +1,18 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
-import { HomeComponent } from './features/home/home.component';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
+  {
+    path: '',
+    loadComponent: () => import('./layout/vscode-layout/vscode-layout.component').then(m => m.VscodeLayoutComponent),
+    children: [
+      { path: '', loadComponent: () => import('./features/welcome/welcome.component').then(m => m.WelcomeComponent) },
+      { path: 'projects', loadComponent: () => import('./features/projects/projects.component').then(m => m.ProjectsComponent) },
+      { path: 'projects/:id', loadComponent: () => import('./features/projects/projects.component').then(m => m.ProjectsComponent) },
+      { path: 'about', loadComponent: () => import('./features/about/about.component').then(m => m.AboutComponent) },
+      { path: 'contact', loadComponent: () => import('./features/contact/contact.component').then(m => m.ContactComponent) }
+    ]
+  },
   { path: 'admin/login', loadComponent: () => import('./features/admin/login/login.component').then(m => m.LoginComponent) },
   {
     path: 'admin/dashboard',

@@ -1,0 +1,298 @@
+<div class="vscode-app-container theme-shades-of-purple">
+
+  <!-- ===== TITLE BAR (top of the IDE) ===== -->
+  <header class="title-bar">
+    <div class="title-bar-left">
+      <div class="traffic-lights">
+        <span class="tl tl-red"></span>
+        <span class="tl tl-yellow"></span>
+        <span class="tl tl-green"></span>
+      </div>
+    </div>
+    <div class="title-bar-center">
+      <span class="title-bar-text">portafolio-juan-barrios — Visual Studio Code</span>
+    </div>
+    <div class="title-bar-right"></div>
+  </header>
+
+  <!-- ===== BODY (Activity Bar + Sidebar + Editor) ===== -->
+  <div class="vscode-body">
+
+    <!-- Activity Bar (Icons) -->
+    <nav class="activity-bar">
+      <div class="activity-icons-top">
+
+        <!-- Home -->
+        <div class="icon-item"
+             [class.active]="activeMenu() === 'home'"
+             (click)="setActiveMenu('home')"
+             routerLink="/"
+             title="Home / README">
+          <i class="pi pi-home"></i>
+          <span class="icon-tooltip">Home</span>
+        </div>
+
+        <!-- Projects -->
+        <div class="icon-item"
+             [class.active]="activeMenu() === 'projects'"
+             (click)="setActiveMenu('projects')"
+             routerLink="/projects"
+             title="Projects">
+          <i class="pi pi-folder"></i>
+          <span class="icon-tooltip">Projects</span>
+        </div>
+
+        <!-- About Me -->
+        <div class="icon-item"
+             [class.active]="activeMenu() === 'about'"
+             (click)="setActiveMenu('about')"
+             routerLink="/about"
+             title="About Me">
+          <i class="pi pi-user"></i>
+          <span class="icon-tooltip">About Me</span>
+        </div>
+
+        <!-- Contact -->
+        <div class="icon-item"
+             [class.active]="activeMenu() === 'contact'"
+             (click)="setActiveMenu('contact')"
+             routerLink="/contact"
+             title="Contact">
+          <i class="pi pi-envelope"></i>
+          <span class="icon-tooltip">Contact</span>
+        </div>
+
+      </div>
+
+      <div class="activity-icons-bottom">
+        <!-- Settings (disabled) -->
+        <div class="icon-item icon-disabled" title="Settings (coming soon)">
+          <i class="pi pi-cog"></i>
+          <span class="icon-tooltip">Settings</span>
+        </div>
+
+        <!-- Profile panel toggle -->
+        <div class="icon-item"
+             [class.active]="showProfilePanel()"
+             (click)="toggleProfilePanel()"
+             title="Developer Profile">
+          <div class="profile-avatar-mini">JB</div>
+          <span class="icon-tooltip">Juan Barrios</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Sidebar (Explorer) -->
+    <aside class="sidebar-explorer" [class.open]="isExplorerOpen()">
+      <div class="sidebar-header">
+        <span class="explorer-title">EXPLORER</span>
+        <button class="sidebar-close-btn" (click)="toggleExplorer()" title="Close sidebar">
+          <i class="pi pi-chevron-left"></i>
+        </button>
+      </div>
+
+      <div class="sidebar-content">
+
+        <!-- Home section -->
+        @if (activeMenu() === 'home') {
+          <div class="sidebar-section">
+            <div class="section-header">
+              <i class="pi pi-chevron-down text-xs"></i>
+              <span>WORKSPACE</span>
+            </div>
+            <div class="section-list">
+              <a class="list-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                <i class="pi pi-file" style="color: #4ec9b0; font-size: 0.85rem;"></i>
+                README.md
+              </a>
+            </div>
+          </div>
+        }
+
+        <!-- Projects section -->
+        @if (activeMenu() === 'projects') {
+          <div class="sidebar-section">
+            <div class="section-header">
+              <i class="pi pi-chevron-down text-xs"></i>
+              <span>PROJECTS</span>
+            </div>
+            <div class="section-list">
+              @for (project of projects(); track project.id) {
+                <div class="sidebar-folder">
+                  <div class="folder-header" (click)="toggleFolder(project.id.toString())">
+                    <i class="pi" [ngClass]="expandedFolders().has(project.id.toString()) ? 'pi-chevron-down' : 'pi-chevron-right'" style="font-size: 0.6rem;"></i>
+                    <i class="pi pi-folder" style="color: #e8b74a; font-size: 0.85rem;"></i>
+                    <span class="folder-name">{{ project.name.toLowerCase().replace(' ', '-') }}</span>
+                  </div>
+                  @if (expandedFolders().has(project.id.toString())) {
+                    <div class="folder-contents">
+                      <a class="list-item nested-item"
+                         [routerLink]="['/projects', project.id]"
+                         fragment="readme"
+                         [class.active]="activeProjectId() === project.id.toString() && activeFragment() === 'readme'">
+                        <i class="pi pi-file" style="color: #4ec9b0; font-size: 0.85rem;"></i>
+                        readme.md
+                      </a>
+                      <a class="list-item nested-item"
+                         [routerLink]="['/projects', project.id]"
+                         fragment="stack"
+                         [class.active]="activeProjectId() === project.id.toString() && activeFragment() === 'stack'">
+                        <i class="pi pi-code" style="color: #e8a94a; font-size: 0.85rem;"></i>
+                        stack.json
+                      </a>
+                      <a class="list-item nested-item"
+                         [routerLink]="['/projects', project.id]"
+                         fragment="features"
+                         [class.active]="activeProjectId() === project.id.toString() && activeFragment() === 'features'">
+                        <i class="pi pi-file" style="color: #569cd6; font-size: 0.85rem;"></i>
+                        features.ts
+                      </a>
+                      <a class="list-item nested-item"
+                         [routerLink]="['/projects', project.id]"
+                         fragment="metrics"
+                         [class.active]="activeProjectId() === project.id.toString() && activeFragment() === 'metrics'">
+                        <i class="pi pi-table" style="color: #a599e9; font-size: 0.85rem;"></i>
+                        metrics.csv
+                      </a>
+                    </div>
+                  }
+                </div>
+              } @empty {
+                <span class="list-item text-muted">
+                  <i class="pi pi-spin pi-spinner"></i> Loading...
+                </span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- About section -->
+        @if (activeMenu() === 'about') {
+          <div class="sidebar-section">
+            <div class="section-header">
+              <i class="pi pi-chevron-down text-xs"></i>
+              <span>ABOUT</span>
+            </div>
+            <div class="section-list">
+              <a class="list-item" routerLink="/about" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                <i class="pi pi-code" style="color: #e8a94a; font-size: 0.85rem;"></i>
+                profile.json
+              </a>
+            </div>
+          </div>
+        }
+
+        <!-- Contact section -->
+        @if (activeMenu() === 'contact') {
+          <div class="sidebar-section">
+            <div class="section-header">
+              <i class="pi pi-chevron-down text-xs"></i>
+              <span>CONTACT</span>
+            </div>
+            <div class="section-list">
+              <a class="list-item" routerLink="/contact" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                <i class="pi pi-file" style="color: #569cd6; font-size: 0.85rem;"></i>
+                send-message.ts
+              </a>
+            </div>
+          </div>
+        }
+
+      </div>
+    </aside>
+
+    <!-- ===== Main Editor Area ===== -->
+    <main class="editor-area">
+
+      <!-- Dynamic Editor Tabs -->
+      <header class="editor-tabs">
+        <!-- Toggle sidebar button -->
+        <button class="tab-sidebar-toggle" (click)="toggleExplorer()" title="Toggle Explorer">
+          <i class="pi pi-bars"></i>
+        </button>
+
+        <!-- Active Tab -->
+        <div class="tab active">
+          <i [class]="currentTab().icon" [style.color]="currentTab().iconColor"></i>
+          <span>{{ currentTab().label }}</span>
+          <span class="tab-close">×</span>
+        </div>
+
+        <!-- Breadcrumb -->
+        <div class="tab-breadcrumb">
+          <span>portafolio-juan-barrios</span>
+          <i class="pi pi-angle-right"></i>
+          <span>{{ currentTab().label }}</span>
+        </div>
+      </header>
+
+      <!-- Editor Content -->
+      <div class="editor-content">
+        <router-outlet></router-outlet>
+      </div>
+
+      <!-- Status Bar (bottom) -->
+      <footer class="status-bar">
+        <div class="status-left">
+          <span class="status-item status-branch">
+            <i class="pi pi-code-branch"></i>
+            develop
+          </span>
+          <span class="status-item">
+            <i class="pi pi-check-circle"></i>
+            0 errors
+          </span>
+        </div>
+        <div class="status-right">
+          <span class="status-item hide-mobile">Angular 22</span>
+          <span class="status-item hide-mobile">UTF-8</span>
+          <span class="status-item hide-mobile">TypeScript</span>
+          <span class="status-item status-available">
+            <span class="availability-dot"></span>
+            Available for hire
+          </span>
+        </div>
+      </footer>
+
+    </main>
+
+  </div><!-- end vscode-body -->
+
+  <!-- ===== Profile Panel (Floating) ===== -->
+  @if (showProfilePanel()) {
+    <div class="profile-panel-overlay" (click)="closeProfilePanel()"></div>
+    <div class="profile-panel">
+      <div class="profile-panel-header">
+        <div class="profile-avatar">JB</div>
+        <div class="profile-info">
+          <span class="profile-name">Juan Barrios</span>
+          <span class="profile-role">Backend Developer</span>
+        </div>
+      </div>
+      <div class="profile-panel-body">
+        <div class="profile-status">
+          <span class="availability-dot"></span>
+          <span>Available for hire</span>
+        </div>
+        <div class="profile-links">
+          <a href="https://github.com/1Zamuken1" target="_blank" rel="noopener noreferrer" class="profile-link">
+            <i class="pi pi-github"></i>
+            GitHub
+          </a>
+          <a href="https://linkedin.com/in/juan-barrios-a8a651274" target="_blank" rel="noopener noreferrer" class="profile-link">
+            <i class="pi pi-linkedin"></i>
+            LinkedIn
+          </a>
+          <a href="mailto:juanbarrios072@gmail.com" class="profile-link">
+            <i class="pi pi-envelope"></i>
+            Email
+          </a>
+        </div>
+        <div class="profile-panel-footer">
+          <span class="profile-location"><i class="pi pi-map-marker"></i> Bogotá, Colombia</span>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

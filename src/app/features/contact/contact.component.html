@@ -1,0 +1,98 @@
+<div class="editor-canvas">
+  <div class="glass-card flex-1 overflow-y-auto" style="border:none; background: transparent; box-shadow: none;">
+    <div class="code-editor-layout">
+      <!-- Line Numbers -->
+      <div class="line-numbers" aria-hidden="true">
+        @for (n of lineNumbers; track n) {
+          <span>{{ n }}</span>
+        }
+      </div>
+
+      <!-- Code Content -->
+      <div class="code-content">
+        <p-toast />
+        
+        <div class="code-line">
+          <span class="syntax-keyword">import</span> <span class="syntax-bracket">&#123;</span> <span class="syntax-variable">ContactService</span> <span class="syntax-bracket">&#125;</span> <span class="syntax-keyword">from</span> <span class="syntax-string">'@/core/services'</span><span class="syntax-punctuation">;</span>
+        </div>
+        <div class="code-line">
+          <span class="syntax-keyword">import</span> <span class="syntax-bracket">&#123;</span> <span class="syntax-variable">MessageBuilder</span> <span class="syntax-bracket">&#125;</span> <span class="syntax-keyword">from</span> <span class="syntax-string">'@/utils/messaging'</span><span class="syntax-punctuation">;</span>
+        </div>
+        <div class="code-line empty-line"></div>
+        <div class="code-line">
+          <span class="syntax-comment">/**</span>
+        </div>
+        <div class="code-line">
+          <span class="syntax-comment"> * ¿Interesado en trabajar juntos?</span>
+        </div>
+        <div class="code-line">
+          <span class="syntax-comment"> * Me pondré en contacto contigo lo antes posible.</span>
+        </div>
+        <div class="code-line">
+          <span class="syntax-comment"> */</span>
+        </div>
+        <div class="code-line">
+          <span class="syntax-keyword">const</span> <span class="syntax-function">sendMessage</span> <span class="syntax-operator">=</span> <span class="syntax-keyword">async</span> <span class="syntax-bracket">(</span><span class="syntax-bracket">)</span> <span class="syntax-operator">=></span> <span class="syntax-bracket">&#123;</span>
+        </div>
+        
+        <form [formGroup]="contactForm" (ngSubmit)="sendContactForm()" class="code-form" novalidate>
+          <div class="code-line indented">
+            <span class="syntax-keyword">const</span> <span class="syntax-variable">payload</span> <span class="syntax-operator">=</span> <span class="syntax-bracket">&#123;</span>
+          </div>
+          
+          <div class="code-line indented-2 form-field-line">
+            <span class="syntax-property">name</span><span class="syntax-punctuation">:</span> 
+            <input type="text" formControlName="name" placeholder="'Tu nombre'" class="code-input" />
+            <span class="syntax-punctuation">,</span>
+            <p-message *ngIf="contactForm.get('name')?.invalid && contactForm.get('name')?.touched" severity="error" text="// Requerido" styleClass="inline-error" />
+          </div>
+
+          <div class="code-line indented-2 form-field-line">
+            <span class="syntax-property">email</span><span class="syntax-punctuation">:</span> 
+            <input type="email" formControlName="email" placeholder="'tu@email.com'" class="code-input" />
+            <span class="syntax-punctuation">,</span>
+            <p-message *ngIf="contactForm.get('email')?.invalid && contactForm.get('email')?.touched" severity="error" text="// Requerido" styleClass="inline-error" />
+          </div>
+
+          <div class="code-line indented-2 form-field-line">
+            <span class="syntax-property">subject</span><span class="syntax-punctuation">:</span> 
+            <input type="text" formControlName="subject" placeholder="'Asunto del mensaje'" class="code-input" />
+            <span class="syntax-punctuation">,</span>
+            <p-message *ngIf="contactForm.get('subject')?.invalid && contactForm.get('subject')?.touched" severity="error" text="// Requerido" styleClass="inline-error" />
+          </div>
+
+          <div class="code-line indented-2 form-field-line textarea-line">
+            <span class="syntax-property">message</span><span class="syntax-punctuation">:</span> 
+            <span class="syntax-string">`</span>
+            <textarea formControlName="message" placeholder="Cuéntame en qué puedo ayudarte..." rows="3" class="code-textarea"></textarea>
+            <span class="syntax-string">`</span><span class="syntax-punctuation">,</span>
+            <p-message *ngIf="contactForm.get('message')?.invalid && contactForm.get('message')?.touched" severity="error" text="// Requerido" styleClass="inline-error" />
+          </div>
+
+          <div class="code-line indented">
+            <span class="syntax-bracket">&#125;</span><span class="syntax-punctuation">;</span>
+          </div>
+          <div class="code-line empty-line"></div>
+
+          <div class="code-line indented">
+            <span class="syntax-keyword">await</span> <span class="syntax-variable">ContactService</span><span class="syntax-punctuation">.</span><span class="syntax-function">dispatch</span><span class="syntax-bracket">(</span><span class="syntax-variable">payload</span><span class="syntax-bracket">)</span><span class="syntax-punctuation">;</span>
+          </div>
+          
+          <div class="code-line indented submit-line">
+            <button type="submit" [disabled]="submitting()" class="run-button">
+              <i class="pi" [ngClass]="submitting() ? 'pi-spin pi-spinner' : 'pi-play'"></i>
+              <span class="run-text">{{ submitting() ? 'Executing...' : 'Run send-message.ts' }}</span>
+            </button>
+            <span *ngIf="submitError()" class="syntax-comment inline-comment error-text">// Error: {{ submitError() }}</span>
+            <span *ngIf="submitted()" class="syntax-comment inline-comment success-text">// 200 OK: Message dispatched successfully!</span>
+          </div>
+
+        </form>
+
+        <div class="code-line">
+          <span class="syntax-bracket">&#125;</span><span class="syntax-punctuation">;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
