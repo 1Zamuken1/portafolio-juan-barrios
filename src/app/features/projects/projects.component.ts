@@ -228,7 +228,7 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
   getTechIcon(techName: string): string {
     const tech = this.project()?.techStack?.find(t => t.name.toLowerCase() === techName.toLowerCase());
     if (tech) return tech.icon + ' colored';
-    
+
     // Fallbacks for known tech not explicitly in techStack array
     const name = techName.toLowerCase();
     if (name.includes('django')) return 'devicon-django-plain colored';
@@ -237,6 +237,24 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
     if (name.includes('postgres')) return 'devicon-postgresql-plain colored';
     if (name.includes('tailwind')) return 'devicon-tailwindcss-original colored';
     if (name.includes('gemini') || name.includes('google')) return 'devicon-google-plain colored';
+    if (name.includes('electron')) return 'devicon-electron-original colored';
+    if (name.includes('node')) return 'devicon-nodejs-plain colored';
+    if (name.includes('playwright')) return 'devicon-playwright-plain colored';
+    if (name.includes('chromium') || name.includes('chrome')) return 'devicon-chrome-plain colored';
+    if (name.includes('react')) return 'devicon-react-original colored';
+    if (name.includes('vue')) return 'devicon-vuejs-plain colored';
+    if (name.includes('angular')) return 'devicon-angular-original colored';
+    if (name.includes('typescript')) return 'devicon-typescript-plain colored';
+    if (name.includes('javascript')) return 'devicon-javascript-plain colored';
+    if (name.includes('html')) return 'devicon-html5-plain colored';
+    if (name.includes('css')) return 'devicon-css3-plain colored';
+    if (name.includes('json')) return 'devicon-json-plain colored';
+    if (name.includes('java')) return 'devicon-java-plain colored';
+    if (name.includes('spring')) return 'devicon-spring-original colored';
+    if (name.includes('mysql')) return 'devicon-mysql-plain colored';
+    if (name.includes('sonar')) return 'devicon-sonarqube-plain colored';
+    if (name.includes('markdown')) return 'devicon-markdown-original colored';
+    if (name.includes('excel')) return 'devicon-excel-plain colored';
     return 'pi pi-bolt';
   }
 

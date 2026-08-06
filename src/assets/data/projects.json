@@ -109,29 +109,27 @@
     "slug": "sgva-assistant",
     "type": "Desktop Application",
     "shortDescription": "Automatización y análisis de ofertas del portal SGVA con Inteligencia Artificial.",
-    "fullDescription": "Aplicación de escritorio en Node.js y Electron para buscar prácticas del SENA. Automatiza el web scraping con Playwright y extrae datos clave con Groq (Llama 3). Cuenta con caché JSON para ahorrar llamadas a API y un modo ligero para PCs antiguas.",
+    "fullDescription": "Aplicación de escritorio en Node.js y Electron para buscar prácticas del SENA. Automatiza el web scraping con Playwright y extrae datos clave con Groq (Llama 3). Cuenta con caché JSON para ahorrar llamadas a API y un modo ligero para PCs antiguos.",
     "imageUrl": "/assets/images/projects/sgva-assistant.png",
-    "features": [
-      "Web scraping y automatización de navegador con Playwright",
-      "Procesamiento NLP para extraer entidades clave usando Groq AI",
-      "Exportación automática de ofertas a Excel y Markdown",
-      "Modo 'Bajo Rendimiento' sin animaciones para hardware antiguo",
-      "UI basada en Glassmorphism (Vanilla HTML/CSS/JS)",
-      "Base de datos persistente en JSON local"
-    ],
     "role": "Arquitecto de Automatización",
     "year": 2026,
     "status": "Active Development",
+    "teamSize": 1,
+    "coreArchitecture": "Electron + IPC",
+    "databaseArchitecture": "JSON Cache",
+    "aiArchitecture": "Groq (Llama 3)",
     "links": {
       "github": "https://github.com/1Zamuken1/SGVA-Assistant"
     },
     "highlights": [
-      "Automatización de login y sorteo de modales web (Playwright)",
-      "Ahorro drástico de tiempo de búsqueda manual",
-      "Estructuración de datos no-tabulares mediante Prompts de IA",
-      "Sistema de caché local para evitar redundancia de tokens API"
+      "Automatización completa del portal SGVA (login, navegación y extracción)",
+      "Extracción inteligente de datos no estructurados mediante IA (Groq Llama 3)",
+      "Sistema de caché local en JSON para minimizar consumo de tokens de API",
+      "Exportación profesional a Excel (.xlsx) y Markdown",
+      "Arquitectura Electron + IPC aislada para mantener la UI responsiva",
+      "Modo Low Performance: UI sin animaciones para hardware antiguo"
     ],
-    "keywords": ["automatización", "web scraping", "IA", "Electron", "Playwright", "Groq"],
+    "keywords": ["automatización", "web scraping", "IA", "Electron", "Playwright", "Groq", "Excel"],
     "techStack": [
       { "name": "Node.js", "icon": "devicon-nodejs-plain" },
       { "name": "Electron", "icon": "devicon-electron-original" },
@@ -140,11 +138,62 @@
       { "name": "HTML/CSS", "icon": "devicon-html5-plain" },
       { "name": "Groq AI", "icon": "devicon-thealgorithms-plain" }
     ],
-    "metrics": {
-      "automationLevel": "High",
-      "timeReductionPercent": 80,
-      "dataPointsProcessed": 1000
+    "readmeMarkdown": {
+      "objective": "SGVA Assistant resuelve el problema de buscar prácticas profesionales en el portal del SENA (SGVA) de forma manual e intermitente. El portal carece de filtros avanzados y no permite descargar masivamente las ofertas. La aplicación automatiza todo el flujo: inicia sesión, navega las páginas, extrae la información de cada oferta y estructura los datos mediante un modelo de lenguaje.",
+      "architecture": "La aplicación se construye sobre Electron para empaquetar una interfaz de escritorio cross-platform. Para mantener la UI responsiva durante las tareas de automatización, la comunicación entre el renderer y el proceso principal se realiza por canales IPC de Electron, donde el motor de scraping (Playwright) corre aislado del frontend.",
+      "mainFeatures": "Automatización headless del portal SGVA, extracción y estructuración de datos mediante IA, caché local para evitar redundancia de tokens, exportación a Excel y Markdown, y un modo de bajo rendimiento para equipos antiguos.",
+      "technologies": "Backend y runtime en Node.js sobre Electron. El motor de automatización está basado en Playwright con Chromium. La inteligencia artificial utiliza el SDK de Groq con el modelo Llama 3 para estructurar texto sin formato. La persistencia local se maneja con archivos JSON, y la exportación con ExcelJS.",
+      "learnings": "El mayor aprendizaje fue orquestar Electron IPC para comunicar el motor de scraping con la UI sin bloquear el hilo principal, y ajustar prompts de extracción estructurada para minimizar costos de API en llamadas a Groq mientras se mantenía alta precisión en los datos extraídos."
     },
+    "structuredStack": {
+      "backend": ["Node.js", "Electron Main", "Electron IPC", "Node FS"],
+      "frontend": ["HTML5", "CSS3", "Vanilla JavaScript", "Glassmorphism"],
+      "automation": ["Playwright", "Chromium"],
+      "ai": ["Groq SDK", "Llama 3"],
+      "persistence": ["JSON"],
+      "export": ["ExcelJS", "Markdown"]
+    },
+    "structuredFeatures": {
+      "Automation": ["Web scraping", "Login automation", "Modal handling", "Headless browser"],
+      "Artificial Intelligence": ["Groq SDK", "Llama 3", "Prompt engineering", "Entity extraction"],
+      "Persistence": ["JSON cache", "Local storage", "Cache invalidation"],
+      "Export": ["Excel", "ExcelJS", "Markdown", "CSV-ready data"],
+      "Performance": ["Low Performance mode", "No animations", "Memory-efficient scraping"],
+      "User Interface": ["Electron renderer", "Glassmorphism UI", "Vanilla JS", "Responsive layout"]
+    },
+    "rawMetrics": {
+      "Automation Engine": "Playwright",
+      "AI Model": "Llama 3",
+      "Desktop Platform": "Electron",
+      "Export Formats": 2,
+      "Persistence": "JSON Cache",
+      "Optimization Mode": "Low Performance",
+      "Status": "Active Development"
+    },
+    "architectureFlow": [
+      "Usuario",
+      "Playwright",
+      "Portal SGVA",
+      "Texto sin estructura",
+      "Groq",
+      "Datos estructurados",
+      "JSON Cache",
+      "Excel / Markdown"
+    ],
+    "challenges": [
+      {
+        "title": "Mantener la UI responsiva durante el scraping",
+        "description": "Ejecutar Playwright en el proceso principal de Electron mediante canales IPC, aislando el renderer para que la interfaz no se congele durante largas sesiones de automatización."
+      },
+      {
+        "title": "Extracción estructurada con bajo consumo de tokens",
+        "description": "Diseñar prompts de ingeniería para Llama 3 que extraigan exactamente las entidades necesarias en un solo llamado, minimizando costos de la API de Groq y reduciendo latencia."
+      },
+      {
+        "title": "Cacheo eficiente de resultados",
+        "description": "Implementar un sistema de caché JSON con invalidación por clave, evitando redundancia de llamadas a la API de IA y permitiendo reanudar sesiones interrumpidas."
+      }
+    ],
     "displayOrder": 2
   },
   {
@@ -155,26 +204,24 @@
     "shortDescription": "Herramienta de análisis SEO On-Page profundo para múltiples frameworks locales.",
     "fullDescription": "Auditor SEO profundo de aplicaciones locales. Seona identifica el stack (Django, Angular, Thymeleaf) y ejecuta 5 motores en paralelo para analizar métricas. Renderiza SPA usando Playwright y genera reportes en formato JSON/Markdown listos para integrarse con IAs.",
     "imageUrl": "/assets/images/projects/seona.png",
-    "features": [
-      "Detección inteligente de frameworks de frontend y backend",
-      "Motor headless con Playwright para SPA y parseo estático (Cheerio)",
-      "Auditoría SEO en 5 dimensiones (Meta, Técnico, Contenido, CSS, Performance)",
-      "Exportación de reportes estructurados a JSON y Markdown",
-      "UI con Zustand, Recharts, Radix UI y Tailwind CSS"
-    ],
     "role": "Desarrollador y Analista SEO",
     "year": 2026,
     "status": "Published",
+    "teamSize": 1,
+    "coreArchitecture": "React + Zustand",
+    "databaseArchitecture": "Report JSON",
+    "aiArchitecture": "IA-Optimized Reports",
     "links": {
       "github": "https://github.com/1Zamuken1/Seona"
     },
     "highlights": [
-      "Manejo de estados complejos y vistas con Zustand y React 18",
-      "Arquitectura modular de parsers y motores de renderizado",
-      "Exportación de auditorías optimizadas para lectura de modelos de IA",
-      "Detección de anti-patrones en CSS Frameworks (Tailwind/Bootstrap)"
+      "Auditoría SEO en 5 dimensiones (Meta, Técnico, Contenido, CSS, Performance) en paralelo",
+      "Detección automática del stack del framework (Django, Angular, Thymeleaf, ...)",
+      "Motor headless de Playwright para renderizar SPAs y Cheerio para parseo estático",
+      "Exportación de auditorías optimizada para consumo de modelos de IA (JSON/Markdown)",
+      "Detección de anti-patrones en sistemas de utilidades CSS (Tailwind/Bootstrap)"
     ],
-    "keywords": ["SEO", "análisis", "React", "TypeScript", "Vite", "Electron"],
+    "keywords": ["SEO", "análisis", "React", "TypeScript", "Vite", "Electron", "Playwright"],
     "techStack": [
       { "name": "React", "icon": "devicon-react-original" },
       { "name": "TypeScript", "icon": "devicon-typescript-plain" },
@@ -183,11 +230,58 @@
       { "name": "Playwright", "icon": "devicon-playwright-plain" },
       { "name": "Tailwind CSS", "icon": "devicon-tailwindcss-original" }
     ],
-    "metrics": {
-      "detectedFrameworks": 4,
-      "analyzersCount": 5,
-      "reportFormats": 2
+    "readmeMarkdown": {
+      "objective": "Seona resuelve el problema de auditar páginas SEO de aplicaciones locales (a menudo SPAs) que los audits tradicionales no pueden analizar porque su contenido es generado por JavaScript. Identifica el framework del stack y ejecuta 5 motores de auditoría en paralelo, entregando reportes estructurados listos para que un modelo de IA los consuma.",
+      "architecture": "La aplicación combina un parser estático (Cheerio) para URLs con contenido server-side y un motor headless (Playwright) para renderizar SPAs antes de analizarlas. Los resultados de los 5 audits se agregan en paralelo y se exportan a JSON/Markdown optimizados para lectura de IAs.",
+      "mainFeatures": "Detección de framework, auditoría SEO en 5 dimensiones, renderizado headless de SPAs, exportación IA-ready y detección de anti-patrones CSS.",
+      "technologies": "Frontend en React 18 con TypeScript y Vite. Gestión de estado con Zustand, gráficas con Recharts y componentes con Radix UI + Tailwind CSS. El motor de análisis usa Playwright (Chromium) para SPA y Cheerio para parseo estático, todo empaquetado en Electron.",
+      "learnings": "Aprendí a equilibrar parseo estático versus renderizado headless: Cheerio es rápido pero no ejecuta JS, mientras Playwright resuelve SPAs pero es costoso. La clave fue decidir el motor por tipo de aplicación y paralelizar los 5 audits para mantener tiempos de respuesta razonables."
     },
+    "structuredStack": {
+      "frontend": ["React", "TypeScript", "Vite", "Zustand", "Recharts", "Radix UI", "Tailwind CSS"],
+      "automation": ["Playwright", "Chromium", "Cheerio"],
+      "platform": ["Electron"],
+      "persistence": ["JSON"],
+      "export": ["JSON", "Markdown"]
+    },
+    "structuredFeatures": {
+      "Analysis": ["Framework detection", "SEO audit (Meta)", "SEO audit (Technical)", "SEO audit (Content)", "SEO audit (CSS)", "SEO audit (Performance)"],
+      "Rendering": ["Headless browser", "SPA rendering", "Static parse", "Parallel engine"],
+      "Export": ["JSON", "Markdown", "IA-optimized reports"],
+      "Performance": ["Parallel audits", "Cheerio static parse", "Playwright selective render"],
+      "User Interface": ["React 18", "Zustand state", "Recharts", "Radix UI", "Tailwind CSS"]
+    },
+    "rawMetrics": {
+      "Frameworks Detectados": 4,
+      "Motores de Auditoría": 5,
+      "Modos de Renderizado": 2,
+      "Formatos de Exportación": 2,
+      "Estado": "Publicado"
+    },
+    "architectureFlow": [
+      "Usuario",
+      "URL de la app local",
+      "Detección de framework",
+      "Parser estático (Cheerio)",
+      "Motor headless (Playwright)",
+      "5 audits en paralelo",
+      "Agregación de resultados",
+      "JSON / Markdown"
+    ],
+    "challenges": [
+      {
+        "title": "Audit de SPAs con contenido dinámico",
+        "description": "Decidir entre parseo estático con Cheerio (rápido pero sin JS) y renderizado headless con Playwright (completo pero costoso), seleccionando el motor según el tipo de aplicación para equilibrar velocidad y precisión."
+      },
+      {
+        "title": "Paralelismo de auditorías sin colapsar",
+        "description": "Ejecutar los 5 audits de SEO (Meta, Técnico, Contenido, CSS, Performance) en paralelo sobre el mismo árbol renderizado, consolidando resultados sin condiciones de carrera ni bloqueos del hilo principal."
+      },
+      {
+        "title": "Reportes optimizados para IA",
+        "description": "Estructurar la salida JSON/Markdown para que un modelo de lenguaje lo consuma sin pre-procesamiento, eliminando ruido y normalizando vocabulario de auditoría."
+      }
+    ],
     "displayOrder": 3
   },
   {
@@ -198,39 +292,81 @@
     "shortDescription": "E-commerce B2B con gestión de inventarios y dashboard estadístico.",
     "fullDescription": "E-commerce B2B enfocado en rendimiento y calidad de código. API REST en Java Spring Boot con JWT y UI en Angular 20. Maneja inventario reactivo y un dashboard interactivo de administración. Todo el código fue evaluado con métricas estrictas de SonarQube.",
     "imageUrl": "/assets/images/projects/salsamentaria.png",
-    "features": [
-      "Autenticación segura basada en tokens (JWT) y Spring Security",
-      "Panel de administración interactivo con gráficas de ventas (Chart.js)",
-      "Sistema de inventarios reactivo (control de stock al vuelo)",
-      "Gestión completa (CRUD) de categorías, productos y órdenes",
-      "Código auditado mediante SonarQube y Codacy (Calidad de Software)"
-    ],
     "role": "Backend / Frontend Developer",
     "year": 2025,
     "status": "Completed",
+    "teamSize": 4,
+    "coreArchitecture": "Spring Boot REST API + Angular 20",
+    "databaseArchitecture": "MySQL",
+    "aiArchitecture": "N/A",
     "links": {
       "github": "https://github.com/1Zamuken1/taller_calidad_software_Salsamentaria"
     },
     "highlights": [
-      "Implementación de métricas de calidad de código y análisis estático",
-      "Comunicación REST eficiente entre Java y Angular",
-      "Sistema de estados de ventas (Pendiente, Completado, Cancelado)",
-      "Restauración transaccional de inventario post-cancelación"
+      "API REST eficiente entre Spring Boot y Angular 20",
+      "Autenticación basada en tokens JWT con Spring Security",
+      "Sistema de inventario reactivo con rollback transaccional post-cancelación",
+      "Dashboard interactivo de ventas con Chart.js",
+      "Código auditado con SonarQube y Codacy (rating A)"
     ],
-    "keywords": ["e-commerce", "Java", "Spring Boot", "Angular", "JWT", "MySQL"],
+    "keywords": ["e-commerce", "Java", "Spring Boot", "Angular", "JWT", "MySQL", "SonarQube"],
     "techStack": [
       { "name": "Java", "icon": "devicon-java-plain" },
       { "name": "Spring Boot", "icon": "devicon-spring-original" },
-      { "name": "Angular", "icon": "devicon-angularjs-plain" },
-      { "name": "MySQL", "icon": "devicon-mysql-original" },
+      { "name": "Angular", "icon": "devicon-angular-original" },
+      { "name": "MySQL", "icon": "devicon-mysql-plain" },
       { "name": "JWT", "icon": "devicon-json-plain" },
       { "name": "SonarQube", "icon": "devicon-sonarqube-plain" }
     ],
-    "metrics": {
-      "endpoints": 12,
-      "roles": 2,
-      "sonarQubeRating": "A"
+    "readmeMarkdown": {
+      "objective": "Salsamentaría es un e-commerce B2B que nace del requerimiento de una gestión de inventarios reactiva con control de stock al vuelo y un dashboard analítico, todo bajo un estándar estricto de calidad de código validado por SonarQube.",
+      "architecture": "El sistema sigue una arquitectura cliente-servidor: Angular 20 como cliente SPA consume una API REST construida con Spring Boot. La capa de datos usa MySQL con transacciones para garantizar la consistencia del inventario. La autenticación se basa en JWT con Spring Security. Todo el código pasa por quality gates de SonarQube y Codacy.",
+      "mainFeatures": "Autenticación JWT, CRUD de categorías/productos/órdenes, inventario reactivo con rollback transaccional, dashboard analítico con Chart.js y auditoría de calidad continua.",
+      "technologies": "Backend en Java Spring Boot con Spring Security y JWT. Frontend en Angular 20 con Chart.js para gráficas. Base de datos MySQL con gestión transaccional. Análisis de calidad con SonarQube y Codacy.",
+      "learnings": "Las lecciones clave fueron implementar rollback transaccional del inventario tras cancelaciones de órdenes para evitar consistencia, aplicar quality gates de SonarQube en CI para mantener rating A, y estructurar la API REST para que Angular consuma datos de forma eficiente sin over-fetching."
     },
+    "structuredStack": {
+      "backend": ["Java", "Spring Boot", "Spring Security", "Spring Data JPA", "JWT"],
+      "frontend": ["Angular 20", "TypeScript", "Chart.js"],
+      "database": ["MySQL", "Hibernate"],
+      "authentication": ["JWT", "Spring Security"],
+      "audit": ["SonarQube", "Codacy"]
+    },
+    "structuredFeatures": {
+      "Security": ["JWT authentication", "Spring Security", "Token validation", "Role-based access"],
+      "Catalog": ["Categorías CRUD", "Productos CRUD", "Órdenes CRUD"],
+      "Inventory": ["Reactive stock", "Transactional rollback", "Stock-on-hand control"],
+      "Reporting": ["Sales dashboard", "Chart.js charts", "Export-ready data"],
+      "Architecture": ["Spring Boot REST API", "Angular 20 SPA", "MySQL persistence", "SonarQube audit"]
+    },
+    "rawMetrics": {
+      "Endpoints REST": 12,
+      "Roles de usuario": 2,
+      "Rating SonarQube": "A",
+      "Estado": "Completado"
+    },
+    "architectureFlow": [
+      "Angular 20 (SPA)",
+      "API REST (Spring Boot)",
+      "Spring Security + JWT",
+      "Spring Data JPA",
+      "MySQL",
+      "SonarQube"
+    ],
+    "challenges": [
+      {
+        "title": "Rollback transaccional de inventario post-cancelación",
+        "description": "Garantizar que al cancelar una orden, las unidades de stock reservadas se devuelvan de forma atómica mediante transacciones de base de datos, evitando inconsistencias entre el dashboard y el inventario real."
+      },
+      {
+        "title": "Quality gates de SonarQube en CI",
+        "description": "Integrar los análisis de SonarQube y Codacy como quality gates bloqueantes en el pipeline, manteniendo un rating A en el código y evitando regresiones de calidad en cada merge."
+      },
+      {
+        "title": "API REST eficiente entre Java y Angular",
+        "description": "Diseñar endpoints que entreguen exactamente los datos que el dashboard de Angular necesita (proyecciones e índices), evitando over-fetching y manteniendo tiempos de respuesta bajos."
+      }
+    ],
     "displayOrder": 4
   }
 ]
