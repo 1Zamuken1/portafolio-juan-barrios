@@ -1,11 +1,474 @@
-.projects-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-xl);
+/* ================================================
+   PROJECT DETAIL — STACKED LAYOUT
+   ================================================ */
+
+/* === Utilities === */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.full-height {
+  height: 100%;
+  width: 100%;
+}
+
+.empty-state {
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  color: var(--vscode-text-muted);
+  opacity: 0.4;
+}
+
+.empty-text {
+  color: var(--vscode-text-muted);
+  font-size: 1rem;
+  font-family: 'Inter', sans-serif;
+}
+
+/* === Scroller Container === */
+.project-scroller {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+.project-scroller::-webkit-scrollbar {
+  width: 8px;
+}
+
+.project-scroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.project-scroller::-webkit-scrollbar-thumb {
+  background: rgba(165, 153, 233, 0.2);
+  border-radius: 4px;
+}
+
+.project-scroller::-webkit-scrollbar-thumb:hover {
+  background: rgba(165, 153, 233, 0.4);
+}
+
+/* === BANNER (GitHub-style cover) === */
+.project-banner {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  overflow: hidden;
+}
+
+.banner-img {
+  position: absolute;
+  inset: -20% 0;
+  height: 140%;
+  width: 100%;
+  background-size: cover;
+  background-position: center top;
+  will-change: transform;
+}
+
+.banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(19, 19, 48, 0.6) 0%,
+    rgba(19, 19, 48, 0.8) 60%,
+    rgba(19, 19, 48, 0.98) 100%
+  );
+}
+
+.banner-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2rem 3rem;
+  z-index: 2;
+}
+
+.project-type-badge {
+  display: inline-block;
+  padding: 0.2rem 0.75rem;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--vscode-primary);
+  background: rgba(250, 208, 0, 0.12);
+  border: 1px solid rgba(250, 208, 0, 0.25);
+  margin-bottom: 0.75rem;
+}
+
+.project-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+}
+
+.project-subtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 1.25rem 0;
+  max-width: 600px;
+  line-height: 1.5;
+}
+
+.banner-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* === Buttons === */
+.btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.25s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-primary {
+  background: var(--vscode-primary);
+  color: #1a1a2e;
+  border: 1px solid var(--vscode-primary);
+}
+
+.btn-primary:hover {
+  background: #ffe066;
+  box-shadow: 0 0 20px rgba(250, 208, 0, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* === Content Body === */
+.project-body {
+  width: 100%;
+  padding: 2.5rem 3rem 10rem 3rem;
+}
+
+/* === Section Cards === */
+.project-section {
+  margin-bottom: 4rem;
+  padding: 1rem;
+  background: rgba(19, 19, 48, 0.5);
+  border: 1px solid rgba(165, 153, 233, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+}
+
+.project-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  background: rgba(19, 19, 48, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(165, 153, 233, 0.08);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--vscode-text-muted);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  transition: box-shadow 0.2s;
+}
+
+.section-header-bar i {
+  font-size: 0.85rem;
+  color: var(--vscode-primary);
+}
+
+.section-content {
+  padding: 2rem 2.5rem;
+  flex: 1;
+}
+
+/* === README === */
+.project-description {
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 2rem 0;
+}
+
+.project-meta {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.meta-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--vscode-text-muted);
+}
+
+.meta-value {
+  font-size: 0.9rem;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.status-badge {
+  color: var(--vscode-primary);
+}
+
+.tech-tags-grid {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.tech-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(165, 153, 233, 0.1);
+  min-width: 100px;
+  transition: all 0.25s ease;
+}
+
+.tech-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  border-color: rgba(250, 208, 0, 0.4);
+}
+
+.tech-icon {
+  font-size: 2.5rem;
+  /* Removal of explicit color allows devicon original colors to shine when using .colored class */
+}
+
+/* === Devicon Contrast Overrides for Dark Theme === */
+/* Some devicons are too dark for the #131327 background. We override them with the VSCode palette */
+
+.tech-icon.devicon-django-plain.colored::before,
+.tech-icon.devicon-django-plain.colored {
+  color: #3ad900 !important; /* VSCode String Green */
+  filter: drop-shadow(0 0 8px rgba(58, 217, 0, 0.3));
+}
+
+.tech-icon.devicon-postgresql-plain.colored::before,
+.tech-icon.devicon-postgresql-plain.colored {
+  color: #59a4f9 !important; /* VSCode Info Blue */
+  filter: drop-shadow(0 0 8px rgba(89, 164, 249, 0.3));
+}
+
+.tech-icon.devicon-thealgorithms-plain.colored::before,
+.tech-icon.devicon-thealgorithms-plain.colored,
+.tech-icon.devicon-json-plain.colored::before,
+.tech-icon.devicon-json-plain.colored {
+  color: #a599e9 !important; /* VSCode Keyword Purple */
+  filter: drop-shadow(0 0 8px rgba(165, 153, 233, 0.3));
+}
+
+/* General slight brightness bump for all colored icons */
+.tech-icon.colored {
+  filter: brightness(1.15) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.tech-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #dae2fd;
+  text-align: center;
+}
+
+/* Fallback for old keywords */
+.tech-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--vscode-primary);
+  background: rgba(250, 208, 0, 0.06);
+  border: 1px solid rgba(250, 208, 0, 0.2);
+}
+
+/* === FEATURES === */
+.features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(165, 153, 233, 0.05);
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+}
+
+.feature-item:last-child {
+  border-bottom: none;
+}
+
+.feature-item i {
+  color: #4ec9b0;
+  font-size: 0.85rem;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+/* === METRICS === */
+.subsection-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--vscode-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 1rem 0;
+}
+
+.highlights-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.highlight-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+}
+
+.highlight-item i {
+  color: var(--vscode-primary);
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.metric-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(165, 153, 233, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  transition: border-color 0.2s;
+}
+
+.metric-card:hover {
+  border-color: rgba(250, 208, 0, 0.3);
+}
+
+.metric-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--vscode-primary);
+  word-break: break-word;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: var(--vscode-text-muted);
+  text-transform: capitalize;
+}
+
+/* === Responsive === */
 @media (max-width: 768px) {
-  .projects-grid {
-    grid-template-columns: 1fr;
+  .project-banner {
+    height: 240px;
+  }
+
+  .banner-content {
+    padding: 1.5rem;
+  }
+
+  .project-title {
+    font-size: 1.5rem;
+  }
+
+  .project-body {
+    padding: 1.5rem 1rem 4rem 1rem;
+  }
+
+  .project-section {
+    min-height: auto;
+  }
+
+  .project-meta {
+    gap: 1rem;
+  }
+
+  .banner-actions {
+    flex-direction: column;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

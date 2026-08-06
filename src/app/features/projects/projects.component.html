@@ -1,28 +1,145 @@
-<section class="section" id="projects">
-  <div class="container">
-    <div class="stitch-projects-header" style="margin-bottom: var(--space-4xl);">
-      <h2 class="font-code-md tracking-widest uppercase text-primary" style="margin-bottom: var(--space-sm); font-size: 1.1rem; opacity: 0.7;">02 // ARCHIVO DE ARQUITECTURA</h2>
-      <p class="font-headline-md text-primary" style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 700;">
-        Proyectos Destacados
-      </p>
-    </div>
-
-    <div class="projects-grid">
-      @for (project of projects(); track project.id; let i = $index) {
-        <app-project-card
-          [project]="project"
-          [index]="i"
-          (viewMore)="openModal(project)"
-        />
-      }
-    </div>
+<!-- Loading State -->
+@if (loading()) {
+  <div class="flex-center full-height">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: var(--vscode-primary);"></i>
   </div>
+} @else {
 
-  <!-- Project Detail Modal -->
-  @if (selectedProject()) {
-    <app-project-modal
-      [project]="selectedProject()!"
-      (close)="closeModal()"
-    />
+  <!-- Select Project State -->
+  @if (!project()) {
+    <div class="flex-center full-height empty-state">
+      <i class="pi pi-folder-open empty-icon"></i>
+      <p class="empty-text">Select a project from the explorer to view details.</p>
+    </div>
+  } @else {
+
+    <!-- Project Detail — Stacked Single Column -->
+    <div class="project-scroller" #projectScroller data-lenis-prevent>
+
+      <!-- ===== BANNER (GitHub-style cover) ===== -->
+      <div class="project-banner">
+        <div class="banner-img" [style.backgroundImage]="'url(' + (project()!.imageUrl || 'assets/placeholder.jpg') + ')'"></div>
+        <div class="banner-overlay"></div>
+        <div class="banner-content">
+          <span class="project-type-badge">{{ project()!.type || project()!.status }}</span>
+          <h1 class="project-title">{{ project()!.name }}</h1>
+          <p class="project-subtitle">{{ project()!.shortDescription }}</p>
+          <div class="banner-actions">
+            @if (project()!.links?.github || project()!.githubUrl) {
+              <a [href]="project()!.links?.github || project()!.githubUrl" target="_blank" class="btn btn-outline">
+                <i class="pi pi-github"></i> Source Code
+              </a>
+            }
+            @if (project()!.links?.live || project()!.liveUrl) {
+              <a [href]="project()!.links?.live || project()!.liveUrl" target="_blank" class="btn btn-primary">
+                <i class="pi pi-external-link"></i> Live Demo
+              </a>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CONTENT AREA ===== -->
+      <div class="project-body">
+
+        <!-- README Section -->
+        <section id="readme" class="project-section">
+          <div class="section-header-bar">
+            <i class="pi pi-info-circle"></i>
+            <span>readme.md</span>
+          </div>
+          <div class="section-content">
+            <p class="project-description">{{ project()!.fullDescription }}</p>
+            <div class="project-meta">
+              <div class="meta-item">
+                <span class="meta-label">Role</span>
+                <span class="meta-value">{{ project()!.role }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Year</span>
+                <span class="meta-value">{{ project()!.year }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Status</span>
+                <span class="meta-value status-badge">{{ project()!.status }}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- STACK Section -->
+        <section id="stack" class="project-section">
+          <div class="section-header-bar">
+            <i class="pi pi-code"></i>
+            <span>stack.json</span>
+          </div>
+          <div class="section-content">
+            <div class="tech-tags-grid">
+              @if (project()!.techStack?.length) {
+                @for (tech of project()!.techStack; track tech.name) {
+                  <div class="tech-card">
+                    <i [class]="tech.icon + ' colored tech-icon'"></i>
+                    <span class="tech-name">{{ tech.name }}</span>
+                  </div>
+                }
+              } @else {
+                @for (tech of project()!.keywords || project()!.technologies; track tech) {
+                  <span class="tech-tag">{{ tech }}</span>
+                }
+              }
+            </div>
+          </div>
+        </section>
+
+        <!-- FEATURES Section -->
+        <section id="features" class="project-section">
+          <div class="section-header-bar">
+            <i class="pi pi-list-check"></i>
+            <span>features.ts</span>
+          </div>
+          <div class="section-content">
+            <ul class="features-list">
+              @for (feature of project()!.features; track feature) {
+                <li class="feature-item">
+                  <i class="pi pi-check-circle"></i>
+                  <span>{{ feature }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        </section>
+
+        <!-- METRICS Section -->
+        <section id="metrics" class="project-section">
+          <div class="section-header-bar">
+            <i class="pi pi-chart-bar"></i>
+            <span>metrics.csv</span>
+          </div>
+          <div class="section-content">
+            <h3 class="subsection-title">Highlights</h3>
+            <ul class="highlights-list">
+              @for (highlight of project()!.highlights; track highlight) {
+                <li class="highlight-item">
+                  <i class="pi pi-star-fill"></i>
+                  <span>{{ highlight }}</span>
+                </li>
+              }
+            </ul>
+            @if (project()!.metrics) {
+              <h3 class="subsection-title" style="margin-top: 2rem;">Key Metrics</h3>
+              <div class="metrics-grid">
+                @for (key of getMetricKeys(); track key) {
+                  <div class="metric-card">
+                    <span class="metric-value">{{ project()!.metrics[key] }}</span>
+                    <span class="metric-label">{{ formatMetricLabel(key) }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
+      </div>
+    </div>
   }
-</section>
+}
