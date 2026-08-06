@@ -221,6 +221,35 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
       .trim();
   }
 
+  getKeys(obj: Record<string, any>): string[] {
+    return Object.keys(obj);
+  }
+
+  getTechIcon(techName: string): string {
+    const tech = this.project()?.techStack?.find(t => t.name.toLowerCase() === techName.toLowerCase());
+    if (tech) return tech.icon + ' colored';
+    
+    // Fallbacks for known tech not explicitly in techStack array
+    const name = techName.toLowerCase();
+    if (name.includes('django')) return 'devicon-django-plain colored';
+    if (name.includes('python')) return 'devicon-python-plain colored';
+    if (name.includes('sqlite')) return 'devicon-sqlite-plain colored';
+    if (name.includes('postgres')) return 'devicon-postgresql-plain colored';
+    if (name.includes('tailwind')) return 'devicon-tailwindcss-original colored';
+    if (name.includes('gemini') || name.includes('google')) return 'devicon-google-plain colored';
+    return 'pi pi-bolt';
+  }
+
+  getFeatureIcon(category: string): string {
+    const cat = category.toLowerCase();
+    if (cat.includes('autenticaci')) return 'pi pi-lock';
+    if (cat.includes('finanza')) return 'pi pi-dollar';
+    if (cat.includes('reporte')) return 'pi pi-file-pdf';
+    if (cat.includes('ia') || cat.includes('ai')) return 'pi pi-sparkles';
+    if (cat.includes('arquitectura')) return 'pi pi-sitemap';
+    return 'pi pi-check-circle';
+  }
+
   private updateFragment(fragment: string): void {
     if (!fragment || this.isProgrammaticScroll) return;
     const projectId = this.route.snapshot.paramMap.get('id');

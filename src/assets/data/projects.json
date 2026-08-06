@@ -15,18 +15,24 @@
       "Panel de administración estilizado con Tailwind CSS",
       "Arquitectura modular separada por responsabilidades de negocio"
     ],
-    "role": "Fullstack Developer",
+    "role": "Product Owner · Backend Developer",
     "year": 2026,
-    "status": "Production",
+    "status": "Producción",
+    "teamSize": 4,
+    "coreArchitecture": "Django Apps + Services Layer",
+    "databaseArchitecture": "SQLite / PostgreSQL",
+    "aiArchitecture": "Gemini Flash + Groq Fallback",
     "links": {
       "github": "https://github.com/1Zamuken1/GastuDjango",
       "live": "https://gastu.onrender.com/"
     },
     "highlights": [
-      "Implementación de Agentes de IA en producción",
-      "Gestión de migraciones colaborativas en base de datos PostgreSQL",
-      "Módulo de exportación con openpyxl y reportlab",
-      "Login social con django-allauth"
+      "Arquitectura modular basada en Django Apps",
+      "Sistema híbrido SQLite/PostgreSQL mediante variables de entorno",
+      "Integración de IA con Gemini Flash y fallback automático a Groq",
+      "Exportación profesional en CSV, Excel y PDF",
+      "Autenticación híbrida Email + Google OAuth",
+      "Proyecto desplegado para producción"
     ],
     "keywords": ["finanzas", "IA", "fullstack", "Django", "PostgreSQL", "OAuth"],
     "techStack": [
@@ -37,11 +43,64 @@
       { "name": "Tailwind CSS", "icon": "devicon-tailwindcss-original" },
       { "name": "Gemini AI", "icon": "devicon-google-plain" }
     ],
-    "metrics": {
-      "performance": "Óptimo",
-      "db_support": "SQLite/PostgreSQL",
-      "ai_models": "Gemini/Llama3"
+    "readmeMarkdown": {
+      "objective": "GastuApp nace de la necesidad de tener un control absoluto sobre las finanzas personales sin depender de herramientas genéricas. El objetivo fue crear un sistema automatizado que no solo registre ingresos y egresos, sino que actúe como un asesor financiero utilizando Inteligencia Artificial.",
+      "architecture": "El proyecto implementa una arquitectura modular estricta basada en Django Apps, aislando responsabilidades mediante un patrón de Capa de Servicios (Services Layer). Esto evita sobrecargar los Modelos o Controladores (Views), facilitando el testing y la escalabilidad.",
+      "mainFeatures": "Autenticación híbrida segura, gestión completa de finanzas, motor de IA para análisis de patrones de gasto, y un sistema robusto de exportación documental (PDF, Excel, CSV).",
+      "technologies": "Backend impulsado por Django 5.2 con un sistema de base de datos dual (SQLite para desarrollo rápido, PostgreSQL para despliegue). El motor de IA utiliza Gemini Flash con Llama 3 (Groq) como fallback de seguridad.",
+      "learnings": "El mayor aprendizaje fue orquestar múltiples APIs de LLMs, manejando latencias y caídas de servicio de forma transparente para el usuario, y la implementación de django-allauth para OAuth en un entorno híbrido."
     },
+    "structuredStack": {
+      "backend": ["Python", "Django", "Django ORM"],
+      "frontend": ["Django Templates", "Tailwind CSS"],
+      "database": ["SQLite", "PostgreSQL"],
+      "authentication": ["Email", "Google OAuth"],
+      "ai": ["Gemini Flash", "Groq"],
+      "export": ["Excel", "PDF", "CSV"]
+    },
+    "structuredFeatures": {
+      "Autenticación": ["Login Email", "Google OAuth"],
+      "Finanzas": ["Ingresos", "Egresos", "Categorías", "Presupuestos", "Dashboard"],
+      "Reportes": ["Excel", "PDF", "CSV"],
+      "IA": ["Gemini Flash", "Groq Fallback", "Recomendaciones financieras"],
+      "Arquitectura": ["Django Apps", "Services Layer", "ORM", "Arquitectura modular"]
+    },
+    "rawMetrics": {
+      "Apps Django": 10,
+      "Módulos principales": 7,
+      "Motores IA": 2,
+      "Bases de datos": 2,
+      "Formatos de exportación": 3,
+      "Métodos de autenticación": 2,
+      "Equipo": 4,
+      "Estado": "Producción"
+    },
+    "architectureFlow": [
+      "Landing",
+      "Views",
+      "Services",
+      "Models",
+      "SQLite / PostgreSQL",
+      "Gemini Flash"
+    ],
+    "challenges": [
+      {
+        "title": "Implementación de autenticación híbrida",
+        "description": "Integrar django-allauth para permitir logins sociales (Google) coexistiendo con usuarios tradicionales, unificando perfiles sin conflictos de email."
+      },
+      {
+        "title": "Cambio transparente entre SQLite y PostgreSQL",
+        "description": "Configurar los settings de Django para usar SQLite en desarrollo local y cambiar automáticamente a PostgreSQL en producción (Render) detectando variables de entorno."
+      },
+      {
+        "title": "Arquitectura desacoplada mediante Services",
+        "description": "Extraer toda la lógica de negocio y llamadas a la IA fuera de las Views de Django hacia clases de servicio (Services Layer) puras, permitiendo testing unitario sin levantar el servidor web."
+      },
+      {
+        "title": "Integración de agentes IA con fallback automático",
+        "description": "Implementar un patrón Circuit Breaker donde si Gemini Flash falla o excede cuotas de API, el sistema redirige la petición a Llama 3 en Groq instantáneamente."
+      }
+    ],
     "displayOrder": 1
   },
   {

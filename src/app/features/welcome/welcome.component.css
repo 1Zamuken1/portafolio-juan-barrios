@@ -12,7 +12,7 @@
   min-height: calc(100vh - 7rem);
   background: transparent;
   font-family: 'JetBrains Mono', 'Consolas', monospace;
-  padding: 1.5rem 0;
+  padding: 1rem 0;
   gap: 0;
 }
 
@@ -21,12 +21,12 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  padding: 0 1.25rem 0 1rem;
+  padding: 0 1rem 0 0.5rem;
   gap: 0;
-  min-width: 3.5rem;
+  min-width: 3rem;
   color: rgba(100, 120, 160, 0.35);
   font-size: 0.82rem;
-  line-height: 1.9rem;
+  line-height: 1.6rem;
   user-select: none;
   flex-shrink: 0;
 }
@@ -38,14 +38,14 @@
 /* ---- Content ---- */
 .readme-content {
   flex: 1;
-  padding: 0 2rem 3rem 0;
+  padding: 0 1.5rem 2rem 0;
   max-width: 800px;
 }
 
 /* ---- Markdown Lines ---- */
 .md-line {
-  line-height: 1.9rem;
-  min-height: 1.9rem;
+  line-height: 1.6rem;
+  min-height: 1.6rem;
   white-space: pre-wrap;
   animation: fade-in-line 0.3s ease forwards;
 }
@@ -55,7 +55,7 @@
   to   { opacity: 1; }
 }
 
-.md-blank { min-height: 1.9rem; }
+.md-blank { min-height: 1.6rem; }
 
 /* ---- Heading styles ---- */
 .md-h1 {
@@ -142,48 +142,91 @@
 .badge-available { background: rgba(74,222,128,0.12); border-color: rgba(74,222,128,0.4); color: #4ade80; }
 
 /* ================================================
-   TERMINAL BLOCK
+   TECH STACK GRID
    ================================================ */
-.terminal-block {
-  background: rgba(30, 30, 63, 0.8);
-  border: 1px solid rgba(168, 85, 247, 0.2);
+.tech-stack-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin: 0.5rem 0;
+}
+
+.stack-category {
+  background: rgba(30, 30, 63, 0.6);
+  border: 1px solid rgba(168, 85, 247, 0.15);
   border-radius: 0.5rem;
-  padding: 1rem 1.25rem;
-  margin: 0.25rem 0;
-  font-size: 0.82rem;
-  line-height: 1.7;
-  min-height: 8rem;
+  padding: 0.75rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.terminal-line {
-  display: block;
-  animation: term-fade 0.2s ease;
+.stack-category:hover {
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.08);
 }
 
-@keyframes term-fade {
-  from { opacity: 0; transform: translateY(2px); }
-  to   { opacity: 1; transform: translateY(0); }
+.stack-category-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #FAD000;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-.terminal-command {
-  color: #A5FF90;
+.stack-category-header i {
+  font-size: 0.8rem;
+  opacity: 0.7;
 }
 
-.terminal-output {
-  color: #A599E9;
-  padding-left: 1rem;
+.stack-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
 }
 
-.terminal-cursor {
-  display: inline-block;
-  color: #A855F7;
-  animation: blink 1s step-end infinite;
-  font-size: 0.85rem;
+.stack-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  background: rgba(165, 153, 233, 0.08);
+  border: 1px solid rgba(165, 153, 233, 0.15);
+  border-radius: 0.35rem;
+  font-size: 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: #c5c0e8;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
 }
 
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
+.stack-chip:hover {
+  transform: translateY(-1px);
+  background: rgba(165, 153, 233, 0.15);
+  border-color: rgba(165, 153, 233, 0.3);
+}
+
+.stack-chip i {
+  font-size: 1rem;
+}
+
+/* Icons that are .colored get their natural brand color */
+/* Non-colored icons (Django, SQLite, CI/CD) get a soft white */
+.stack-chip i:not(.colored) {
+  color: rgba(200, 200, 220, 0.7);
+}
+
+/* Brightness boost for colored devicons in the dark theme */
+.stack-chip i.colored {
+  filter: brightness(1.2);
+}
+
+@media (max-width: 600px) {
+  .tech-stack-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ================================================

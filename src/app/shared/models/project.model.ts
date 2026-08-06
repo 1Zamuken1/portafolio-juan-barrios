@@ -22,5 +22,23 @@ export interface Project {
   type?: string;
   metrics?: any;
   techStack?: { name: string; icon: string }[];
+  
+  // Advanced Case Study Fields
+  teamSize?: number;
+  coreArchitecture?: string;
+  databaseArchitecture?: string;
+  aiArchitecture?: string;
+  readmeMarkdown?: {
+    objective: string;
+    architecture: string;
+    mainFeatures: string;
+    technologies: string;
+    learnings: string;
+  };
+  structuredStack?: Record<string, string[]>;
+  structuredFeatures?: Record<string, string[]>;
+  rawMetrics?: Record<string, string | number>;
+  architectureFlow?: string[];
+  challenges?: { title: string; description: string }[];
 }
 

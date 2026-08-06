@@ -23,7 +23,24 @@
         <div class="banner-content">
           <span class="project-type-badge">{{ project()!.type || project()!.status }}</span>
           <h1 class="project-title">{{ project()!.name }}</h1>
-          <p class="project-subtitle">{{ project()!.shortDescription }}</p>
+          @if (project()!.teamSize) {
+            <!-- Advanced Hero Metadata -->
+            <div class="hero-metadata-grid">
+              <div class="hero-meta-item"><span>Rol:</span> {{ project()!.role }}</div>
+              <div class="hero-meta-item"><span>Proyecto:</span> {{ project()!.type }}</div>
+              <div class="hero-meta-item"><span>Año:</span> {{ project()!.year }}</div>
+              <div class="hero-meta-item"><span>Estado:</span> {{ project()!.status }}</div>
+              <div class="hero-meta-item"><span>Equipo:</span> {{ project()!.teamSize }} desarrolladores</div>
+              <div class="hero-meta-item"><span>Backend:</span> {{ project()!.structuredStack?.['backend']?.join(' / ') || 'N/A' }}</div>
+              <div class="hero-meta-item"><span>Frontend:</span> {{ project()!.structuredStack?.['frontend']?.join(' + ') || 'N/A' }}</div>
+              <div class="hero-meta-item"><span>Base de datos:</span> {{ project()!.databaseArchitecture }}</div>
+              <div class="hero-meta-item"><span>IA:</span> {{ project()!.aiArchitecture }}</div>
+              <div class="hero-meta-item"><span>Arquitectura:</span> {{ project()!.coreArchitecture }}</div>
+            </div>
+            <p class="project-subtitle advanced-subtitle">{{ project()!.readmeMarkdown?.objective || project()!.shortDescription }}</p>
+          } @else {
+            <p class="project-subtitle">{{ project()!.shortDescription }}</p>
+          }
           <div class="banner-actions">
             @if (project()!.links?.github || project()!.githubUrl) {
               <a [href]="project()!.links?.github || project()!.githubUrl" target="_blank" class="btn btn-outline">
@@ -48,22 +65,39 @@
             <i class="pi pi-info-circle"></i>
             <span>readme.md</span>
           </div>
-          <div class="section-content">
-            <p class="project-description">{{ project()!.fullDescription }}</p>
-            <div class="project-meta">
-              <div class="meta-item">
-                <span class="meta-label">Role</span>
-                <span class="meta-value">{{ project()!.role }}</span>
+          <div class="section-content markdown-body">
+            @if (project()!.readmeMarkdown) {
+              <h1 class="md-h1"># Descripción</h1>
+              <p class="md-p">{{ project()!.readmeMarkdown!.objective }}</p>
+              
+              <h2 class="md-h2">## Arquitectura</h2>
+              <p class="md-p">{{ project()!.readmeMarkdown!.architecture }}</p>
+              
+              <h2 class="md-h2">## Funcionalidades principales</h2>
+              <p class="md-p">{{ project()!.readmeMarkdown!.mainFeatures }}</p>
+              
+              <h2 class="md-h2">## Tecnologías</h2>
+              <p class="md-p">{{ project()!.readmeMarkdown!.technologies }}</p>
+              
+              <h2 class="md-h2">## Aprendizajes</h2>
+              <p class="md-p">{{ project()!.readmeMarkdown!.learnings }}</p>
+            } @else {
+              <p class="project-description">{{ project()!.fullDescription }}</p>
+              <div class="project-meta">
+                <div class="meta-item">
+                  <span class="meta-label">Role</span>
+                  <span class="meta-value">{{ project()!.role }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Year</span>
+                  <span class="meta-value">{{ project()!.year }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Status</span>
+                  <span class="meta-value status-badge">{{ project()!.status }}</span>
+                </div>
               </div>
-              <div class="meta-item">
-                <span class="meta-label">Year</span>
-                <span class="meta-value">{{ project()!.year }}</span>
-              </div>
-              <div class="meta-item">
-                <span class="meta-label">Status</span>
-                <span class="meta-value status-badge">{{ project()!.status }}</span>
-              </div>
-            </div>
+            }
           </div>
         </section>
 
@@ -73,21 +107,42 @@
             <i class="pi pi-code"></i>
             <span>stack.json</span>
           </div>
-          <div class="section-content">
-            <div class="tech-tags-grid">
-              @if (project()!.techStack?.length) {
-                @for (tech of project()!.techStack; track tech.name) {
-                  <div class="tech-card">
-                    <i [class]="tech.icon + ' colored tech-icon'"></i>
-                    <span class="tech-name">{{ tech.name }}</span>
+          <div class="section-content code-body">
+            @if (project()!.structuredStack) {
+              <div class="json-code-block">
+                <span class="json-bracket">{{ '{' }}</span>
+                @for (key of getKeys(project()!.structuredStack!); track key) {
+                  <div class="json-indent">
+                    <span class="json-key">"{{ key }}"</span><span class="json-colon">:</span> <span class="json-bracket">[</span>
+                    <div class="json-indent-2 code-pill-container">
+                      @for (item of project()!.structuredStack![key]; track item) {
+                        <div class="code-pill tech-pill">
+                          <i [class]="getTechIcon(item) + ' pill-icon'"></i>
+                          <span class="pill-text">"{{ item }}"</span><span class="json-comma">,</span>
+                        </div>
+                      }
+                    </div>
+                    <span class="json-bracket">]</span><span class="json-comma">,</span>
                   </div>
                 }
-              } @else {
-                @for (tech of project()!.keywords || project()!.technologies; track tech) {
-                  <span class="tech-tag">{{ tech }}</span>
+                <span class="json-bracket">{{ '}' }}</span>
+              </div>
+            } @else {
+              <div class="tech-tags-grid">
+                @if (project()!.techStack?.length) {
+                  @for (tech of project()!.techStack; track tech.name) {
+                    <div class="tech-card">
+                      <i [class]="tech.icon + ' colored tech-icon'"></i>
+                      <span class="tech-name">{{ tech.name }}</span>
+                    </div>
+                  }
+                } @else {
+                  @for (tech of project()!.keywords || project()!.technologies; track tech) {
+                    <span class="tech-tag">{{ tech }}</span>
+                  }
                 }
-              }
-            </div>
+              </div>
+            }
           </div>
         </section>
 
@@ -97,15 +152,36 @@
             <i class="pi pi-list-check"></i>
             <span>features.ts</span>
           </div>
-          <div class="section-content">
-            <ul class="features-list">
-              @for (feature of project()!.features; track feature) {
-                <li class="feature-item">
-                  <i class="pi pi-check-circle"></i>
-                  <span>{{ feature }}</span>
-                </li>
-              }
-            </ul>
+          <div class="section-content code-body">
+            @if (project()!.structuredFeatures) {
+              <div class="ts-code-block">
+                <span class="ts-keyword">export const</span> <span class="ts-variable">features</span> <span class="ts-operator">=</span> <span class="ts-bracket">{{ '{' }}</span>
+                @for (key of getKeys(project()!.structuredFeatures!); track key) {
+                  <div class="ts-indent">
+                    <span class="ts-property">{{ key }}</span><span class="ts-colon">:</span> <span class="ts-bracket">[</span>
+                    <div class="ts-indent-2 code-pill-container">
+                      @for (item of project()!.structuredFeatures![key]; track item) {
+                        <div class="code-pill feature-pill">
+                          <i [class]="getFeatureIcon(key) + ' pill-icon'"></i>
+                          <span class="pill-text">'{{ item }}'</span><span class="ts-comma">,</span>
+                        </div>
+                      }
+                    </div>
+                    <span class="ts-bracket">]</span><span class="ts-comma">,</span>
+                  </div>
+                }
+                <span class="ts-bracket">{{ '}' }}</span><span class="ts-operator">;</span>
+              </div>
+            } @else {
+              <ul class="features-list">
+                @for (feature of project()!.features; track feature) {
+                  <li class="feature-item">
+                    <i class="pi pi-check-circle"></i>
+                    <span>{{ feature }}</span>
+                  </li>
+                }
+              </ul>
+            }
           </div>
         </section>
 
@@ -115,29 +191,103 @@
             <i class="pi pi-chart-bar"></i>
             <span>metrics.csv</span>
           </div>
-          <div class="section-content">
-            <h3 class="subsection-title">Highlights</h3>
-            <ul class="highlights-list">
-              @for (highlight of project()!.highlights; track highlight) {
-                <li class="highlight-item">
-                  <i class="pi pi-star-fill"></i>
-                  <span>{{ highlight }}</span>
-                </li>
-              }
-            </ul>
-            @if (project()!.metrics) {
-              <h3 class="subsection-title" style="margin-top: 2rem;">Key Metrics</h3>
+          <div class="section-content code-body">
+            @if (project()!.rawMetrics) {
+              <div class="csv-table-container">
+                <table class="csv-table">
+                  <thead>
+                    <tr>
+                      <th>Metric</th>
+                      <th>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (key of getKeys(project()!.rawMetrics!); track key) {
+                      <tr>
+                        <td>{{ key }}</td>
+                        <td>{{ project()!.rawMetrics![key] }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              <h3 class="subsection-title" style="margin-top: 2rem;">Visual Overview</h3>
               <div class="metrics-grid">
-                @for (key of getMetricKeys(); track key) {
+                @for (key of getKeys(project()!.rawMetrics!); track key) {
                   <div class="metric-card">
-                    <span class="metric-value">{{ project()!.metrics[key] }}</span>
-                    <span class="metric-label">{{ formatMetricLabel(key) }}</span>
+                    <span class="metric-value">{{ project()!.rawMetrics![key] }}</span>
+                    <span class="metric-label">{{ key }}</span>
                   </div>
                 }
               </div>
+            } @else {
+              <h3 class="subsection-title">Highlights</h3>
+              <ul class="highlights-list">
+                @for (highlight of project()!.highlights; track highlight) {
+                  <li class="highlight-item">
+                    <i class="pi pi-star-fill"></i>
+                    <span>{{ highlight }}</span>
+                  </li>
+                }
+              </ul>
+              @if (project()!.metrics) {
+                <h3 class="subsection-title" style="margin-top: 2rem;">Key Metrics</h3>
+                <div class="metrics-grid">
+                  @for (key of getMetricKeys(); track key) {
+                    <div class="metric-card">
+                      <span class="metric-value">{{ project()!.metrics[key] }}</span>
+                      <span class="metric-label">{{ formatMetricLabel(key) }}</span>
+                    </div>
+                  }
+                </div>
+              }
             }
           </div>
         </section>
+
+        <!-- ARCHITECTURE Section -->
+        @if (project()!.architectureFlow) {
+          <section id="architecture" class="project-section">
+            <div class="section-header-bar">
+              <i class="pi pi-sitemap" style="color: #fca311;"></i>
+              <span>architecture.drawio</span>
+            </div>
+            <div class="section-content diagram-body">
+              <div class="architecture-flow">
+                @for (node of project()!.architectureFlow; track node; let last = $last) {
+                  <div class="arch-node">{{ node }}</div>
+                  @if (!last) {
+                    <div class="arch-arrow">
+                      <i class="pi pi-arrow-down"></i>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+          </section>
+        }
+
+        <!-- CHALLENGES Section -->
+        @if (project()!.challenges) {
+          <section id="challenges" class="project-section">
+            <div class="section-header-bar">
+              <i class="pi pi-exclamation-triangle" style="color: #f72585;"></i>
+              <span>challenges.md</span>
+            </div>
+            <div class="section-content markdown-body">
+              <h1 class="md-h1"># Desafíos Técnicos</h1>
+              @for (challenge of project()!.challenges; track challenge.title) {
+                <div class="challenge-block">
+                  <h3 class="md-h3">### {{ challenge.title }}</h3>
+                  <p class="md-p">
+                    <i class="pi pi-check-circle challenge-icon"></i>
+                    {{ challenge.description }}
+                  </p>
+                </div>
+              }
+            </div>
+          </section>
+        }>
 
       </div>
     </div>

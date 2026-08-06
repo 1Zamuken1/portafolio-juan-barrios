@@ -23,7 +23,7 @@
       <span class="badge badge-python">🐍 Python</span>
       <span class="badge badge-angular">🅰️ Angular</span>
       <span class="badge badge-docker">🐳 Docker</span>
-      <span class="badge badge-available">🟢 Available for hire</span>
+      <span class="badge badge-available">🟢 Looking for SENA Apprenticeship</span>
     </div>
     <div class="md-line md-blank"></div>
 
@@ -33,13 +33,16 @@
     </div>
     <div class="md-line md-blank"></div>
     <div class="md-line">
-      <span class="md-text">Backend Developer especializado en <span class="md-bold">Java (Spring Boot)</span></span>
+      <span class="md-text">Construyo <span class="md-bold">backends robustos</span> y APIs limpias.</span>
     </div>
     <div class="md-line">
-      <span class="md-text">y <span class="md-bold">Python (Django)</span>. Arquitecturas hexagonales, APIs REST</span>
+      <span class="md-text">Creo profundamente en la calidad de código, las pruebas automatizadas</span>
     </div>
     <div class="md-line">
-      <span class="md-text">y soluciones escalables con enfoque en calidad de código.</span>
+      <span class="md-text">y las arquitecturas escalables (Hexagonal, Clean Architecture).</span>
+    </div>
+    <div class="md-line">
+      <span class="md-text">Mi objetivo es crear software que no solo funcione, sino que sea fácil de mantener.</span>
     </div>
     <div class="md-line md-blank"></div>
 
@@ -48,38 +51,123 @@
       <span class="md-h2">## Tech Stack</span>
     </div>
     <div class="md-line md-blank"></div>
-    <div class="md-line">
-      <span class="md-list-item"><span class="md-bold">Backend:</span> Java · Spring Boot 3 · Python · Django</span>
-    </div>
-    <div class="md-line">
-      <span class="md-list-item"><span class="md-bold">Frontend:</span> Angular 22 · TypeScript · PrimeNG</span>
-    </div>
-    <div class="md-line">
-      <span class="md-list-item"><span class="md-bold">DevOps:</span> Docker · GitHub Actions · Render · Vercel</span>
-    </div>
-    <div class="md-line">
-      <span class="md-list-item"><span class="md-bold">DB:</span> PostgreSQL · SQLite · JPA/Hibernate</span>
+
+    <!-- Styled Tech Stack Grid -->
+    <div class="tech-stack-grid">
+
+      <!-- Backend -->
+      <div class="stack-category">
+        <div class="stack-category-header">
+          <i class="pi pi-server"></i>
+          <span>Backend</span>
+        </div>
+        <div class="stack-items">
+          <div class="stack-chip">
+            <i class="devicon-java-plain colored"></i>
+            <span>Java</span>
+          </div>
+          <div class="stack-chip">
+            <i class="devicon-spring-original colored"></i>
+            <span>Spring Boot</span>
+          </div>
+          <div class="stack-chip">
+            <i class="devicon-python-plain colored"></i>
+            <span>Python</span>
+          </div>
+          <div class="stack-chip">
+            <i class="devicon-django-plain"></i>
+            <span>Django</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Frontend -->
+      <div class="stack-category">
+        <div class="stack-category-header">
+          <i class="pi pi-desktop"></i>
+          <span>Frontend</span>
+        </div>
+        <div class="stack-items">
+          <div class="stack-chip">
+            <i class="devicon-angularjs-plain colored"></i>
+            <span>Angular</span>
+          </div>
+          <div class="stack-chip">
+            <i class="devicon-typescript-plain colored"></i>
+            <span>TypeScript</span>
+          </div>
+          <div class="stack-chip">
+            <i class="devicon-html5-plain colored"></i>
+            <span>HTML/CSS</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- DevOps -->
+      <div class="stack-category">
+        <div class="stack-category-header">
+          <i class="pi pi-cloud"></i>
+          <span>DevOps</span>
+        </div>
+        <div class="stack-items">
+          <div class="stack-chip">
+            <i class="devicon-docker-plain colored"></i>
+            <span>Docker</span>
+          </div>
+          <div class="stack-chip">
+            <i class="devicon-git-plain colored"></i>
+            <span>Git</span>
+          </div>
+          <div class="stack-chip">
+            <i class="devicon-githubactions-plain"></i>
+            <span>CI/CD</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Databases -->
+      <div class="stack-category">
+        <div class="stack-category-header">
+          <i class="pi pi-database"></i>
+          <span>Databases</span>
+        </div>
+        <div class="stack-items">
+          <div class="stack-chip">
+            <i class="devicon-postgresql-plain colored"></i>
+            <span>PostgreSQL</span>
+          </div>
+          <div class="stack-chip">
+            <i class="devicon-mysql-plain colored"></i>
+            <span>MySQL</span>
+          </div>
+          <div class="stack-chip">
+            <i class="devicon-sqlite-plain"></i>
+            <span>SQLite</span>
+          </div>
+        </div>
+      </div>
+
     </div>
     <div class="md-line md-blank"></div>
 
-    <!-- Terminal block -->
+    <!-- H2 Featured Projects -->
     <div class="md-line">
-      <span class="md-code-fence">```bash</span>
+      <span class="md-h2">## Featured Projects</span>
     </div>
-
-    <div class="terminal-block">
-      @for (line of displayedLines; track $index) {
-        <div class="terminal-line" [class.terminal-command]="line.startsWith('$')" [class.terminal-output]="line.startsWith('>')">
-          {{ line }}
-        </div>
-      }
-      @if (!typingDone) {
-        <span class="terminal-cursor">█</span>
-      }
-    </div>
-
-    <div class="md-line">
-      <span class="md-code-fence">```</span>
+    <div class="md-line md-blank"></div>
+    <div class="md-line links-row">
+      <a [routerLink]="['/projects', 1]" class="md-link">
+        <i class="pi pi-chart-line"></i> Gastu Django
+      </a>
+      <a [routerLink]="['/projects', 2]" class="md-link">
+        <i class="pi pi-desktop"></i> SGVA Assistant
+      </a>
+      <a [routerLink]="['/projects', 3]" class="md-link">
+        <i class="pi pi-search"></i> Seona
+      </a>
+      <a [routerLink]="['/projects', 4]" class="md-link">
+        <i class="pi pi-shopping-cart"></i> Salsamentaría
+      </a>
     </div>
     <div class="md-line md-blank"></div>
 
