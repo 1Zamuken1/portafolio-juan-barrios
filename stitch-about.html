@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>about.md - IDE Portfolio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#340042",
+                        "background": "#0b1326",
+                        "surface-variant": "#2d3449",
+                        "on-primary-fixed-variant": "#6900b3",
+                        "outline": "#988d9f",
+                        "tertiary": "#f3aeff",
+                        "surface-dim": "#0b1326",
+                        "secondary": "#c4c1fb",
+                        "primary": "#ddb7ff",
+                        "on-secondary-fixed-variant": "#444173",
+                        "on-primary-fixed": "#2c0051",
+                        "on-tertiary": "#4e155d",
+                        "on-surface": "#dae2fd",
+                        "surface-container-high": "#222a3d",
+                        "surface-container": "#171f33",
+                        "secondary-container": "#444173",
+                        "surface-tint": "#ddb7ff",
+                        "surface-bright": "#31394d",
+                        "on-error-container": "#ffdad6",
+                        "secondary-fixed": "#e3dfff",
+                        "on-background": "#dae2fd",
+                        "on-secondary-fixed": "#181445",
+                        "tertiary-fixed-dim": "#f3aeff",
+                        "inverse-on-surface": "#283044",
+                        "error-container": "#93000a",
+                        "surface-container-low": "#131b2e",
+                        "surface": "#0b1326",
+                        "on-primary-container": "#400071",
+                        "on-error": "#690005",
+                        "surface-container-lowest": "#060e20",
+                        "secondary-fixed-dim": "#c4c1fb",
+                        "primary-container": "#b76dff",
+                        "outline-variant": "#4d4354",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed-variant": "#682f76",
+                        "on-surface-variant": "#cfc2d6",
+                        "on-tertiary-container": "#470c56",
+                        "inverse-surface": "#dae2fd",
+                        "on-primary": "#490080",
+                        "inverse-primary": "#842bd2",
+                        "primary-fixed-dim": "#ddb7ff",
+                        "tertiary-fixed": "#fcd6ff",
+                        "tertiary-container": "#b979c6",
+                        "surface-container-highest": "#2d3449",
+                        "primary-fixed": "#f0dbff",
+                        "on-secondary": "#2d2a5b",
+                        "on-secondary-container": "#b3afe9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "margin-safe": "24px",
+                        "gutter": "16px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "code-md": ["JetBrains Mono"],
+                        "headline-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "code-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                        "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            border: 0.5px solid rgba(168, 85, 247, 0.2);
+        }
+        .code-glow {
+            text-shadow: 0 0 8px rgba(221, 183, 255, 0.4);
+        }
+        .scroll-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .timeline-border {
+            border-left: 0.5px dashed #4d4354;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden flex flex-col h-screen">
+<!-- TopAppBar -->
+<header class="bg-surface/70 backdrop-blur-md text-primary font-code-md text-code-md docked full-width top-0 border-b border-outline-variant/20 shadow-[0px_0px_8px_rgba(168,85,247,0.15)] flex justify-between items-center px-gutter w-full h-12 z-50">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined cursor-pointer active:opacity-80" onclick="toggleDrawer()">terminal</span>
+<div class="flex items-center h-full border-b-2 border-primary px-2">
+<span class="font-bold">about.md</span>
+<span class="material-symbols-outlined text-[12px] ml-2 opacity-60">close</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined cursor-pointer active:opacity-80">search</span>
+<span class="material-symbols-outlined cursor-pointer active:opacity-80">settings</span>
+</div>
+</header>
+<!-- Main Content Container -->
+<main class="flex-grow overflow-y-auto scroll-hide pb-12 relative">
+<!-- Background Ambient Shader Placeholder -->
+
+<div class="max-w-md mx-auto px-4 py-8 relative z-10 space-y-6">
+<!-- Profile Header -->
+<section class="glass-panel rounded-xl p-6 flex flex-col items-center text-center">
+<div class="relative mb-4">
+<div class="w-24 h-24 rounded-full overflow-hidden border-2 border-primary/30">
+<img class="w-full h-full object-cover" data-alt="A cinematic portrait of a professional software engineer in a dark, tech-focused environment. The lighting is dominated by neon purple and deep obsidian blues, creating a high-fidelity synthwave aesthetic. The subject is backlit with a soft lavender glow, highlighting a modern, focused workspace. The overall atmosphere is atmospheric and sophisticated, matching an IDE-inspired design system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXdWNgI-zAL-veGMNdr3V1-CmWhnasYnhUA9mWS-PuGA4BAQ9hYbQGwWifgMzKqMR4f22ngUl7uHw1UET1ETWIs1nWb5hke6Qc1O8Vhm7XYCR9A_KZngq4zbcNR76kHWodpP6J3K3qyyhvlFwQZt2gFgRo25mxNLLv7ZLqJLL-eQ2zf0jFVbYSYCkrhYwqLFkCrEWrDvkhvTt-49blfXptr7VIbEvbXPhr4I0bUgm-4YTkwv-SsNmBAzA8k1joXpU-zcrgJZFJZ_MM"/>
+</div>
+<div class="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-surface animate-pulse"></div>
+</div>
+<h1 class="font-code-md text-headline-md text-primary code-glow">@dev_null</h1>
+<p class="font-code-md text-on-surface-variant text-sm mt-1">Backend Engineer // Systems Architect</p>
+<div class="mt-4 flex gap-2">
+<span class="bg-primary/10 text-primary text-[10px] px-2 py-1 rounded-full border border-primary/20 font-code-md uppercase tracking-wider">Status: Online</span>
+<span class="bg-secondary/10 text-secondary text-[10px] px-2 py-1 rounded-full border border-secondary/20 font-code-md uppercase tracking-wider">Lvl: 99</span>
+</div>
+</section>
+<!-- Tech Stack Section (JSON Style) -->
+<section class="space-y-3">
+<div class="flex items-center gap-2 px-2">
+<span class="text-secondary font-code-md">#</span>
+<h2 class="font-code-md font-bold text-on-surface uppercase tracking-widest text-sm">Tech Stack</h2>
+</div>
+<div class="glass-panel rounded-lg p-4 font-code-md text-xs leading-relaxed">
+<div class="text-tertiary">"skills": {</div>
+<div class="pl-4">
+<span class="text-secondary">"languages":</span> [
+                        <div class="flex flex-wrap gap-2 py-2 pl-4">
+<span class="bg-surface-container-high px-2 py-1 rounded border border-outline-variant/30 text-primary">Go</span>
+<span class="bg-surface-container-high px-2 py-1 rounded border border-outline-variant/30 text-primary">Rust</span>
+<span class="bg-surface-container-high px-2 py-1 rounded border border-outline-variant/30 text-primary">Python</span>
+</div>
+                        ],<br/>
+<span class="text-secondary">"infrastructure":</span> [
+                        <div class="flex flex-wrap gap-2 py-2 pl-4">
+<span class="bg-surface-container-high px-2 py-1 rounded border border-outline-variant/30 text-tertiary">Kubernetes</span>
+<span class="bg-surface-container-high px-2 py-1 rounded border border-outline-variant/30 text-tertiary">Docker</span>
+<span class="bg-surface-container-high px-2 py-1 rounded border border-outline-variant/30 text-tertiary">Terraform</span>
+</div>
+                        ],<br/>
+<span class="text-secondary">"data":</span> [
+                        <div class="flex flex-wrap gap-2 py-2 pl-4">
+<span class="bg-surface-container-high px-2 py-1 rounded border border-outline-variant/30 text-secondary">PostgreSQL</span>
+<span class="bg-surface-container-high px-2 py-1 rounded border border-outline-variant/30 text-secondary">Redis</span>
+<span class="bg-surface-container-high px-2 py-1 rounded border border-outline-variant/30 text-secondary">gRPC</span>
+</div>
+                        ]
+                    </div>
+<div class="text-tertiary">}</div>
+</div>
+</section>
+<!-- Work Experience (Timeline) -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 px-2">
+<span class="text-secondary font-code-md">#</span>
+<h2 class="font-code-md font-bold text-on-surface uppercase tracking-widest text-sm">Experience.log</h2>
+</div>
+<div class="space-y-6 pl-4 timeline-border">
+<!-- Job 1 -->
+<div class="relative pl-6">
+<div class="absolute -left-[5px] top-1.5 w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(168,85,247,0.6)]"></div>
+<div class="font-code-md text-xs text-on-surface-variant">2022 - PRESENT</div>
+<h3 class="font-code-md font-bold text-primary mt-1">Senior Dist. Systems Engineer</h3>
+<p class="font-code-md text-xs text-secondary mb-2">@TechNova_Labs</p>
+<ul class="text-xs font-code-md space-y-1 text-on-surface/80">
+<li>- Scaling microservices to 10M+ RPM.</li>
+<li>- Implementing gRPC-based service mesh.</li>
+<li>- Managed 50+ K8s clusters across regions.</li>
+</ul>
+</div>
+<!-- Job 2 -->
+<div class="relative pl-6">
+<div class="absolute -left-[5px] top-1.5 w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="font-code-md text-xs text-on-surface-variant">2019 - 2022</div>
+<h3 class="font-code-md font-bold text-on-surface mt-1">Backend Developer</h3>
+<p class="font-code-md text-xs text-secondary mb-2">@Stream_Logic</p>
+<ul class="text-xs font-code-md space-y-1 text-on-surface/80">
+<li>- Reduced latency by 40% via Redis caching.</li>
+<li>- Architected event-driven pipelines.</li>
+</ul>
+</div>
+</div>
+</section>
+<!-- Engineering Philosophy (Code Block Style) -->
+<section class="space-y-3 pb-8">
+<div class="flex items-center gap-2 px-2">
+<span class="text-secondary font-code-md">#</span>
+<h2 class="font-code-md font-bold text-on-surface uppercase tracking-widest text-sm">Philosophy.go</h2>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant/20 rounded-lg p-4 overflow-hidden relative">
+<div class="absolute right-4 top-4 opacity-10">
+<span class="material-symbols-outlined text-4xl">format_quote</span>
+</div>
+<pre class="font-code-md text-xs leading-6 overflow-x-auto scroll-hide"><span class="text-on-surface-variant/50">// Package philosophy defines the core tenets</span>
+<span class="text-primary">func</span> <span class="text-secondary">GetManifesto</span>() <span class="text-tertiary">[]string</span> {
+    <span class="text-primary">return</span> []<span class="text-tertiary">string</span>{
+        <span class="text-on-tertiary">"Keep it simple, stupid."</span>,
+        <span class="text-on-tertiary">"Optimization is secondary to clarity."</span>,
+        <span class="text-on-tertiary">"Everything is a system of systems."</span>,
+    }
+}
+                    </pre>
+</div>
+</section>
+</div>
+</main>
+<!-- Navigation Drawer (Side Menu Hidden Initially) -->
+<div class="fixed inset-y-0 left-0 z-50 w-64 -translate-x-full bg-surface-container-low/70 backdrop-blur-xl border-r border-outline-variant/20 flex flex-col h-screen transition-transform duration-300 ease-in-out" id="drawer">
+<div class="p-4 border-b border-outline-variant/20">
+<div class="font-code-md text-code-md tracking-widest text-outline uppercase">Explorer</div>
+</div>
+<nav class="flex-grow py-4">
+<div class="text-on-surface-variant py-2 px-4 flex items-center gap-2 hover:bg-surface-variant/20 cursor-pointer transition-all">
+<span class="material-symbols-outlined text-primary">folder_open</span>
+<span class="font-code-md text-code-md">explorer.exe</span>
+</div>
+<div class="text-on-surface-variant py-2 px-4 flex items-center gap-2 hover:bg-surface-variant/20 cursor-pointer transition-all">
+<span class="material-symbols-outlined">code</span>
+<span class="font-code-md text-code-md">projects.json</span>
+</div>
+<div class="bg-secondary-container/30 text-primary border-l-2 border-primary py-2 px-4 flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined">terminal</span>
+<span class="font-code-md text-code-md">skills.sh</span>
+</div>
+<div class="text-on-surface-variant py-2 px-4 flex items-center gap-2 hover:bg-surface-variant/20 cursor-pointer transition-all">
+<span class="material-symbols-outlined">alternate_email</span>
+<span class="font-code-md text-code-md">contact.py</span>
+</div>
+</nav>
+<div class="p-4 opacity-40 text-[10px] font-code-md">
+            v2.4.0-stable
+        </div>
+</div>
+<!-- Drawer Backdrop -->
+<div class="fixed inset-0 bg-black/60 z-40 hidden" id="drawer-backdrop" onclick="toggleDrawer()"></div>
+<!-- Footer StatusBar -->
+<footer class="bg-primary text-on-primary font-code-md text-[10px] fixed bottom-0 w-full h-6 flex justify-between items-center px-2 z-50 cursor-default">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 hover:bg-on-primary/10 px-1">
+<span class="material-symbols-outlined text-[12px]">save_as</span>
+<span>Main*</span>
+</div>
+<div class="flex items-center gap-1 hover:bg-on-primary/10 px-1">
+<span class="material-symbols-outlined text-[12px]">sync</span>
+<span>0 ↓ 0 ↑</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="opacity-80">UTF-8</span>
+<span class="opacity-80">Ln 42, Col 12</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">cloud_done</span>
+</div>
+</div>
+</footer>
+<script>
+        function toggleDrawer() {
+            const drawer = document.getElementById('drawer');
+            const backdrop = document.getElementById('drawer-backdrop');
+            const isOpen = !drawer.classList.contains('-translate-x-full');
+            
+            if (isOpen) {
+                drawer.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+            } else {
+                drawer.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+            }
+        }
+
+        // Simple interactive effect for code blocks
+        document.querySelectorAll('.glass-panel').forEach(panel => {
+            panel.addEventListener('touchstart', () => {
+                panel.style.transform = 'scale(0.98)';
+                panel.style.transition = 'transform 0.1s';
+            });
+            panel.addEventListener('touchend', () => {
+                panel.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>
