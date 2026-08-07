@@ -637,14 +637,6 @@
   margin-bottom: 1.5rem;
 }
 
-/* Architecture Flow */
-.diagram-body {
-  padding: 3rem 1rem !important;
-  display: flex;
-  justify-content: center;
-   background-color: var(--vscode-editor-bg);
- }
-
 /* Blueprint Viewer wrapper: needs a bounded height to render the canvas */
 .blueprint-wrapper {
   height: 620px;
