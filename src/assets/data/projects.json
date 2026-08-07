@@ -75,13 +75,32 @@
       "Equipo": 4,
       "Estado": "Producción"
     },
-    "architectureFlow": [
-      "Landing",
-      "Views",
-      "Services",
-      "Models",
-      "SQLite / PostgreSQL",
-      "Gemini Flash"
+    "architectureLayout": { "orientation": "tree" },
+    "architectureNodes": [
+      { "id": "landing", "label": "Landing", "icon": "pi pi-home", "description": "Endpoint de entrada principal al sistema web." },
+      { "id": "views", "label": "Views", "icon": "pi pi-desktop", "description": "Renderizado dinámico de las pantallas del portafolio." },
+      { "id": "services", "label": "Services", "icon": "pi pi-cog", "description": "Lógica de negocio y coordinación entre módulos." },
+      { "id": "auth", "label": "Authentication", "icon": "pi pi-lock", "description": "Gestión de identidad y acceso de usuarios." },
+      { "id": "business", "label": "Business Logic", "icon": "pi pi-sitemap", "description": "Reglas y flujos propios del dominio financiero." },
+      { "id": "persistence", "label": "Persistence", "icon": "pi pi-database", "description": "Gestión y lectura de información desde archivos." },
+      { "id": "sqlite", "label": "SQLite", "icon": "devicon-sqlite-plain", "description": "Base de datos ligera para desarrollo y testing." },
+      { "id": "postgres", "label": "PostgreSQL", "icon": "devicon-postgresql-plain", "description": "Base de datos robusta para producción." },
+      { "id": "ai", "label": "AI Recommendation Engine", "icon": "pi pi-sparkles", "description": "Procesamiento inteligente y generación de contenido." },
+      { "id": "export", "label": "Export Services", "icon": "pi pi-file-export", "description": "Serialización de resultados a formatos documentales." },
+      { "id": "reports", "label": "Reports", "icon": "pi pi-file-pdf", "description": "Salida final de información al usuario." }
+    ],
+    "architectureEdges": [
+      { "from": "landing", "to": "views" },
+      { "from": "views", "to": "services" },
+      { "from": "services", "to": "auth" },
+      { "from": "auth", "to": "business" },
+      { "from": "business", "to": "persistence" },
+      { "from": "persistence", "to": "sqlite" },
+      { "from": "persistence", "to": "postgres" },
+      { "from": "sqlite", "to": "ai" },
+      { "from": "postgres", "to": "ai" },
+      { "from": "ai", "to": "export" },
+      { "from": "export", "to": "reports" }
     ],
     "challenges": [
       {
@@ -170,15 +189,25 @@
       "Optimization Mode": "Low Performance",
       "Status": "Active Development"
     },
-    "architectureFlow": [
-      "Usuario",
-      "Playwright",
-      "Portal SGVA",
-      "Texto sin estructura",
-      "Groq",
-      "Datos estructurados",
-      "JSON Cache",
-      "Excel / Markdown"
+    "architectureLayout": { "orientation": "pipeline" },
+    "architectureNodes": [
+      { "id": "desktop", "label": "Desktop App", "icon": "pi pi-desktop", "description": "Interfaz de escritorio empaquetada para el usuario final." },
+      { "id": "electron", "label": "Electron Process", "icon": "devicon-electron-original", "description": "Orquestador principal y puente entre UI y automatización." },
+      { "id": "playwright", "label": "Playwright Automation", "icon": "devicon-playwright-original", "description": "Motor headless que navega y extrae contenido del portal SGVA." },
+      { "id": "parser", "label": "Offer Parser", "icon": "pi pi-box", "description": "Normaliza el HTML extraído en ofertas de práctica." },
+      { "id": "groq", "label": "Groq AI", "icon": "devicon-thealgorithms-plain", "description": "Motor de lenguaje que estructura texto libre en entidades clave." },
+      { "id": "cache", "label": "Cache Engine", "icon": "pi pi-database", "description": "Almacenamiento local de resultados para evitar llamadas redundantes." },
+      { "id": "excel", "label": "Excel / Markdown Export", "icon": "pi pi-file-export", "description": "Serializa las ofertas estructuradas a formatos profesionales." },
+      { "id": "ui", "label": "User Interface", "icon": "pi pi-mouse", "description": "Panel interactivo donde el usuario inspecciona y descarga resultados." }
+    ],
+    "architectureEdges": [
+      { "from": "desktop", "to": "electron" },
+      { "from": "electron", "to": "playwright" },
+      { "from": "playwright", "to": "parser" },
+      { "from": "parser", "to": "groq" },
+      { "from": "groq", "to": "cache" },
+      { "from": "cache", "to": "excel" },
+      { "from": "excel", "to": "ui" }
     ],
     "challenges": [
       {
@@ -258,15 +287,26 @@
       "Formatos de Exportación": 2,
       "Estado": "Publicado"
     },
-    "architectureFlow": [
-      "Usuario",
-      "URL de la app local",
-      "Detección de framework",
-      "Parser estático (Cheerio)",
-      "Motor headless (Playwright)",
-      "5 audits en paralelo",
-      "Agregación de resultados",
-      "JSON / Markdown"
+    "architectureLayout": { "orientation": "tree" },
+    "architectureNodes": [
+      { "id": "user", "label": "Usuario", "icon": "pi pi-user", "description": "Actor que inicia la auditoría apuntando a una URL local." },
+      { "id": "url", "label": "URL de la app local", "icon": "pi pi-link", "description": "Origen del contenido a auditar." },
+      { "id": "detect", "label": "Detección de framework", "icon": "pi pi-search", "description": "Identifica el stack del frontend (Django, Angular, Thymeleaf, ...)." },
+      { "id": "cheerio", "label": "Parser estático (Cheerio)", "icon": "pi pi-file", "description": "Extrae contenido sin ejecutar JavaScript." },
+      { "id": "playwright", "label": "Motor headless (Playwright)", "icon": "devicon-playwright-original", "description": "Renderiza SPAs antes de analizarlas." },
+      { "id": "audits", "label": "5 Auditorías en paralelo", "icon": "pi pi-bolt", "description": "SEO en 5 dimensiones: Meta, Técnico, Contenido, CSS, Performance." },
+      { "id": "aggregate", "label": "Agregación de resultados", "icon": "pi pi-sitemap", "description": "Consolida los hallazgos sin condiciones de carrera." },
+      { "id": "export", "label": "Export (JSON / Markdown)", "icon": "pi pi-file-export", "description": "Reportes estructurados listos para consumo de IAs." }
+    ],
+    "architectureEdges": [
+      { "from": "user", "to": "url" },
+      { "from": "url", "to": "detect" },
+      { "from": "detect", "to": "cheerio" },
+      { "from": "detect", "to": "playwright" },
+      { "from": "cheerio", "to": "audits" },
+      { "from": "playwright", "to": "audits" },
+      { "from": "audits", "to": "aggregate" },
+      { "from": "aggregate", "to": "export" }
     ],
     "challenges": [
       {
@@ -345,13 +385,21 @@
       "Rating SonarQube": "A",
       "Estado": "Completado"
     },
-    "architectureFlow": [
-      "Angular 20 (SPA)",
-      "API REST (Spring Boot)",
-      "Spring Security + JWT",
-      "Spring Data JPA",
-      "MySQL",
-      "SonarQube"
+    "architectureLayout": { "orientation": "pipeline" },
+    "architectureNodes": [
+      { "id": "spa", "label": "Angular 20 (SPA)", "icon": "devicon-angular-original", "description": "Cliente reactivo que consume la API REST del backend." },
+      { "id": "api", "label": "API REST (Spring Boot)", "icon": "devicon-spring-original", "description": "Capa de exposición que atiende peticiones y orquesta casos de uso." },
+      { "id": "security", "label": "Spring Security + JWT", "icon": "pi pi-lock", "description": "Autenticación y autorización basada en tokens." },
+      { "id": "persistence", "label": "Spring Data JPA", "icon": "devicon-java-plain", "description": "Mapeo orientado a objetos y transacciones con la base de datos." },
+      { "id": "mysql", "label": "MySQL", "icon": "devicon-mysql-plain", "description": "Almacenamiento transaccional del catálogo e inventario." },
+      { "id": "audit", "label": "SonarQube", "icon": "devicon-sonarqube-plain", "description": "Quality gate que valida la calidad del código en cada build." }
+    ],
+    "architectureEdges": [
+      { "from": "spa", "to": "api" },
+      { "from": "api", "to": "security" },
+      { "from": "security", "to": "persistence" },
+      { "from": "persistence", "to": "mysql" },
+      { "from": "api", "to": "audit" }
     ],
     "challenges": [
       {

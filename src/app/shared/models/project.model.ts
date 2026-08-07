@@ -1,3 +1,5 @@
+import { BlueprintNode, BlueprintEdge, BlueprintLayout } from './blueprint.model';
+
 export interface Project {
   id: number;
   name: string;
@@ -22,7 +24,7 @@ export interface Project {
   type?: string;
   metrics?: any;
   techStack?: { name: string; icon: string }[];
-  
+
   // Advanced Case Study Fields
   teamSize?: number;
   coreArchitecture?: string;
@@ -38,7 +40,10 @@ export interface Project {
   structuredStack?: Record<string, string[]>;
   structuredFeatures?: Record<string, string[]>;
   rawMetrics?: Record<string, string | number>;
-  architectureFlow?: string[];
+  architectureNodes?: BlueprintNode[];
+  architectureEdges?: BlueprintEdge[];
+  architectureLayout?: BlueprintLayout;
   challenges?: { title: string; description: string }[];
 }
 
+export type { BlueprintNode, BlueprintEdge, BlueprintLayout };

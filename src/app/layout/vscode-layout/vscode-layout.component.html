@@ -152,7 +152,7 @@
                             <i class="pi pi-table" style="color: #a599e9; font-size: 0.85rem;"></i>
                             metrics.csv
                           </a>
-                          @if (project.architectureFlow) {
+                          @if (project.architectureNodes) {
                             <a class="list-item nested-item-2" [routerLink]="['/projects', project.id]" fragment="architecture" [class.active]="activeTabId() === '/projects/' + project.id + '#architecture'">
                               <i class="pi pi-sitemap" style="color: #fca311; font-size: 0.85rem;"></i>
                               architecture.drawio

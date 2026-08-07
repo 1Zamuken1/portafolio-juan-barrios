@@ -246,23 +246,19 @@
         </section>
 
         <!-- ARCHITECTURE Section -->
-        @if (project()!.architectureFlow) {
+        @if (project()!.architectureNodes) {
           <section id="architecture" class="project-section">
             <div class="section-header-bar">
               <i class="pi pi-sitemap" style="color: #fca311;"></i>
               <span>architecture.drawio</span>
             </div>
-            <div class="section-content diagram-body">
-              <div class="architecture-flow">
-                @for (node of project()!.architectureFlow; track node; let last = $last) {
-                  <div class="arch-node">{{ node }}</div>
-                  @if (!last) {
-                    <div class="arch-arrow">
-                      <i class="pi pi-arrow-down"></i>
-                    </div>
-                  }
-                }
-              </div>
+            <div class="section-content blueprint-wrapper">
+              <app-blueprint-viewer
+                [nodes]="project()!.architectureNodes ?? []"
+                [edges]="project()!.architectureEdges ?? []"
+                [layout]="project()!.architectureLayout"
+                version="v2.1"
+              ></app-blueprint-viewer>
             </div>
           </section>
         }

@@ -1,0 +1,97 @@
+<div class="blueprint-viewer">
+  <!-- Viewport (pan + zoom container) -->
+  <div
+    class="blueprint-viewport"
+    [class.viewport--panning]="isPanning()"
+    [style.--zoom]="zoom()"
+    [style.--tx]="offsetX()"
+    [style.--ty]="offsetY()"
+    (wheel)="onWheel($event, viewportEl)"
+    (mousemove)="onPanMove($event)"
+    (mouseup)="onPanEnd()"
+    (mouseleave)="onPanEnd()"
+    #viewportEl
+     (mousedown)="onPanStart($event)"
+   >
+    <div class="blueprint-stage"
+         [style.--zoom]="zoom()"
+         [style.--tx]="offsetX()"
+         [style.--ty]="offsetY()">
+      <svg
+        class="blueprint-canvas"
+      [attr.viewBox]="'0 0 ' + viewBoxWidth() + ' ' + viewBoxHeight()"
+      [attr.width]="viewBoxWidth()"
+      [attr.height]="viewBoxHeight()"
+      role="img"
+      aria-label="Blueprint de arquitectura técnica"
+    >
+      <!-- Grid background -->
+      <defs>
+        <pattern id="blueprint-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path class="grid-line" d="M 20 0 L 0 0 0 20" />
+        </pattern>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="2.5"
+                orient="auto" markerUnits="strokeWidth">
+          <path class="arrow-head" d="M0,0 L4,2.5 L0,5 Z" />
+        </marker>
+      </defs>
+      <rect class="grid-bg" width="100%" height="100%" fill="url(#blueprint-grid)" />
+
+      <!-- Connectors (orthogonal 90°) -->
+      <g class="blueprint-connectors">
+        @for (conn of connectors(); track conn.from.id + '->' + conn.to.id) {
+          <path
+            class="connector-line"
+            [class.connector--highlighted]="isConnectorHighlighted(conn)"
+            [attr.d]="connectorPath(conn)"
+            marker-end="url(#arrowhead)"
+          />
+        }
+      </g>
+    </svg>
+
+    <!-- Nodes (HTML cards positioned over the canvas) -->
+    <div class="blueprint-nodes">
+      @for (node of positionedNodes(); track trackById($index, node)) {
+        <div
+          class="bp-node"
+          [class.bp-node--highlighted]="isNodeHighlighted(node)"
+          [style.left.px]="node.x"
+          [style.top.px]="node.y"
+          [style.width.px]="250"
+          [style.height.px]="96"
+          (click)="onNodeClick(node)"
+          (mouseenter)="onNodeHover(node, true)"
+          (mouseleave)="onNodeHover(node, false)"
+          [attr.data-node-id]="node.id"
+        >
+          <div class="bp-node-header">
+            <i [class]="nodeIconClass(node.icon)" class="bp-node-icon"></i>
+            <span class="bp-node-title">{{ node.label }}</span>
+          </div>
+          <p class="bp-node-description">{{ node.description }}</p>
+        </div>
+      }
+    </div> <!-- /.blueprint-nodes -->
+  </div> <!-- /.blueprint-stage -->
+  </div>
+
+  <!-- HUD técnico (CAD-style) -->
+  <div class="blueprint-hud">
+    <span class="hud-item">Blueprint {{ version() }}</span>
+    <span class="hud-item">Zoom {{ zoomPercent() }}%</span>
+    <span class="hud-item">Nodes {{ (positionedNodes() || []).length }}</span>
+    <span class="hud-item">Connections {{ (connectors() || []).length }}</span>
+    <span class="hud-item">Interactive {{ interactiveEnabled() ? 'Enabled' : 'Disabled' }}</span>
+  </div>
+
+  <!-- HUD controls -->
+  <div class="blueprint-controls">
+    <button class="bp-btn" (click)="fitScreen()" title="Fit screen" aria-label="Fit screen">
+      <i class="pi pi-expand"></i>
+    </button>
+    <button class="bp-btn" (click)="resetZoom()" title="Reset zoom" aria-label="Reset zoom">
+      <i class="pi pi-refresh"></i>
+    </button>
+  </div>
+</div>
