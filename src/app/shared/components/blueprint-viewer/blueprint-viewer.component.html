@@ -19,12 +19,13 @@
          [style.--ty]="offsetY()">
       <svg
         class="blueprint-canvas"
-      [attr.viewBox]="'0 0 ' + viewBoxWidth() + ' ' + viewBoxHeight()"
-      [attr.width]="viewBoxWidth()"
-      [attr.height]="viewBoxHeight()"
-      role="img"
-      aria-label="Blueprint de arquitectura técnica"
-    >
+        [attr.viewBox]="'0 0 ' + viewBoxWidth() + ' ' + viewBoxHeight()"
+        [attr.width]="viewBoxWidth()"
+        [attr.height]="viewBoxHeight()"
+        preserveAspectRatio="none"
+        role="img"
+        aria-label="Blueprint de arquitectura técnica"
+      >
       <!-- Grid background -->
       <defs>
         <pattern id="blueprint-grid" width="20" height="20" patternUnits="userSpaceOnUse">

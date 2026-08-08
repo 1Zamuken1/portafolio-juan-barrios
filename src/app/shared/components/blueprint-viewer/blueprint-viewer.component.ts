@@ -144,29 +144,29 @@ export class BlueprintViewerComponent {
     const nodeH = 96;
     const gapX = 260;
     const gapY = 150;
+    const canvasHeight = 600; // baseline canvas height (matches viewBox min-height)
 
     const positioned: PositionedNode[] = [];
     if (orientation === 'horizontal' || orientation === 'tree' || orientation === 'pipeline') {
-      // layers = columns (left to right)
-      const cols = ranks.length;
-      const maxHeight = cols - 1;
+      // layers = columns (left to right); each column stacked vertically
+      const maxColHeight = Math.max(...ranks.map(c => c.length)); // tallest column
       for (let c = 0; c < ranks.length; c++) {
         const col = ranks[c];
         const totalH = Math.max(col.length - 1, 0) * gapY;
         col.forEach((id, i) => {
           const n = nodeMap.get(id)!;
           const x = c * gapX;
-          const y = (maxHeight * gapY) / 2 - totalH / 2 + i * gapY;
+          const y = ((maxColHeight - 1) * gapY) / 2 - totalH / 2 + i * gapY;
           positioned.push({ ...n, x, y });
         });
       }
     } else {
       // vertical: layers = rows (top to bottom)
-      const rows = ranks.length;
+      const maxRowWidth = Math.max(...ranks.map(r => r.length)); // widest row
       for (let r = 0; r < ranks.length; r++) {
         const row = ranks[r];
         const totalW = Math.max(row.length - 1, 0) * gapX;
-        const centerX = (this.maxHeight(ranks) * gapX) / 2;
+        const centerX = ((maxRowWidth - 1) * gapX) / 2;
         row.forEach((id, i) => {
           const n = nodeMap.get(id)!;
           const x = centerX - totalW / 2 + i * gapX;
@@ -176,11 +176,15 @@ export class BlueprintViewerComponent {
       }
     }
 
-    return positioned;
-  }
+    // Center nodes vertically within the canvas when the layout does not fill
+    // the full height (e.g. a single-row pipeline), so they are not pinned to the top.
+    const maxBottom = positioned.reduce((m, n) => Math.max(m, n.y + nodeH), 0);
+    const yOffset = Math.max((canvasHeight - maxBottom) / 2, 0);
+    if (yOffset > 0) {
+      for (const n of positioned) n.y += yOffset;
+    }
 
-  private maxHeight(ranks: string[][]): number {
-    return Math.max(...ranks.map(r => Math.max(r.length - 1, 0)));
+    return positioned;
   }
 
   /** Build orthogonal (90°) connector polylines between positioned nodes */
@@ -233,14 +237,21 @@ export class BlueprintViewerComponent {
       return { points: [{ x: fx, y: from.y + nodeH }, { x: tx, y: to.y }] };
     }
 
-    // Horizontal flow -> right edge of source to left edge of target with a 90° elbow
+    // Horizontal flow -> right edge of source to left edge of target (orthogonal elbow)
     const sx = from.x + nodeW; // right edge
     const ex = to.x;           // left edge
+
+    // Same row (y-aligned) -> single straight segment, no degenerate elbow.
+    if (Math.abs(fy - ty) < 1) {
+      return { points: [{ x: sx, y: fy }, { x: ex, y: ty }] };
+    }
+
+    // Staggered rows -> 90° elbow through a shared middle row.
     const midY = (fy + ty) / 2;
     return {
       points: [
         { x: sx, y: fy },
-        { x: ex, y: fy },
+        { x: ex, y: midY },
         { x: ex, y: ty },
       ],
     };
