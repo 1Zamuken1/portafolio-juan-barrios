@@ -34,14 +34,39 @@
       "Autenticación híbrida Email + Google OAuth",
       "Proyecto desplegado para producción"
     ],
-    "keywords": ["finanzas", "IA", "fullstack", "Django", "PostgreSQL", "OAuth"],
+    "keywords": [
+      "finanzas",
+      "IA",
+      "fullstack",
+      "Django",
+      "PostgreSQL",
+      "OAuth"
+    ],
     "techStack": [
-      { "name": "Python", "icon": "devicon-python-plain" },
-      { "name": "Django", "icon": "devicon-django-plain" },
-      { "name": "PostgreSQL", "icon": "devicon-postgresql-plain" },
-      { "name": "SQLite", "icon": "devicon-sqlite-plain" },
-      { "name": "Tailwind CSS", "icon": "devicon-tailwindcss-original" },
-      { "name": "Gemini AI", "icon": "devicon-google-plain" }
+      {
+        "name": "Python",
+        "icon": "devicon-python-plain"
+      },
+      {
+        "name": "Django",
+        "icon": "devicon-django-plain"
+      },
+      {
+        "name": "PostgreSQL",
+        "icon": "devicon-postgresql-plain"
+      },
+      {
+        "name": "SQLite",
+        "icon": "devicon-sqlite-plain"
+      },
+      {
+        "name": "Tailwind CSS",
+        "icon": "devicon-tailwindcss-original"
+      },
+      {
+        "name": "Gemini AI",
+        "icon": "devicon-google-plain"
+      }
     ],
     "readmeMarkdown": {
       "objective": "GastuApp nace de la necesidad de tener un control absoluto sobre las finanzas personales sin depender de herramientas genéricas. El objetivo fue crear un sistema automatizado que no solo registre ingresos y egresos, sino que actúe como un asesor financiero utilizando Inteligencia Artificial.",
@@ -51,19 +76,61 @@
       "learnings": "El mayor aprendizaje fue orquestar múltiples APIs de LLMs, manejando latencias y caídas de servicio de forma transparente para el usuario, y la implementación de django-allauth para OAuth en un entorno híbrido."
     },
     "structuredStack": {
-      "backend": ["Python", "Django", "Django ORM"],
-      "frontend": ["Django Templates", "Tailwind CSS"],
-      "database": ["SQLite", "PostgreSQL"],
-      "authentication": ["Email", "Google OAuth"],
-      "ai": ["Gemini Flash", "Groq"],
-      "export": ["Excel", "PDF", "CSV"]
+      "backend": [
+        "Python",
+        "Django",
+        "Django ORM"
+      ],
+      "frontend": [
+        "Django Templates",
+        "Tailwind CSS"
+      ],
+      "database": [
+        "SQLite",
+        "PostgreSQL"
+      ],
+      "authentication": [
+        "Email",
+        "Google OAuth"
+      ],
+      "ai": [
+        "Gemini Flash",
+        "Groq"
+      ],
+      "export": [
+        "Excel",
+        "PDF",
+        "CSV"
+      ]
     },
     "structuredFeatures": {
-      "Autenticación": ["Login Email", "Google OAuth"],
-      "Finanzas": ["Ingresos", "Egresos", "Categorías", "Presupuestos", "Dashboard"],
-      "Reportes": ["Excel", "PDF", "CSV"],
-      "IA": ["Gemini Flash", "Groq Fallback", "Recomendaciones financieras"],
-      "Arquitectura": ["Django Apps", "Services Layer", "ORM", "Arquitectura modular"]
+      "Autenticación": [
+        "Login Email",
+        "Google OAuth"
+      ],
+      "Finanzas": [
+        "Ingresos",
+        "Egresos",
+        "Categorías",
+        "Presupuestos",
+        "Dashboard"
+      ],
+      "Reportes": [
+        "Excel",
+        "PDF",
+        "CSV"
+      ],
+      "IA": [
+        "Gemini Flash",
+        "Groq Fallback",
+        "Recomendaciones financieras"
+      ],
+      "Arquitectura": [
+        "Django Apps",
+        "Services Layer",
+        "ORM",
+        "Arquitectura modular"
+      ]
     },
     "rawMetrics": {
       "Apps Django": 10,
@@ -75,32 +142,140 @@
       "Equipo": 4,
       "Estado": "Producción"
     },
-    "architectureLayout": { "orientation": "tree" },
+    "architectureLayout": {
+      "orientation": "swimlanes"
+    },
     "architectureNodes": [
-      { "id": "landing", "label": "Landing", "icon": "pi pi-home", "description": "Endpoint de entrada principal al sistema web." },
-      { "id": "views", "label": "Views", "icon": "pi pi-desktop", "description": "Renderizado dinámico de las pantallas del portafolio." },
-      { "id": "services", "label": "Services", "icon": "pi pi-cog", "description": "Lógica de negocio y coordinación entre módulos." },
-      { "id": "auth", "label": "Authentication", "icon": "pi pi-lock", "description": "Gestión de identidad y acceso de usuarios." },
-      { "id": "business", "label": "Business Logic", "icon": "pi pi-sitemap", "description": "Reglas y flujos propios del dominio financiero." },
-      { "id": "persistence", "label": "Persistence", "icon": "pi pi-database", "description": "Gestión y lectura de información desde archivos." },
-      { "id": "sqlite", "label": "SQLite", "icon": "devicon-sqlite-plain", "description": "Base de datos ligera para desarrollo y testing." },
-      { "id": "postgres", "label": "PostgreSQL", "icon": "devicon-postgresql-plain", "description": "Base de datos robusta para producción." },
-      { "id": "ai", "label": "AI Recommendation Engine", "icon": "pi pi-sparkles", "description": "Procesamiento inteligente y generación de contenido." },
-      { "id": "export", "label": "Export Services", "icon": "pi pi-file-export", "description": "Serialización de resultados a formatos documentales." },
-      { "id": "reports", "label": "Reports", "icon": "pi pi-file-pdf", "description": "Salida final de información al usuario." }
+      {
+        "id": "landing",
+        "label": "Landing",
+        "icon": "pi pi-home",
+        "description": "Endpoint de entrada principal al sistema web.",
+        "group": "client",
+        "type": "primary"
+      },
+      {
+        "id": "views",
+        "label": "Views",
+        "icon": "pi pi-desktop",
+        "description": "Renderizado dinámico de las pantallas del portafolio.",
+        "group": "client",
+        "type": "secondary"
+      },
+      {
+        "id": "services",
+        "label": "Services",
+        "icon": "pi pi-cog",
+        "description": "Lógica de negocio y coordinación entre módulos.",
+        "group": "application",
+        "type": "primary"
+      },
+      {
+        "id": "auth",
+        "label": "Authentication",
+        "icon": "pi pi-lock",
+        "description": "Gestión de identidad y acceso de usuarios.",
+        "group": "application",
+        "type": "secondary"
+      },
+      {
+        "id": "business",
+        "label": "Business Logic",
+        "icon": "pi pi-sitemap",
+        "description": "Reglas y flujos propios del dominio financiero.",
+        "group": "application",
+        "type": "primary"
+      },
+      {
+        "id": "persistence",
+        "label": "Persistence",
+        "icon": "pi pi-database",
+        "description": "Gestión y lectura de información desde archivos.",
+        "group": "persistence",
+        "type": "primary"
+      },
+      {
+        "id": "sqlite",
+        "label": "SQLite",
+        "icon": "devicon-sqlite-plain",
+        "description": "Base de datos ligera para desarrollo y testing.",
+        "group": "database",
+        "type": "secondary"
+      },
+      {
+        "id": "postgres",
+        "label": "PostgreSQL",
+        "icon": "devicon-postgresql-plain",
+        "description": "Base de datos robusta para producción.",
+        "group": "database",
+        "type": "primary"
+      },
+      {
+        "id": "ai",
+        "label": "AI Engine",
+        "icon": "pi pi-sparkles",
+        "description": "Procesamiento inteligente (Gemini/Groq).",
+        "group": "external",
+        "type": "primary"
+      },
+      {
+        "id": "export",
+        "label": "Export Services",
+        "icon": "pi pi-file-export",
+        "description": "Serialización a CSV/PDF/Excel.",
+        "group": "application",
+        "type": "secondary"
+      },
+      {
+        "id": "reports",
+        "label": "Reports",
+        "icon": "pi pi-file-pdf",
+        "description": "Salida documental.",
+        "group": "client",
+        "type": "secondary"
+      }
     ],
     "architectureEdges": [
-      { "from": "landing", "to": "views" },
-      { "from": "views", "to": "services" },
-      { "from": "services", "to": "auth" },
-      { "from": "auth", "to": "business" },
-      { "from": "business", "to": "persistence" },
-      { "from": "persistence", "to": "sqlite" },
-      { "from": "persistence", "to": "postgres" },
-      { "from": "sqlite", "to": "ai" },
-      { "from": "postgres", "to": "ai" },
-      { "from": "ai", "to": "export" },
-      { "from": "export", "to": "reports" }
+      {
+        "from": "landing",
+        "to": "views"
+      },
+      {
+        "from": "views",
+        "to": "services"
+      },
+      {
+        "from": "services",
+        "to": "auth"
+      },
+      {
+        "from": "auth",
+        "to": "business"
+      },
+      {
+        "from": "business",
+        "to": "persistence"
+      },
+      {
+        "from": "persistence",
+        "to": "sqlite"
+      },
+      {
+        "from": "persistence",
+        "to": "postgres"
+      },
+      {
+        "from": "business",
+        "to": "ai"
+      },
+      {
+        "from": "ai",
+        "to": "export"
+      },
+      {
+        "from": "export",
+        "to": "reports"
+      }
     ],
     "challenges": [
       {
@@ -148,14 +323,40 @@
       "Arquitectura Electron + IPC aislada para mantener la UI responsiva",
       "Modo Low Performance: UI sin animaciones para hardware antiguo"
     ],
-    "keywords": ["automatización", "web scraping", "IA", "Electron", "Playwright", "Groq", "Excel"],
+    "keywords": [
+      "automatización",
+      "web scraping",
+      "IA",
+      "Electron",
+      "Playwright",
+      "Groq",
+      "Excel"
+    ],
     "techStack": [
-      { "name": "Node.js", "icon": "devicon-nodejs-plain" },
-      { "name": "Electron", "icon": "devicon-electron-original" },
-      { "name": "Playwright", "icon": "devicon-playwright-plain" },
-      { "name": "JavaScript", "icon": "devicon-javascript-plain" },
-      { "name": "HTML/CSS", "icon": "devicon-html5-plain" },
-      { "name": "Groq AI", "icon": "devicon-thealgorithms-plain" }
+      {
+        "name": "Node.js",
+        "icon": "devicon-nodejs-plain"
+      },
+      {
+        "name": "Electron",
+        "icon": "devicon-electron-original"
+      },
+      {
+        "name": "Playwright",
+        "icon": "devicon-playwright-plain"
+      },
+      {
+        "name": "JavaScript",
+        "icon": "devicon-javascript-plain"
+      },
+      {
+        "name": "HTML/CSS",
+        "icon": "devicon-html5-plain"
+      },
+      {
+        "name": "Groq AI",
+        "icon": "devicon-thealgorithms-plain"
+      }
     ],
     "readmeMarkdown": {
       "objective": "SGVA Assistant resuelve el problema de buscar prácticas profesionales en el portal del SENA (SGVA) de forma manual e intermitente. El portal carece de filtros avanzados y no permite descargar masivamente las ofertas. La aplicación automatiza todo el flujo: inicia sesión, navega las páginas, extrae la información de cada oferta y estructura los datos mediante un modelo de lenguaje.",
@@ -165,20 +366,69 @@
       "learnings": "El mayor aprendizaje fue orquestar Electron IPC para comunicar el motor de scraping con la UI sin bloquear el hilo principal, y ajustar prompts de extracción estructurada para minimizar costos de API en llamadas a Groq mientras se mantenía alta precisión en los datos extraídos."
     },
     "structuredStack": {
-      "backend": ["Node.js", "Electron Main", "Electron IPC", "Node FS"],
-      "frontend": ["HTML5", "CSS3", "Vanilla JavaScript", "Glassmorphism"],
-      "automation": ["Playwright", "Chromium"],
-      "ai": ["Groq SDK", "Llama 3"],
-      "persistence": ["JSON"],
-      "export": ["ExcelJS", "Markdown"]
+      "backend": [
+        "Node.js",
+        "Electron Main",
+        "Electron IPC",
+        "Node FS"
+      ],
+      "frontend": [
+        "HTML5",
+        "CSS3",
+        "Vanilla JavaScript",
+        "Glassmorphism"
+      ],
+      "automation": [
+        "Playwright",
+        "Chromium"
+      ],
+      "ai": [
+        "Groq SDK",
+        "Llama 3"
+      ],
+      "persistence": [
+        "JSON"
+      ],
+      "export": [
+        "ExcelJS",
+        "Markdown"
+      ]
     },
     "structuredFeatures": {
-      "Automation": ["Web scraping", "Login automation", "Modal handling", "Headless browser"],
-      "Artificial Intelligence": ["Groq SDK", "Llama 3", "Prompt engineering", "Entity extraction"],
-      "Persistence": ["JSON cache", "Local storage", "Cache invalidation"],
-      "Export": ["Excel", "ExcelJS", "Markdown", "CSV-ready data"],
-      "Performance": ["Low Performance mode", "No animations", "Memory-efficient scraping"],
-      "User Interface": ["Electron renderer", "Glassmorphism UI", "Vanilla JS", "Responsive layout"]
+      "Automation": [
+        "Web scraping",
+        "Login automation",
+        "Modal handling",
+        "Headless browser"
+      ],
+      "Artificial Intelligence": [
+        "Groq SDK",
+        "Llama 3",
+        "Prompt engineering",
+        "Entity extraction"
+      ],
+      "Persistence": [
+        "JSON cache",
+        "Local storage",
+        "Cache invalidation"
+      ],
+      "Export": [
+        "Excel",
+        "ExcelJS",
+        "Markdown",
+        "CSV-ready data"
+      ],
+      "Performance": [
+        "Low Performance mode",
+        "No animations",
+        "Memory-efficient scraping"
+      ],
+      "User Interface": [
+        "Electron renderer",
+        "Glassmorphism UI",
+        "Vanilla JS",
+        "Responsive layout"
+      ]
     },
     "rawMetrics": {
       "Automation Engine": "Playwright",
@@ -189,25 +439,104 @@
       "Optimization Mode": "Low Performance",
       "Status": "Active Development"
     },
-    "architectureLayout": { "orientation": "pipeline" },
+    "architectureLayout": {
+      "orientation": "swimlanes"
+    },
     "architectureNodes": [
-      { "id": "desktop", "label": "Desktop App", "icon": "pi pi-desktop", "description": "Interfaz de escritorio empaquetada para el usuario final." },
-      { "id": "electron", "label": "Electron Process", "icon": "devicon-electron-original", "description": "Orquestador principal y puente entre UI y automatización." },
-      { "id": "playwright", "label": "Playwright Automation", "icon": "devicon-playwright-original", "description": "Motor headless que navega y extrae contenido del portal SGVA." },
-      { "id": "parser", "label": "Offer Parser", "icon": "pi pi-box", "description": "Normaliza el HTML extraído en ofertas de práctica." },
-      { "id": "groq", "label": "Groq AI", "icon": "devicon-thealgorithms-plain", "description": "Motor de lenguaje que estructura texto libre en entidades clave." },
-      { "id": "cache", "label": "Cache Engine", "icon": "pi pi-database", "description": "Almacenamiento local de resultados para evitar llamadas redundantes." },
-      { "id": "excel", "label": "Excel / Markdown Export", "icon": "pi pi-file-export", "description": "Serializa las ofertas estructuradas a formatos profesionales." },
-      { "id": "ui", "label": "User Interface", "icon": "pi pi-mouse", "description": "Panel interactivo donde el usuario inspecciona y descarga resultados." }
+      {
+        "id": "desktop",
+        "label": "Desktop App",
+        "icon": "pi pi-desktop",
+        "description": "Interfaz empaquetada.",
+        "group": "client",
+        "type": "primary"
+      },
+      {
+        "id": "electron",
+        "label": "Electron Process",
+        "icon": "devicon-electron-original",
+        "description": "Orquestador principal.",
+        "group": "application",
+        "type": "primary"
+      },
+      {
+        "id": "playwright",
+        "label": "Playwright",
+        "icon": "devicon-playwright-original",
+        "description": "Motor headless SGVA.",
+        "group": "automation",
+        "type": "primary"
+      },
+      {
+        "id": "parser",
+        "label": "Offer Parser",
+        "icon": "pi pi-box",
+        "description": "Normaliza HTML extraído.",
+        "group": "application",
+        "type": "secondary"
+      },
+      {
+        "id": "groq",
+        "label": "Groq AI",
+        "icon": "devicon-thealgorithms-plain",
+        "description": "Motor de lenguaje estructurado.",
+        "group": "external",
+        "type": "primary"
+      },
+      {
+        "id": "cache",
+        "label": "Cache Engine",
+        "icon": "pi pi-database",
+        "description": "Almacenamiento local JSON.",
+        "group": "persistence",
+        "type": "secondary"
+      },
+      {
+        "id": "excel",
+        "label": "Export",
+        "icon": "pi pi-file-export",
+        "description": "Excel / Markdown.",
+        "group": "application",
+        "type": "secondary"
+      },
+      {
+        "id": "ui",
+        "label": "User Interface",
+        "icon": "pi pi-mouse",
+        "description": "Panel interactivo.",
+        "group": "client",
+        "type": "secondary"
+      }
     ],
     "architectureEdges": [
-      { "from": "desktop", "to": "electron" },
-      { "from": "electron", "to": "playwright" },
-      { "from": "playwright", "to": "parser" },
-      { "from": "parser", "to": "groq" },
-      { "from": "groq", "to": "cache" },
-      { "from": "cache", "to": "excel" },
-      { "from": "excel", "to": "ui" }
+      {
+        "from": "desktop",
+        "to": "electron"
+      },
+      {
+        "from": "electron",
+        "to": "playwright"
+      },
+      {
+        "from": "playwright",
+        "to": "parser"
+      },
+      {
+        "from": "parser",
+        "to": "groq"
+      },
+      {
+        "from": "groq",
+        "to": "cache"
+      },
+      {
+        "from": "cache",
+        "to": "excel"
+      },
+      {
+        "from": "excel",
+        "to": "ui"
+      }
     ],
     "challenges": [
       {
@@ -250,14 +579,40 @@
       "Exportación de auditorías optimizada para consumo de modelos de IA (JSON/Markdown)",
       "Detección de anti-patrones en sistemas de utilidades CSS (Tailwind/Bootstrap)"
     ],
-    "keywords": ["SEO", "análisis", "React", "TypeScript", "Vite", "Electron", "Playwright"],
+    "keywords": [
+      "SEO",
+      "análisis",
+      "React",
+      "TypeScript",
+      "Vite",
+      "Electron",
+      "Playwright"
+    ],
     "techStack": [
-      { "name": "React", "icon": "devicon-react-original" },
-      { "name": "TypeScript", "icon": "devicon-typescript-plain" },
-      { "name": "Vite", "icon": "devicon-vitejs-plain" },
-      { "name": "Electron", "icon": "devicon-electron-original" },
-      { "name": "Playwright", "icon": "devicon-playwright-plain" },
-      { "name": "Tailwind CSS", "icon": "devicon-tailwindcss-original" }
+      {
+        "name": "React",
+        "icon": "devicon-react-original"
+      },
+      {
+        "name": "TypeScript",
+        "icon": "devicon-typescript-plain"
+      },
+      {
+        "name": "Vite",
+        "icon": "devicon-vitejs-plain"
+      },
+      {
+        "name": "Electron",
+        "icon": "devicon-electron-original"
+      },
+      {
+        "name": "Playwright",
+        "icon": "devicon-playwright-plain"
+      },
+      {
+        "name": "Tailwind CSS",
+        "icon": "devicon-tailwindcss-original"
+      }
     ],
     "readmeMarkdown": {
       "objective": "Seona resuelve el problema de auditar páginas SEO de aplicaciones locales (a menudo SPAs) que los audits tradicionales no pueden analizar porque su contenido es generado por JavaScript. Identifica el framework del stack y ejecuta 5 motores de auditoría en paralelo, entregando reportes estructurados listos para que un modelo de IA los consuma.",
@@ -267,18 +622,63 @@
       "learnings": "Aprendí a equilibrar parseo estático versus renderizado headless: Cheerio es rápido pero no ejecuta JS, mientras Playwright resuelve SPAs pero es costoso. La clave fue decidir el motor por tipo de aplicación y paralelizar los 5 audits para mantener tiempos de respuesta razonables."
     },
     "structuredStack": {
-      "frontend": ["React", "TypeScript", "Vite", "Zustand", "Recharts", "Radix UI", "Tailwind CSS"],
-      "automation": ["Playwright", "Chromium", "Cheerio"],
-      "platform": ["Electron"],
-      "persistence": ["JSON"],
-      "export": ["JSON", "Markdown"]
+      "frontend": [
+        "React",
+        "TypeScript",
+        "Vite",
+        "Zustand",
+        "Recharts",
+        "Radix UI",
+        "Tailwind CSS"
+      ],
+      "automation": [
+        "Playwright",
+        "Chromium",
+        "Cheerio"
+      ],
+      "platform": [
+        "Electron"
+      ],
+      "persistence": [
+        "JSON"
+      ],
+      "export": [
+        "JSON",
+        "Markdown"
+      ]
     },
     "structuredFeatures": {
-      "Analysis": ["Framework detection", "SEO audit (Meta)", "SEO audit (Technical)", "SEO audit (Content)", "SEO audit (CSS)", "SEO audit (Performance)"],
-      "Rendering": ["Headless browser", "SPA rendering", "Static parse", "Parallel engine"],
-      "Export": ["JSON", "Markdown", "IA-optimized reports"],
-      "Performance": ["Parallel audits", "Cheerio static parse", "Playwright selective render"],
-      "User Interface": ["React 18", "Zustand state", "Recharts", "Radix UI", "Tailwind CSS"]
+      "Analysis": [
+        "Framework detection",
+        "SEO audit (Meta)",
+        "SEO audit (Technical)",
+        "SEO audit (Content)",
+        "SEO audit (CSS)",
+        "SEO audit (Performance)"
+      ],
+      "Rendering": [
+        "Headless browser",
+        "SPA rendering",
+        "Static parse",
+        "Parallel engine"
+      ],
+      "Export": [
+        "JSON",
+        "Markdown",
+        "IA-optimized reports"
+      ],
+      "Performance": [
+        "Parallel audits",
+        "Cheerio static parse",
+        "Playwright selective render"
+      ],
+      "User Interface": [
+        "React 18",
+        "Zustand state",
+        "Recharts",
+        "Radix UI",
+        "Tailwind CSS"
+      ]
     },
     "rawMetrics": {
       "Frameworks Detectados": 4,
@@ -287,26 +687,108 @@
       "Formatos de Exportación": 2,
       "Estado": "Publicado"
     },
-    "architectureLayout": { "orientation": "tree" },
+    "architectureLayout": {
+      "orientation": "swimlanes"
+    },
     "architectureNodes": [
-      { "id": "user", "label": "Usuario", "icon": "pi pi-user", "description": "Actor que inicia la auditoría apuntando a una URL local." },
-      { "id": "url", "label": "URL de la app local", "icon": "pi pi-link", "description": "Origen del contenido a auditar." },
-      { "id": "detect", "label": "Detección de framework", "icon": "pi pi-search", "description": "Identifica el stack del frontend (Django, Angular, Thymeleaf, ...)." },
-      { "id": "cheerio", "label": "Parser estático (Cheerio)", "icon": "pi pi-file", "description": "Extrae contenido sin ejecutar JavaScript." },
-      { "id": "playwright", "label": "Motor headless (Playwright)", "icon": "devicon-playwright-original", "description": "Renderiza SPAs antes de analizarlas." },
-      { "id": "audits", "label": "5 Auditorías en paralelo", "icon": "pi pi-bolt", "description": "SEO en 5 dimensiones: Meta, Técnico, Contenido, CSS, Performance." },
-      { "id": "aggregate", "label": "Agregación de resultados", "icon": "pi pi-sitemap", "description": "Consolida los hallazgos sin condiciones de carrera." },
-      { "id": "export", "label": "Export (JSON / Markdown)", "icon": "pi pi-file-export", "description": "Reportes estructurados listos para consumo de IAs." }
+      {
+        "id": "user",
+        "label": "Usuario",
+        "icon": "pi pi-user",
+        "description": "Actor principal.",
+        "group": "client",
+        "type": "primary"
+      },
+      {
+        "id": "url",
+        "label": "Local URL",
+        "icon": "pi pi-link",
+        "description": "Target app.",
+        "group": "client",
+        "type": "secondary"
+      },
+      {
+        "id": "detect",
+        "label": "Stack Detect",
+        "icon": "pi pi-search",
+        "description": "Detecta framework.",
+        "group": "application",
+        "type": "primary"
+      },
+      {
+        "id": "cheerio",
+        "label": "Cheerio Parser",
+        "icon": "pi pi-file",
+        "description": "Static parse.",
+        "group": "automation",
+        "type": "secondary"
+      },
+      {
+        "id": "playwright",
+        "label": "Playwright Render",
+        "icon": "devicon-playwright-original",
+        "description": "Render SPAs.",
+        "group": "automation",
+        "type": "primary"
+      },
+      {
+        "id": "audits",
+        "label": "5 Parallel Audits",
+        "icon": "pi pi-bolt",
+        "description": "SEO Metrics.",
+        "group": "application",
+        "type": "primary"
+      },
+      {
+        "id": "aggregate",
+        "label": "Aggregator",
+        "icon": "pi pi-sitemap",
+        "description": "Consolida resultados.",
+        "group": "application",
+        "type": "secondary"
+      },
+      {
+        "id": "export",
+        "label": "AI Export",
+        "icon": "pi pi-file-export",
+        "description": "JSON / MD.",
+        "group": "persistence",
+        "type": "secondary"
+      }
     ],
     "architectureEdges": [
-      { "from": "user", "to": "url" },
-      { "from": "url", "to": "detect" },
-      { "from": "detect", "to": "cheerio" },
-      { "from": "detect", "to": "playwright" },
-      { "from": "cheerio", "to": "audits" },
-      { "from": "playwright", "to": "audits" },
-      { "from": "audits", "to": "aggregate" },
-      { "from": "aggregate", "to": "export" }
+      {
+        "from": "user",
+        "to": "url"
+      },
+      {
+        "from": "url",
+        "to": "detect"
+      },
+      {
+        "from": "detect",
+        "to": "cheerio"
+      },
+      {
+        "from": "detect",
+        "to": "playwright"
+      },
+      {
+        "from": "cheerio",
+        "to": "audits"
+      },
+      {
+        "from": "playwright",
+        "to": "audits"
+      },
+      {
+        "from": "audits",
+        "to": "aggregate"
+      },
+      {
+        "from": "aggregate",
+        "to": "export"
+      }
     ],
     "challenges": [
       {
@@ -349,14 +831,40 @@
       "Dashboard interactivo de ventas con Chart.js",
       "Código auditado con SonarQube y Codacy (rating A)"
     ],
-    "keywords": ["e-commerce", "Java", "Spring Boot", "Angular", "JWT", "MySQL", "SonarQube"],
+    "keywords": [
+      "e-commerce",
+      "Java",
+      "Spring Boot",
+      "Angular",
+      "JWT",
+      "MySQL",
+      "SonarQube"
+    ],
     "techStack": [
-      { "name": "Java", "icon": "devicon-java-plain" },
-      { "name": "Spring Boot", "icon": "devicon-spring-original" },
-      { "name": "Angular", "icon": "devicon-angular-original" },
-      { "name": "MySQL", "icon": "devicon-mysql-plain" },
-      { "name": "JWT", "icon": "devicon-json-plain" },
-      { "name": "SonarQube", "icon": "devicon-sonarqube-plain" }
+      {
+        "name": "Java",
+        "icon": "devicon-java-plain"
+      },
+      {
+        "name": "Spring Boot",
+        "icon": "devicon-spring-original"
+      },
+      {
+        "name": "Angular",
+        "icon": "devicon-angular-original"
+      },
+      {
+        "name": "MySQL",
+        "icon": "devicon-mysql-plain"
+      },
+      {
+        "name": "JWT",
+        "icon": "devicon-json-plain"
+      },
+      {
+        "name": "SonarQube",
+        "icon": "devicon-sonarqube-plain"
+      }
     ],
     "readmeMarkdown": {
       "objective": "Salsamentaría es un e-commerce B2B que nace del requerimiento de una gestión de inventarios reactiva con control de stock al vuelo y un dashboard analítico, todo bajo un estándar estricto de calidad de código validado por SonarQube.",
@@ -366,18 +874,59 @@
       "learnings": "Las lecciones clave fueron implementar rollback transaccional del inventario tras cancelaciones de órdenes para evitar consistencia, aplicar quality gates de SonarQube en CI para mantener rating A, y estructurar la API REST para que Angular consuma datos de forma eficiente sin over-fetching."
     },
     "structuredStack": {
-      "backend": ["Java", "Spring Boot", "Spring Security", "Spring Data JPA", "JWT"],
-      "frontend": ["Angular 20", "TypeScript", "Chart.js"],
-      "database": ["MySQL", "Hibernate"],
-      "authentication": ["JWT", "Spring Security"],
-      "audit": ["SonarQube", "Codacy"]
+      "backend": [
+        "Java",
+        "Spring Boot",
+        "Spring Security",
+        "Spring Data JPA",
+        "JWT"
+      ],
+      "frontend": [
+        "Angular 20",
+        "TypeScript",
+        "Chart.js"
+      ],
+      "database": [
+        "MySQL",
+        "Hibernate"
+      ],
+      "authentication": [
+        "JWT",
+        "Spring Security"
+      ],
+      "audit": [
+        "SonarQube",
+        "Codacy"
+      ]
     },
     "structuredFeatures": {
-      "Security": ["JWT authentication", "Spring Security", "Token validation", "Role-based access"],
-      "Catalog": ["Categorías CRUD", "Productos CRUD", "Órdenes CRUD"],
-      "Inventory": ["Reactive stock", "Transactional rollback", "Stock-on-hand control"],
-      "Reporting": ["Sales dashboard", "Chart.js charts", "Export-ready data"],
-      "Architecture": ["Spring Boot REST API", "Angular 20 SPA", "MySQL persistence", "SonarQube audit"]
+      "Security": [
+        "JWT authentication",
+        "Spring Security",
+        "Token validation",
+        "Role-based access"
+      ],
+      "Catalog": [
+        "Categorías CRUD",
+        "Productos CRUD",
+        "Órdenes CRUD"
+      ],
+      "Inventory": [
+        "Reactive stock",
+        "Transactional rollback",
+        "Stock-on-hand control"
+      ],
+      "Reporting": [
+        "Sales dashboard",
+        "Chart.js charts",
+        "Export-ready data"
+      ],
+      "Architecture": [
+        "Spring Boot REST API",
+        "Angular 20 SPA",
+        "MySQL persistence",
+        "SonarQube audit"
+      ]
     },
     "rawMetrics": {
       "Endpoints REST": 12,
@@ -385,21 +934,80 @@
       "Rating SonarQube": "A",
       "Estado": "Completado"
     },
-    "architectureLayout": { "orientation": "pipeline" },
+    "architectureLayout": {
+      "orientation": "swimlanes"
+    },
     "architectureNodes": [
-      { "id": "spa", "label": "Angular 20 (SPA)", "icon": "devicon-angular-original", "description": "Cliente reactivo que consume la API REST del backend." },
-      { "id": "api", "label": "API REST (Spring Boot)", "icon": "devicon-spring-original", "description": "Capa de exposición que atiende peticiones y orquesta casos de uso." },
-      { "id": "security", "label": "Spring Security + JWT", "icon": "pi pi-lock", "description": "Autenticación y autorización basada en tokens." },
-      { "id": "persistence", "label": "Spring Data JPA", "icon": "devicon-java-plain", "description": "Mapeo orientado a objetos y transacciones con la base de datos." },
-      { "id": "mysql", "label": "MySQL", "icon": "devicon-mysql-plain", "description": "Almacenamiento transaccional del catálogo e inventario." },
-      { "id": "audit", "label": "SonarQube", "icon": "devicon-sonarqube-plain", "description": "Quality gate que valida la calidad del código en cada build." }
+      {
+        "id": "spa",
+        "label": "Angular 20 SPA",
+        "icon": "devicon-angular-original",
+        "description": "Cliente reactivo.",
+        "group": "client",
+        "type": "primary"
+      },
+      {
+        "id": "api",
+        "label": "REST API",
+        "icon": "devicon-spring-original",
+        "description": "Spring Boot.",
+        "group": "application",
+        "type": "primary"
+      },
+      {
+        "id": "security",
+        "label": "Security",
+        "icon": "pi pi-lock",
+        "description": "JWT Tokens.",
+        "group": "application",
+        "type": "secondary"
+      },
+      {
+        "id": "persistence",
+        "label": "Spring Data JPA",
+        "icon": "devicon-java-plain",
+        "description": "ORM transactions.",
+        "group": "persistence",
+        "type": "primary"
+      },
+      {
+        "id": "mysql",
+        "label": "MySQL",
+        "icon": "devicon-mysql-plain",
+        "description": "Base de datos.",
+        "group": "database",
+        "type": "primary"
+      },
+      {
+        "id": "audit",
+        "label": "SonarQube",
+        "icon": "devicon-sonarqube-plain",
+        "description": "Quality gate.",
+        "group": "external",
+        "type": "secondary"
+      }
     ],
     "architectureEdges": [
-      { "from": "spa", "to": "api" },
-      { "from": "api", "to": "security" },
-      { "from": "security", "to": "persistence" },
-      { "from": "persistence", "to": "mysql" },
-      { "from": "api", "to": "audit" }
+      {
+        "from": "spa",
+        "to": "api"
+      },
+      {
+        "from": "api",
+        "to": "security"
+      },
+      {
+        "from": "security",
+        "to": "persistence"
+      },
+      {
+        "from": "persistence",
+        "to": "mysql"
+      },
+      {
+        "from": "api",
+        "to": "audit"
+      }
     ],
     "challenges": [
       {

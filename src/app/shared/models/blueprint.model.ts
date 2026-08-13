@@ -3,6 +3,8 @@ export interface BlueprintNode {
   label: string;
   description: string;
   icon: string;
+  group?: string;
+  type?: 'primary' | 'secondary';
 }
 
 export interface BlueprintEdge {
