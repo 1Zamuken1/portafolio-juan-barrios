@@ -6,20 +6,24 @@ import {
   effect,
   inject,
   PLATFORM_ID,
+  viewChildren,
+  ElementRef,
+  afterNextRender,
+  OnDestroy,
+  viewChild
 } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { BlueprintNode, BlueprintEdge, BlueprintLayout } from '../../models/blueprint.model';
 
-interface PositionedNode extends BlueprintNode {
-  x: number;
-  y: number;
+interface ZoneGroup {
+  name: string;
+  nodes: BlueprintNode[];
 }
 
-interface Connector {
-  from: PositionedNode;
-  to: PositionedNode;
-  points: { x: number; y: number }[];
-  type: 'orthogonal';
+interface SVGConnector {
+  fromId: string;
+  toId: string;
+  path: string;
 }
 
 @Component({
@@ -29,240 +33,307 @@ interface Connector {
   templateUrl: './blueprint-viewer.component.html',
   styleUrl: './blueprint-viewer.component.css',
 })
-export class BlueprintViewerComponent {
+export class BlueprintViewerComponent implements OnDestroy {
   private platformId = inject(PLATFORM_ID);
+  private isBrowser = isPlatformBrowser(this.platformId);
+  private resizeObserver: ResizeObserver | null = null;
 
-  /** Project definition feeding the blueprint. Pure configuration, no project-specific logic. */
   readonly nodes = input<BlueprintNode[]>([]);
   readonly edges = input<BlueprintEdge[]>([]);
-
-  /** Optional layout hints. `auto` infers the best orientation from the graph. */
   readonly layout = input<BlueprintLayout | undefined>(undefined);
-
-  /** HUD metadata (purely presentational). */
   readonly version = input<string>('v2.1');
   readonly platform = input<string>('Desktop');
 
-  /** Interaction state */
   readonly zoom = signal(1);
   readonly offsetX = signal(0);
   readonly offsetY = signal(0);
   readonly highlightedNodeId = signal<string | null>(null);
+  
+  readonly isPanning = signal(false);
+  private panStartX = 0;
+  private panStartY = 0;
 
-  private isBrowser = isPlatformBrowser(this.platformId);
-  viewBoxWidth = signal(0);
-  viewBoxHeight = signal(0);
+  // View queries for DOM elements to draw edges
+  readonly nodeEls = viewChildren<ElementRef<HTMLElement>>('nodeEl');
+  readonly canvasEl = viewChild<ElementRef<HTMLElement>>('canvas');
 
-  /** Computed positionned nodes + connectors derived from inputs */
-  readonly positionedNodes = computed(() => this.computePositions());
-  readonly connectors = computed(() => this.computeConnectors(this.positionedNodes()));
-  readonly zoomPercent = computed(() => Math.round(this.zoom() * 100));
-  readonly interactiveEnabled = computed(() => this.isBrowser);
+  // Calculated SVG Paths
+  readonly connectors = signal<SVGConnector[]>([]);
+
+  // Logical sorting order for zones
+  private readonly zoneOrder = [
+    'client', 'input', 'application', 'core', 'automation', 
+    'persistence', 'database', 'external', 'export'
+  ];
+
+  readonly groupedNodes = computed<ZoneGroup[]>(() => {
+    const allNodes = this.nodes() ?? [];
+    if (!allNodes.length) return [];
+
+    const map = new Map<string, BlueprintNode[]>();
+    for (const n of allNodes) {
+      const g = n.group || 'default';
+      if (!map.has(g)) map.set(g, []);
+      map.get(g)!.push(n);
+    }
+
+    const groups: ZoneGroup[] = [];
+    for (const [name, nodes] of map.entries()) {
+      groups.push({ name, nodes });
+    }
+
+    groups.sort((a, b) => {
+      let idxA = this.zoneOrder.indexOf(a.name.toLowerCase());
+      let idxB = this.zoneOrder.indexOf(b.name.toLowerCase());
+      if (idxA === -1) idxA = 999;
+      if (idxB === -1) idxB = 999;
+      return idxA - idxB;
+    });
+
+    return groups;
+  });
 
   constructor() {
-    effect(() => {
-      const nodes = this.nodes();
-      const positioned = this.positionedNodes();
-      let w = 0;
-      let h = 0;
-      for (const n of positioned) {
-        w = Math.max(w, (n.x ?? 0) + 260);
-        h = Math.max(h, (n.y ?? 0) + 120);
+    afterNextRender(() => {
+      if (!this.isBrowser) return;
+      // Setup resize observer on the canvas to redraw paths
+      const canvas = this.canvasEl()?.nativeElement;
+      if (canvas) {
+        this.resizeObserver = new ResizeObserver(() => {
+          this.recalculatePaths();
+        });
+        this.resizeObserver.observe(canvas);
       }
-      this.viewBoxWidth.set(Math.max(w, 800));
-      this.viewBoxHeight.set(Math.max(h, 600));
-      // Reset zoom/offset whenever the dataset changes
-      this.zoom.set(1);
-      this.offsetX.set(0);
-      this.offsetY.set(0);
-      this.highlightedNodeId.set(null);
+    });
+
+    effect(() => {
+      // Trigger path recalculation when nodes or zoom change
+      this.nodes();
+      this.edges();
+      if (this.isBrowser) {
+        setTimeout(() => this.recalculatePaths(), 50);
+      }
     });
   }
 
+  ngOnDestroy() {
+    this.resizeObserver?.disconnect();
+  }
+
   // ═══════════════════════════════════════════════════════════════
-  // Layout engine
+  // Path Routing Engine (DOM based)
   // ═══════════════════════════════════════════════════════════════
+  
+  private recalculatePaths() {
+    if (!this.isBrowser) return;
+    const canvas = this.canvasEl()?.nativeElement;
+    const nodeElements = this.nodeEls();
+    const currentEdges = this.edges();
+    if (!canvas || !nodeElements.length || !currentEdges.length) return;
 
-  private computePositions(): PositionedNode[] {
-    const inputNodes = this.nodes() ?? [];
-    const inputEdges = this.edges() ?? [];
-    const layout = this.layout() ?? { orientation: 'auto' };
-
-    if (inputNodes.length === 0) return [];
-
-    const nodeMap = new Map<string, BlueprintNode>();
-    for (const n of inputNodes) nodeMap.set(n.id, n);
-
-    // degree maps
-    const inDegree = new Map<string, number>();
-    const outDegree = new Map<string, number>();
-    for (const n of inputNodes) { inDegree.set(n.id, 0); outDegree.set(n.id, 0); }
-    for (const e of inputEdges) {
-      if (!nodeMap.has(e.from) || !nodeMap.has(e.to)) continue;
-      inDegree.set(e.to, (inDegree.get(e.to) ?? 0) + 1);
-      outDegree.set(e.from, (outDegree.get(e.from) ?? 0) + 1);
-    }
-
-    // Longest-path layering (depth = longest path from a root)
-    const depth = new Map<string, number>();
-    const visit = (id: string): number => {
-      if (depth.has(id)) return depth.get(id)!;
-      const incoming = inputEdges.filter(e => e.to === id && nodeMap.has(e.from));
-      if (incoming.length === 0) {
-        depth.set(id, 0);
-        return 0;
+    const canvasRect = canvas.getBoundingClientRect();
+    const domMap = new Map<string, DOMRect>();
+    
+    nodeElements.forEach(elRef => {
+      const el = elRef.nativeElement;
+      const id = el.getAttribute('data-node-id');
+      if (id) {
+        domMap.set(id, el.getBoundingClientRect());
       }
-      let max = 0;
-      for (const e of incoming) {
-        max = Math.max(max, visit(e.from) + 1);
-      }
-      depth.set(id, max);
-      return max;
+    });
+
+    // Track how many connections depart/arrive at each side of each node
+    // so we can fan out attachment points and avoid stacking
+    const portCounters = new Map<string, number>(); // "nodeId-side" -> count
+    const getPort = (nodeId: string, side: 'left' | 'right' | 'top' | 'bottom'): number => {
+      const key = `${nodeId}-${side}`;
+      const count = portCounters.get(key) ?? 0;
+      portCounters.set(key, count + 1);
+      return count;
     };
-    for (const n of inputNodes) visit(n.id);
 
-    // Group into ranks
-    const rankMap = new Map<number, string[]>();
-    for (const n of inputNodes) {
-      const r = depth.get(n.id) ?? 0;
-      if (!rankMap.has(r)) rankMap.set(r, []);
-      rankMap.get(r)!.push(n.id);
+    // Pre-scan to count total ports per side for centering
+    const portTotals = new Map<string, number>();
+    for (const edge of currentEdges) {
+      const rectA = domMap.get(edge.from);
+      const rectB = domMap.get(edge.to);
+      if (!rectA || !rectB) continue;
+      
+      const sides = this.decideSides(rectA, rectB, canvasRect);
+      const keyFrom = `${edge.from}-${sides.fromSide}`;
+      const keyTo = `${edge.to}-${sides.toSide}`;
+      portTotals.set(keyFrom, (portTotals.get(keyFrom) ?? 0) + 1);
+      portTotals.set(keyTo, (portTotals.get(keyTo) ?? 0) + 1);
     }
-    const ranks = Array.from({ length: rankMap.size }, () => [] as string[]);
-    for (const [r, ids] of rankMap.entries()) {
-      // stable order within rank: preserve input order
-      ranks[r] = ids.sort((a, b) => inputNodes.indexOf(nodeMap.get(a)!) - inputNodes.indexOf(nodeMap.get(b)!));
+
+    // Track used midpoint channels to offset parallel routes
+    let channelIndex = 0;
+
+    const newConnectors: SVGConnector[] = [];
+
+    for (const edge of currentEdges) {
+      const rectA = domMap.get(edge.from);
+      const rectB = domMap.get(edge.to);
+      if (!rectA || !rectB) continue;
+
+      const ax = rectA.left - canvasRect.left;
+      const ay = rectA.top - canvasRect.top;
+      const aw = rectA.width;
+      const ah = rectA.height;
+
+      const bx = rectB.left - canvasRect.left;
+      const by = rectB.top - canvasRect.top;
+      const bw = rectB.width;
+      const bh = rectB.height;
+
+      const sides = this.decideSides(rectA, rectB, canvasRect);
+      
+      // Get port indices for fanning
+      const fromPortIdx = getPort(edge.from, sides.fromSide);
+      const toPortIdx = getPort(edge.to, sides.toSide);
+      const fromTotal = portTotals.get(`${edge.from}-${sides.fromSide}`) ?? 1;
+      const toTotal = portTotals.get(`${edge.to}-${sides.toSide}`) ?? 1;
+
+      // Calculate attachment points with fan-out
+      const startPt = this.getAttachmentPoint(ax, ay, aw, ah, sides.fromSide, fromPortIdx, fromTotal);
+      const endPt = this.getAttachmentPoint(bx, by, bw, bh, sides.toSide, toPortIdx, toTotal);
+
+      // Check if this connection skips a column to route it via a "bus"
+      // Si la distancia horizontal es mayor a 1 columna + 1 gap (aprox 1.5 anchos de nodo)
+      const isLongJump = Math.abs(startPt.x - endPt.x) > (aw * 1.5);
+
+      // Build orthogonal path with unique channel offset
+      const offset = channelIndex * 12;
+      channelIndex++;
+      
+      const path = this.buildOrthogonalPath(startPt, endPt, sides.fromSide, sides.toSide, offset, isLongJump);
+      
+      newConnectors.push({ fromId: edge.from, toId: edge.to, path });
     }
 
-    // Decide orientation
-    const hasBranch = Array.from(outDegree.values()).some(d => d > 1);
-    const orientation = layout.orientation === 'auto'
-      ? (hasBranch ? 'horizontal' : 'pipeline')
-      : layout.orientation;
+    this.connectors.set(newConnectors);
+  }
 
-    const nodeW = 250;
-    const nodeH = 96;
-    const gapX = 260;
-    const gapY = 150;
-    const canvasHeight = 600; // baseline canvas height (matches viewBox min-height)
+  /** Decide which sides of two rects to connect */
+  private decideSides(
+    rectA: DOMRect, rectB: DOMRect, canvasRect: DOMRect
+  ): { fromSide: 'left' | 'right' | 'top' | 'bottom'; toSide: 'left' | 'right' | 'top' | 'bottom' } {
+    const ax = rectA.left - canvasRect.left;
+    const ay = rectA.top - canvasRect.top;
+    const aw = rectA.width;
+    const ah = rectA.height;
+    const bx = rectB.left - canvasRect.left;
+    const by = rectB.top - canvasRect.top;
+    const bw = rectB.width;
+    const bh = rectB.height;
+    
+    const acx = ax + aw / 2;
+    const acy = ay + ah / 2;
+    const bcx = bx + bw / 2;
+    const bcy = by + bh / 2;
 
-    const positioned: PositionedNode[] = [];
-    if (orientation === 'horizontal' || orientation === 'tree' || orientation === 'pipeline') {
-      // layers = columns (left to right); each column stacked vertically
-      const maxColHeight = Math.max(...ranks.map(c => c.length)); // tallest column
-      for (let c = 0; c < ranks.length; c++) {
-        const col = ranks[c];
-        const totalH = Math.max(col.length - 1, 0) * gapY;
-        col.forEach((id, i) => {
-          const n = nodeMap.get(id)!;
-          const x = c * gapX;
-          const y = ((maxColHeight - 1) * gapY) / 2 - totalH / 2 + i * gapY;
-          positioned.push({ ...n, x, y });
-        });
+    // Check if vertically aligned (same column)
+    if (Math.abs(acx - bcx) < Math.max(aw, bw) / 2) {
+      return bcy > acy
+        ? { fromSide: 'bottom', toSide: 'top' }
+        : { fromSide: 'top', toSide: 'bottom' };
+    }
+    
+    // Horizontal flow
+    return bcx > acx
+      ? { fromSide: 'right', toSide: 'left' }
+      : { fromSide: 'left', toSide: 'right' };
+  }
+
+  /** Get an attachment point on a node's edge, fanned out evenly among multiple ports */
+  private getAttachmentPoint(
+    x: number, y: number, w: number, h: number,
+    side: 'left' | 'right' | 'top' | 'bottom',
+    portIndex: number, portTotal: number
+  ): { x: number; y: number } {
+    const margin = 12; // inset from corners
+    
+    switch (side) {
+      case 'right': {
+        const usableH = h - margin * 2;
+        const step = portTotal > 1 ? usableH / (portTotal - 1) : usableH / 2;
+        const py = portTotal > 1 ? y + margin + portIndex * step : y + h / 2;
+        return { x: x + w, y: py };
       }
-    } else {
-      // vertical: layers = rows (top to bottom)
-      const maxRowWidth = Math.max(...ranks.map(r => r.length)); // widest row
-      for (let r = 0; r < ranks.length; r++) {
-        const row = ranks[r];
-        const totalW = Math.max(row.length - 1, 0) * gapX;
-        const centerX = ((maxRowWidth - 1) * gapX) / 2;
-        row.forEach((id, i) => {
-          const n = nodeMap.get(id)!;
-          const x = centerX - totalW / 2 + i * gapX;
-          const y = r * gapY;
-          positioned.push({ ...n, x, y });
-        });
+      case 'left': {
+        const usableH = h - margin * 2;
+        const step = portTotal > 1 ? usableH / (portTotal - 1) : usableH / 2;
+        const py = portTotal > 1 ? y + margin + portIndex * step : y + h / 2;
+        return { x: x, y: py };
+      }
+      case 'bottom': {
+        const usableW = w - margin * 2;
+        const step = portTotal > 1 ? usableW / (portTotal - 1) : usableW / 2;
+        const px = portTotal > 1 ? x + margin + portIndex * step : x + w / 2;
+        return { x: px, y: y + h };
+      }
+      case 'top': {
+        const usableW = w - margin * 2;
+        const step = portTotal > 1 ? usableW / (portTotal - 1) : usableW / 2;
+        const px = portTotal > 1 ? x + margin + portIndex * step : x + w / 2;
+        return { x: px, y: y };
       }
     }
-
-    // Center nodes vertically within the canvas when the layout does not fill
-    // the full height (e.g. a single-row pipeline), so they are not pinned to the top.
-    const maxBottom = positioned.reduce((m, n) => Math.max(m, n.y + nodeH), 0);
-    const yOffset = Math.max((canvasHeight - maxBottom) / 2, 0);
-    if (yOffset > 0) {
-      for (const n of positioned) n.y += yOffset;
-    }
-
-    return positioned;
   }
 
-  /** Build orthogonal (90°) connector polylines between positioned nodes */
-  private computeConnectors(nodes: PositionedNode[]): Connector[] {
-    const inputEdges = this.edges() ?? [];
-    const byId = new Map(nodes.map(n => [n.id, n] as const));
-    const nodeW = 250;
-    const nodeH = 96;
-    const orientation = this.resolvedOrientation();
-
-    const result: Connector[] = [];
-    for (const e of inputEdges) {
-      const from = byId.get(e.from);
-      const to = byId.get(e.to);
-      if (!from || !to) continue;
-
-      const conn = this.buildOrthogonalPath(from, to, nodeW, nodeH, orientation);
-      result.push({ from, to, points: conn.points, type: 'orthogonal' });
-    }
-    return result;
-  }
-
-  private resolvedOrientation(): 'horizontal' | 'vertical' {
-    const o = this.layout()?.orientation ?? 'auto';
-    if (o === 'auto') {
-      // infer from node arrangement: if any edge goes left->right, treat as horizontal
-      return 'horizontal';
-    }
-    // map layout hints to a rendering orientation
-    if (o === 'tree' || o === 'horizontal' || o === 'pipeline') return 'horizontal';
-    if (o === 'vertical') return 'vertical';
-    return 'horizontal';
-  }
-
-  /** Compute an orthogonal (90°-elbow) polyline between two axis-aligned nodes. */
+  /** Build an orthogonal (right-angle) path between two points with a unique channel offset */
   private buildOrthogonalPath(
-    from: PositionedNode,
-    to: PositionedNode,
-    nodeW: number,
-    nodeH: number,
-    orientation: 'horizontal' | 'vertical',
-  ): { points: { x: number; y: number }[] } {
-    const fx = from.x + nodeW / 2;
-    const fy = from.y + nodeH / 2;
-    const tx = to.x + nodeW / 2;
-    const ty = to.y + nodeH / 2;
+    start: { x: number; y: number },
+    end: { x: number; y: number },
+    fromSide: string,
+    toSide: string,
+    offset: number,
+    isLongJump: boolean
+  ): string {
+    const s = start;
+    const e = end;
 
-    // Same column (vertical stacking) -> straight vertical line
-    if (Math.abs(fx - tx) < nodeW / 2) {
-      return { points: [{ x: fx, y: from.y + nodeH }, { x: tx, y: to.y }] };
+    if (isLongJump) {
+      // Enrutar por un "Bus" superior o inferior para evitar cruzar nodos intermedios
+      // Subimos/bajamos a una Y libre. Usaremos un bus inferior si el origen está bajo, sino superior.
+      const goUp = Math.min(s.y, e.y) < 200;
+      const busY = goUp ? Math.min(s.y, e.y) - 60 - (offset * 1.5) : Math.max(s.y, e.y) + 60 + (offset * 1.5);
+      
+      let path = `M ${s.x} ${s.y}`;
+      // Salir del nodo
+      if (fromSide === 'right') path += ` L ${s.x + 20} ${s.y} L ${s.x + 20} ${busY}`;
+      else if (fromSide === 'left') path += ` L ${s.x - 20} ${s.y} L ${s.x - 20} ${busY}`;
+      else path += ` L ${s.x} ${busY}`;
+      
+      // Viajar por el bus horizontal
+      path += ` L ${e.x} ${busY}`;
+      
+      // Entrar al destino
+      if (toSide === 'right') path += ` L ${e.x + 20} ${busY} L ${e.x + 20} ${e.y} L ${e.x} ${e.y}`;
+      else if (toSide === 'left') path += ` L ${e.x - 20} ${busY} L ${e.x - 20} ${e.y} L ${e.x} ${e.y}`;
+      else path += ` L ${e.x} ${e.y}`;
+      
+      return path;
     }
 
-    // Horizontal flow -> right edge of source to left edge of target (orthogonal elbow)
-    const sx = from.x + nodeW; // right edge
-    const ex = to.x;           // left edge
-
-    // Same row (y-aligned) -> single straight segment, no degenerate elbow.
-    if (Math.abs(fy - ty) < 1) {
-      return { points: [{ x: sx, y: fy }, { x: ex, y: ty }] };
+    // If both horizontal (right→left or left→right), use a vertical midpoint
+    if ((fromSide === 'right' && toSide === 'left') || (fromSide === 'left' && toSide === 'right')) {
+      const midX = s.x + (e.x - s.x) / 2 + offset;
+      return `M ${s.x} ${s.y} L ${midX} ${s.y} L ${midX} ${e.y} L ${e.x} ${e.y}`;
+    }
+    
+    // If both vertical (bottom→top or top→bottom), use a horizontal midpoint
+    if ((fromSide === 'bottom' && toSide === 'top') || (fromSide === 'top' && toSide === 'bottom')) {
+      const midY = s.y + (e.y - s.y) / 2 + offset;
+      return `M ${s.x} ${s.y} L ${s.x} ${midY} L ${e.x} ${midY} L ${e.x} ${e.y}`;
     }
 
-    // Staggered rows -> 90° elbow through a shared middle row.
-    const midY = (fy + ty) / 2;
-    return {
-      points: [
-        { x: sx, y: fy },
-        { x: ex, y: midY },
-        { x: ex, y: ty },
-      ],
-    };
-  }
-
-  connectorPath(conn: Connector): string {
-    const pts = conn.points;
-    if (pts.length === 0) return '';
-    let d = `M ${pts[0].x} ${pts[0].y}`;
-    for (let i = 1; i < pts.length; i++) d += ` L ${pts[i].x} ${pts[i].y}`;
-    return d;
+    // Mixed sides (right→top, bottom→left, etc.) — use an L-shape
+    if (fromSide === 'right' || fromSide === 'left') {
+      return `M ${s.x} ${s.y} L ${e.x} ${s.y} L ${e.x} ${e.y}`;
+    }
+    
+    return `M ${s.x} ${s.y} L ${s.x} ${e.y} L ${e.x} ${e.y}`;
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -283,38 +354,47 @@ export class BlueprintViewerComponent {
 
   isNodeHighlighted(node: BlueprintNode): boolean {
     const h = this.highlightedNodeId();
-    // nothing highlighted -> show all fully
-    if (!h) return true;
+    if (!h) return false;
     return this.isConnectedTo(node.id, h);
   }
 
-  /** Whether target is connected to root (ancestor/descendant) via BFS over the graph */
+  isNodeDimmed(node: BlueprintNode): boolean {
+    const h = this.highlightedNodeId();
+    if (!h) return false;
+    return !this.isConnectedTo(node.id, h);
+  }
+
+  isConnectorHighlighted(conn: SVGConnector): boolean {
+    const h = this.highlightedNodeId();
+    if (!h) return false;
+    return this.isConnectedTo(conn.fromId, h) && this.isConnectedTo(conn.toId, h);
+  }
+
+  isConnectorDimmed(conn: SVGConnector): boolean {
+    const h = this.highlightedNodeId();
+    if (!h) return false;
+    return !(this.isConnectedTo(conn.fromId, h) && this.isConnectedTo(conn.toId, h));
+  }
+
   private isConnectedTo(target: string, root: string): boolean {
     if (target === root) return true;
     const inputEdges = this.edges() ?? [];
-    const visited = new Set<string>();
-    const queue = [root];
-    while (queue.length) {
-      const cur = queue.shift()!;
-      if (visited.has(cur)) continue;
-      visited.add(cur);
-      for (const e of inputEdges) {
-        if (e.from === cur && e.to === target) return true;
-        if (e.to === cur && e.from === target) return true;
-        if (e.from === cur) queue.push(e.to);
-        if (e.to === cur) queue.push(e.from);
-      }
+    
+    // Solo resaltar vecinos directos (padres e hijos) para evitar que todo el grafo se ilumine
+    for (const e of inputEdges) {
+      if (e.from === root && e.to === target) return true;
+      if (e.to === root && e.from === target) return true;
     }
+    
     return false;
   }
 
-  isConnectorHighlighted(conn: Connector): boolean {
-    const h = this.highlightedNodeId();
-    if (!h) return true;
-    return this.isConnectedTo(conn.from.id, h) && this.isConnectedTo(conn.to.id, h);
+  nodeIconClass(icon: string): string {
+    if (!icon) return 'pi pi-circle';
+    return icon;
   }
 
-  onWheel(event: WheelEvent, viewportEl: HTMLElement) {
+  onWheel(event: WheelEvent) {
     if (!this.isBrowser) return;
     event.preventDefault();
     const delta = -event.deltaY;
@@ -322,24 +402,90 @@ export class BlueprintViewerComponent {
     const next = Math.min(Math.max(this.zoom() + delta * factor, 0.4), 3);
     if (next === this.zoom()) return;
 
-    // Zoom toward the cursor (keeps the point under the mouse fixed in place).
-    if (viewportEl) {
-      const rect = viewportEl.getBoundingClientRect();
+    const canvas = this.canvasEl()?.nativeElement;
+    if (canvas) {
+      const rect = canvas.parentElement!.getBoundingClientRect();
       const cx = event.clientX - rect.left;
       const cy = event.clientY - rect.top;
       const z = this.zoom();
       const scale = next / z;
-      // transform model: translate(tx,ty) scale(z)  ->  px -> tx + z*px
-      // keep screen[cursor] fixed: tx' = cx - scale*(cx - tx)
-      this.offsetX.set(cx - scale * (cx - this.offsetX()));
-      this.offsetY.set(cy - scale * (cy - this.offsetY()));
+      
+      this.offsetX.update(x => cx - scale * (cx - x));
+      this.offsetY.update(y => cy - scale * (cy - y));
     }
     this.zoom.set(next);
   }
 
-  panBy(deltaX: number, deltaY: number) {
-    this.offsetX.update(v => v + deltaX);
-    this.offsetY.update(v => v + deltaY);
+  onPanStart(event: MouseEvent) {
+    if (!this.isBrowser) return;
+    if (event.button !== 0) return; 
+    this.panStartX = event.clientX - this.offsetX();
+    this.panStartY = event.clientY - this.offsetY();
+    this.isPanning.set(true);
+    event.preventDefault();
+  }
+
+  onPanMove(event: MouseEvent) {
+    if (!this.isPanning()) return;
+    this.offsetX.set(event.clientX - this.panStartX);
+    this.offsetY.set(event.clientY - this.panStartY);
+  }
+
+  onPanEnd() {
+    this.isPanning.set(false);
+  }
+
+  // --- Touch Events (Mobile) ---
+  private pinchStartDist = 0;
+  private pinchStartZoom = 1;
+
+  onTouchStart(event: TouchEvent) {
+    if (!this.isBrowser) return;
+    if (event.touches.length === 1) {
+      this.panStartX = event.touches[0].clientX - this.offsetX();
+      this.panStartY = event.touches[0].clientY - this.offsetY();
+      this.isPanning.set(true);
+    } else if (event.touches.length === 2) {
+      this.pinchStartDist = this.getTouchDistance(event);
+      this.pinchStartZoom = this.zoom();
+    }
+  }
+
+  onTouchMove(event: TouchEvent) {
+    if (!this.isBrowser) return;
+    
+    // Bloquear el scroll nativo dentro de este componente
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+
+    if (event.touches.length === 1 && this.isPanning()) {
+      this.offsetX.set(event.touches[0].clientX - this.panStartX);
+      this.offsetY.set(event.touches[0].clientY - this.panStartY);
+    } else if (event.touches.length === 2) {
+      const dist = this.getTouchDistance(event);
+      if (this.pinchStartDist > 0) {
+        const scale = dist / this.pinchStartDist;
+        const nextZoom = Math.min(Math.max(this.pinchStartZoom * scale, 0.4), 3);
+        this.zoom.set(nextZoom);
+      }
+    }
+  }
+
+  onTouchEnd(event?: TouchEvent) {
+    if (event && event.touches.length > 0) {
+      // Si todavía quedan dedos en pantalla, resetear los anclajes de pan
+      this.panStartX = event.touches[0].clientX - this.offsetX();
+      this.panStartY = event.touches[0].clientY - this.offsetY();
+    } else {
+      this.isPanning.set(false);
+    }
+  }
+
+  private getTouchDistance(event: TouchEvent): number {
+    const dx = event.touches[0].clientX - event.touches[1].clientX;
+    const dy = event.touches[0].clientY - event.touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
   }
 
   resetZoom() {
@@ -347,48 +493,5 @@ export class BlueprintViewerComponent {
     this.offsetX.set(0);
     this.offsetY.set(0);
     this.highlightedNodeId.set(null);
-  }
-
-  fitScreen() {
-    this.resetZoom();
-  }
-
-  trackById(index: number, n: PositionedNode): string {
-    return n.id;
-  }
-
-  /** Normalize an icon class into a renderable icon. Supports both PrimeIcons (pi pi-*) and devicon classes. */
-  nodeIconClass(icon: string): string {
-    if (!icon) return 'pi pi-circle';
-    // devicon classes come without a prefix marker; primeicons always start with 'pi'
-    return icon;
-  }
-
-  panStartX = signal(0);
-  panStartY = signal(0);
-  startOffsetX = signal(0);
-  startOffsetY = signal(0);
-  isPanning = signal(false);
-
-  onPanStart(event: MouseEvent) {
-    if (!this.isBrowser) return;
-    if (event.button !== 0) return; // left click only
-    this.panStartX.set(event.clientX);
-    this.panStartY.set(event.clientY);
-    this.startOffsetX.set(this.offsetX());
-    this.startOffsetY.set(this.offsetY());
-    this.isPanning.set(true);
-    event.preventDefault();
-  }
-
-  onPanMove(event: MouseEvent) {
-    if (!this.isPanning()) return;
-    const dx = event.clientX - this.panStartX();
-    const dy = event.clientY - this.panStartY();
-    this.panBy(dx, dy);
-  }
-
-  onPanEnd() {
-    this.isPanning.set(false);
   }
 }

@@ -3,94 +3,97 @@
   <div
     class="blueprint-viewport"
     [class.viewport--panning]="isPanning()"
-    [style.--zoom]="zoom()"
-    [style.--tx]="offsetX()"
-    [style.--ty]="offsetY()"
-    (wheel)="onWheel($event, viewportEl)"
+    (wheel)="onWheel($event)"
     (mousemove)="onPanMove($event)"
     (mouseup)="onPanEnd()"
     (mouseleave)="onPanEnd()"
-    #viewportEl
-     (mousedown)="onPanStart($event)"
+    (mousedown)="onPanStart($event)"
+    (touchstart)="onTouchStart($event)"
+    (touchmove)="onTouchMove($event)"
+    (touchend)="onTouchEnd($event)"
+    (touchcancel)="onTouchEnd($event)"
    >
     <div class="blueprint-stage"
-         [style.--zoom]="zoom()"
-         [style.--tx]="offsetX()"
-         [style.--ty]="offsetY()">
-      <svg
-        class="blueprint-canvas"
-        [attr.viewBox]="'0 0 ' + viewBoxWidth() + ' ' + viewBoxHeight()"
-        [attr.width]="viewBoxWidth()"
-        [attr.height]="viewBoxHeight()"
-        preserveAspectRatio="none"
-        role="img"
-        aria-label="Blueprint de arquitectura técnica"
-      >
-      <!-- Grid background -->
-      <defs>
-        <pattern id="blueprint-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-          <path class="grid-line" d="M 20 0 L 0 0 0 20" />
-        </pattern>
-        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="2.5"
-                orient="auto" markerUnits="strokeWidth">
-          <path class="arrow-head" d="M0,0 L4,2.5 L0,5 Z" />
-        </marker>
-      </defs>
-      <rect class="grid-bg" width="100%" height="100%" fill="url(#blueprint-grid)" />
+         #canvas
+         [style.transform]="'translate(' + offsetX() + 'px, ' + offsetY() + 'px) scale(' + zoom() + ')'"
+         [style.transform-origin]="'0 0'">
+         
+      <!-- Canvas Overlay for SVG Paths -->
+      <svg class="blueprint-canvas-overlay" width="100%" height="100%" preserveAspectRatio="none">
+        <defs>
+          <pattern id="blueprint-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path class="grid-line" d="M 40 0 L 0 0 0 40" />
+          </pattern>
+          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="2.5"
+                  orient="auto" markerUnits="strokeWidth">
+            <path class="arrow-head" d="M0,0 L4,2.5 L0,5 Z" />
+          </marker>
+        </defs>
+        
+        <!-- Grid background -->
+        <rect class="grid-bg" width="100%" height="100%" fill="url(#blueprint-grid)" />
 
-      <!-- Connectors (orthogonal 90°) -->
-      <g class="blueprint-connectors">
-        @for (conn of connectors(); track conn.from.id + '->' + conn.to.id) {
-          <path
-            class="connector-line"
-            [class.connector--highlighted]="isConnectorHighlighted(conn)"
-            [attr.d]="connectorPath(conn)"
-            marker-end="url(#arrowhead)"
-          />
-        }
-      </g>
-    </svg>
+        <!-- Connectors -->
+        <g class="blueprint-connectors">
+          @for (conn of connectors(); track conn.fromId + '->' + conn.toId) {
+            <path
+              class="connector-line"
+              [class.connector--highlighted]="isConnectorHighlighted(conn)"
+              [class.connector--dimmed]="isConnectorDimmed(conn)"
+              [attr.d]="conn.path"
+              marker-end="url(#arrowhead)"
+            />
+          }
+        </g>
+      </svg>
 
-    <!-- Nodes (HTML cards positioned over the canvas) -->
-    <div class="blueprint-nodes">
-      @for (node of positionedNodes(); track trackById($index, node)) {
-        <div
-          class="bp-node"
-          [class.bp-node--highlighted]="isNodeHighlighted(node)"
-          [style.left.px]="node.x"
-          [style.top.px]="node.y"
-          [style.width.px]="250"
-          [style.height.px]="96"
-          (click)="onNodeClick(node)"
-          (mouseenter)="onNodeHover(node, true)"
-          (mouseleave)="onNodeHover(node, false)"
-          [attr.data-node-id]="node.id"
-        >
-          <div class="bp-node-header">
-            <i [class]="nodeIconClass(node.icon)" class="bp-node-icon"></i>
-            <span class="bp-node-title">{{ node.label }}</span>
+      <!-- Nodes Layout (Logical Zones) -->
+      <div class="blueprint-zones">
+        @for (group of groupedNodes(); track group.name) {
+          <div class="bp-zone" [attr.data-zone]="group.name">
+            <div class="bp-zone-header">
+              <span class="bp-zone-title">{{ group.name | uppercase }}</span>
+            </div>
+            
+            <div class="bp-zone-nodes">
+              @for (node of group.nodes; track node.id) {
+                <div
+                  #nodeEl
+                  class="bp-node"
+                  [class.bp-node--primary]="node.type === 'primary'"
+                  [class.bp-node--secondary]="node.type === 'secondary'"
+                  [class.bp-node--highlighted]="isNodeHighlighted(node)"
+                  [class.bp-node--dimmed]="isNodeDimmed(node)"
+                  (click)="onNodeClick(node)"
+                  (mouseenter)="onNodeHover(node, true)"
+                  (mouseleave)="onNodeHover(node, false)"
+                  [attr.data-node-id]="node.id"
+                >
+                  <div class="bp-node-header">
+                    <i [class]="nodeIconClass(node.icon)" class="bp-node-icon"></i>
+                    <span class="bp-node-title">{{ node.label }}</span>
+                  </div>
+                  <p class="bp-node-description">{{ node.description }}</p>
+                </div>
+              }
+            </div>
           </div>
-          <p class="bp-node-description">{{ node.description }}</p>
-        </div>
-      }
-    </div> <!-- /.blueprint-nodes -->
-  </div> <!-- /.blueprint-stage -->
-  </div>
+        }
+      </div> <!-- /.blueprint-zones -->
+      
+    </div> <!-- /.blueprint-stage -->
+  </div> <!-- /.blueprint-viewport -->
 
   <!-- HUD técnico (CAD-style) -->
   <div class="blueprint-hud">
     <span class="hud-item">Blueprint {{ version() }}</span>
-    <span class="hud-item">Zoom {{ zoomPercent() }}%</span>
-    <span class="hud-item">Nodes {{ (positionedNodes() || []).length }}</span>
+    <span class="hud-item">Zoom {{ zoom() | number:'1.0-2' }}x</span>
+    <span class="hud-item">Nodes {{ (nodes() || []).length }}</span>
     <span class="hud-item">Connections {{ (connectors() || []).length }}</span>
-    <span class="hud-item">Interactive {{ interactiveEnabled() ? 'Enabled' : 'Disabled' }}</span>
   </div>
 
   <!-- HUD controls -->
   <div class="blueprint-controls">
-    <button class="bp-btn" (click)="fitScreen()" title="Fit screen" aria-label="Fit screen">
-      <i class="pi pi-expand"></i>
-    </button>
     <button class="bp-btn" (click)="resetZoom()" title="Reset zoom" aria-label="Reset zoom">
       <i class="pi pi-refresh"></i>
     </button>
