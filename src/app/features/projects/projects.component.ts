@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, inject, signal, ElementRef, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { CommonModule } from '@angular/common';
+import { CommonModule, UpperCasePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../core/services/data.service';
 import { Project } from '../../shared/models/project.model';
@@ -255,8 +255,60 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
     if (name.includes('mysql')) return 'devicon-mysql-plain colored';
     if (name.includes('sonar')) return 'devicon-sonarqube-plain colored';
     if (name.includes('markdown')) return 'devicon-markdown-original colored';
-    if (name.includes('excel')) return 'devicon-excel-plain colored';
+    if (name.includes('excel')) return 'pi pi-file-excel';
     return 'pi pi-bolt';
+  }
+
+  getTechColor(techName: string): string {
+    const name = techName.toLowerCase();
+    // Backend
+    if (name.includes('python')) return '#3776AB';
+    if (name.includes('django') && name.includes('orm')) return '#0C4B33';
+    if (name.includes('django') && name.includes('template')) return '#44B78B';
+    if (name.includes('django')) return '#092E20';
+    if (name.includes('java') && !name.includes('javascript')) return '#ED8B00';
+    if (name.includes('spring') && name.includes('security')) return '#4A8F3C';
+    if (name.includes('spring') && name.includes('boot')) return '#6DB33F';
+    if (name.includes('spring')) return '#6DB33F';
+    if (name.includes('php')) return '#777BB4';
+    if (name.includes('node')) return '#339933';
+    // Frontend
+    if (name.includes('angular')) return '#DD0031';
+    if (name.includes('react')) return '#61DAFB';
+    if (name.includes('vue')) return '#4FC08D';
+    if (name.includes('typescript')) return '#3178C6';
+    if (name.includes('javascript')) return '#F7DF1E';
+    if (name.includes('tailwind')) return '#06B6D4';
+    if (name.includes('html')) return '#E34F26';
+    if (name.includes('css')) return '#1572B6';
+    if (name.includes('bootstrap')) return '#7952B3';
+    if (name.includes('electron')) return '#47848F';
+    // Database
+    if (name.includes('sqlite')) return '#003B57';
+    if (name.includes('postgres')) return '#4169E1';
+    if (name.includes('mysql')) return '#4479A1';
+    if (name.includes('mongodb')) return '#47A248';
+    // AI
+    if (name.includes('gemini')) return '#4285F4';
+    if (name.includes('groq')) return '#F55036';
+    // Auth
+    if (name.includes('oauth') || name.includes('google')) return '#4285F4';
+    if (name.includes('email')) return '#EA4335';
+    // DevOps / Tools
+    if (name.includes('docker')) return '#2496ED';
+    if (name.includes('git') && !name.includes('github')) return '#F05032';
+    if (name.includes('github')) return '#181717';
+    if (name.includes('sonar')) return '#4E9BCD';
+    if (name.includes('playwright')) return '#2EAD33';
+    if (name.includes('chromium') || name.includes('chrome')) return '#4285F4';
+    if (name.includes('markdown')) return '#000000';
+    if (name.includes('vercel')) return '#000000';
+    // Export
+    if (name.includes('excel')) return '#217346';
+    if (name.includes('pdf')) return '#EC1C24';
+    if (name.includes('csv')) return '#2D7D46';
+    // Fallback
+    return '#6e5494';
   }
 
   getFeatureIcon(category: string): string {

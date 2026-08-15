@@ -4,175 +4,116 @@
   <!-- Document Header (mimics file tab) -->
   <div class="doc-tab-bar">
     <div class="doc-tab active">
-      <i class="pi pi-file"></i>
-      <span>about.md</span>
-    </div>
-    <div class="doc-tab">
-      <i class="pi pi-server"></i>
-      <span>skills.json</span>
-    </div>
-    <div class="doc-tab">
-      <i class="pi pi-history"></i>
-      <span>experience.log</span>
+      <i class="pi pi-book"></i>
+      <span>README.md</span>
     </div>
   </div>
 
   <!-- Scrollable document content -->
-  <div class="doc-body">
+  <div class="doc-body markdown-body">
 
-    <!-- PROFILE HEADER -->
-    <section class="profile-section glass-card">
-      <div class="profile-avatar-wrap">
-        <div class="profile-avatar">
-          <span class="avatar-initials">JB</span>
-          <div class="online-dot"></div>
-        </div>
-      </div>
-      <div class="profile-info">
-        <h1 class="profile-name">
-          <span class="syntax-comment">// </span>
-          <span class="text-primary-accent">Juan Barrios</span>
-        </h1>
-        <p class="profile-role">Backend Developer <span class="syntax-punct">//</span> Java · Spring Boot · Python</p>
-        <div class="profile-badges">
-          <span class="badge badge-online">
-            <span class="pulse-dot"></span>
-            Status: Online
+    <!-- 1. Presentación -->
+    <h1>Hola, soy Juan Barrios</h1>
+    <h3 class="subtitle">Desarrollador Backend Junior | Java & Spring Boot</h3>
+    
+    <p>Tecnólogo en Análisis y Desarrollo de Software — SENA</p>
+    
+    <p>Actualmente estoy buscando una oportunidad de etapa productiva para continuar desarrollándome profesionalmente en el área de software.</p>
+    
+    <p class="location-badge">
+      <i class="pi pi-map-marker"></i> Bogotá, Colombia
+    </p>
+
+    <div class="contact-links-inline">
+      <a href="https://github.com/1Zamuken1" target="_blank" class="contact-link">
+        <i class="pi pi-github"></i>
+        <span>GitHub</span>
+      </a>
+      <a href="https://www.linkedin.com/in/juan-barrios-dev" target="_blank" class="contact-link">
+        <i class="pi pi-linkedin"></i>
+        <span>LinkedIn</span>
+      </a>
+      <a href="mailto:juanfelipebarriosm@gmail.com" class="contact-link">
+        <i class="pi pi-envelope"></i>
+        <span>Email</span>
+      </a>
+    </div>
+
+    <!-- 2. Sobre mí -->
+    <h2>Sobre mí</h2>
+    <p>Soy Tecnólogo en Análisis y Desarrollo de Software orientado al desarrollo backend y a la construcción de aplicaciones web.</p>
+    <p>Mi principal interés está en Java y Spring Boot, especialmente en el desarrollo de APIs REST, lógica de negocio, autenticación, persistencia de datos y diseño de aplicaciones mantenibles.</p>
+    <p>También he trabajado con Python y Django, Angular y diferentes sistemas de bases de datos, lo que me permite comprender una aplicación desde el backend hasta su integración con el frontend.</p>
+    <p>En mis proyectos procuro aplicar buenas prácticas de desarrollo, arquitectura organizada, control de versiones y una separación clara de responsabilidades. Me interesa especialmente entender cómo funciona una solución completa y encontrar formas de hacerla más mantenible y fácil de evolucionar.</p>
+
+    <!-- 3. Tecnologías y herramientas -->
+    <h2>Tecnologías y herramientas</h2>
+    
+    @for (cat of categories(); track cat) {
+      <h3>{{ cat }}</h3>
+      <div class="tech-badges">
+        @for (skill of skillsByCategory()[cat]; track skill.id) {
+          <span
+            class="tech-badge"
+            [style.background]="skill.color"
+            [style.borderColor]="skill.color"
+          >
+            <i [class]="skill.icon"></i>
+            {{ skill.name | uppercase }}
           </span>
-          <span class="badge badge-location">
-            <i class="pi pi-map-marker"></i>
-            Colombia
-          </span>
-          <span class="badge badge-sena">
-            <i class="pi pi-shield"></i>
-            SENA
-          </span>
-        </div>
-      </div>
-    </section>
-
-    <!-- TECH STACK (JSON syntax style) -->
-    <section class="doc-section">
-      <div class="section-header">
-        <span class="section-symbol">#</span>
-        <h2 class="section-title">Tech Stack</h2>
-        <span class="section-subtitle">skills.json</span>
-      </div>
-
-      <div class="code-block glass-card">
-        <div class="code-line"><span class="json-brace">&#123;</span></div>
-
-        @for (cat of categories(); track cat) {
-          <div class="code-line code-group">
-            <span class="json-key">"{{ cat.toLowerCase() }}"</span>
-            <span class="json-colon">:</span>
-            <span class="json-bracket">[</span>
-            <div class="tech-badges">
-              @for (skill of skillsByCategory()[cat]; track skill.id) {
-                <span
-                  class="tech-badge"
-                  [style.border-color]="skill.color + '55'"
-                  [style.background]="skill.color + '15'"
-                >
-                  <i [class]="skill.icon" [style.color]="skill.color"></i>
-                  <span [style.color]="skill.color">{{ skill.name }}</span>
-                </span>
-              }
-            </div>
-            <span class="json-bracket">]</span>
-            @if (!$last) {<span class="json-comma">,</span>}
-          </div>
-        }
-
-        <div class="code-line"><span class="json-brace">&#125;</span></div>
-      </div>
-    </section>
-
-    <!-- EXPERIENCE TIMELINE -->
-    <section class="doc-section">
-      <div class="section-header">
-        <span class="section-symbol">#</span>
-        <h2 class="section-title">Experience</h2>
-        <span class="section-subtitle">experience.log</span>
-      </div>
-
-      <div class="timeline">
-        @for (exp of experience(); track exp.id) {
-          <div class="timeline-item">
-            <div class="timeline-marker">
-              <div class="timeline-dot"></div>
-            </div>
-            <div class="timeline-content glass-card">
-              <div class="timeline-meta">
-                <span class="timeline-period syntax-comment">// {{ exp.period }}</span>
-                <span class="timeline-company">&#64;{{ exp.company }}</span>
-              </div>
-              <h3 class="timeline-role">{{ exp.role }}</h3>
-              <p class="timeline-desc">{{ exp.description }}</p>
-              <div class="timeline-achievements">
-                @for (ach of exp.achievements; track ach) {
-                  <span class="ach-item">
-                    <span class="syntax-punct">- </span>{{ ach }}
-                  </span>
-                }
-              </div>
-              <div class="timeline-techs">
-                @for (tech of exp.technologies; track tech) {
-                  <span class="tech-pill">{{ tech }}</span>
-                }
-              </div>
-            </div>
-          </div>
         }
       </div>
-    </section>
+    }
 
-
-
-    <!-- CONTACT (terminal style) -->
-    <section class="doc-section contact-section">
-      <div class="section-header">
-        <span class="section-symbol">#</span>
-        <h2 class="section-title">Contact</h2>
-        <span class="section-subtitle">contact.sh</span>
-      </div>
-
-      <div class="terminal-card glass-card">
-        <div class="terminal-bar">
-          <span class="terminal-dot red"></span>
-          <span class="terminal-dot yellow"></span>
-          <span class="terminal-dot green"></span>
-          <span class="terminal-title">bash — contact.sh</span>
-        </div>
-        <div class="terminal-body">
-          <div class="terminal-line">
-            <span class="prompt">$</span>
-            <span class="cmd">echo</span>
-            <span class="str">"Disponible para proyectos"</span>
-          </div>
-          <div class="terminal-output">Disponible para proyectos</div>
-          <div class="terminal-line">
-            <span class="prompt">$</span>
-            <span class="cmd">open</span>
-            <span class="str">./links/</span>
-          </div>
-          <div class="contact-links">
-            <a href="https://github.com/1Zamuken1" target="_blank" class="contact-link">
-              <i class="pi pi-github"></i>
-              <span>github.com/1Zamuken1</span>
-            </a>
-            <a href="https://www.linkedin.com/in/juan-barrios-dev" target="_blank" class="contact-link">
-              <i class="pi pi-linkedin"></i>
-              <span>linkedin.com/in/juan-barrios-dev</span>
-            </a>
-            <a href="mailto:juanfelipebarriosm@gmail.com" class="contact-link">
-              <i class="pi pi-at"></i>
-              <span>juanfelipebarriosm@gmail.com</span>
-            </a>
+    <!-- 4. Proyectos destacados -->
+    <h2>Proyectos destacados</h2>
+    
+    <div class="projects-list">
+      @for (project of projects(); track project.id) {
+        <div class="project-item">
+          <h3>
+            {{ project.name }}
+            @if (project.links?.github || project.githubUrl) {
+              <a [href]="project.links?.github || project.githubUrl" target="_blank" class="repo-link" title="Ver repositorio">
+                <i class="pi pi-github"></i>
+              </a>
+            }
+          </h3>
+          <p>{{ project.shortDescription }}</p>
+          
+          <ul class="project-features">
+            @for (feature of project.features; track feature) {
+              <li>{{ feature }}</li>
+            }
+          </ul>
+          
+          <div class="project-stack">
+            <strong>Stack:</strong>
+            @for (tech of project.techStack; track tech.name) {
+              <span class="tech-pill">{{ tech.name }}</span>
+              @if (!$last) {<span class="dot-separator">·</span>}
+            }
           </div>
         </div>
-      </div>
-    </section>
+      }
+    </div>
+
+    <!-- 5. Actualmente -->
+    <h2>Actualmente</h2>
+    <ul>
+      <li>Buscando una oportunidad de etapa productiva en desarrollo de software.</li>
+      <li>Enfocado principalmente en Java y Spring Boot.</li>
+      <li>Continuando mi formación en desarrollo backend, arquitectura y buenas prácticas de software.</li>
+    </ul>
+
+    <!-- 6. Contacto -->
+    <h2>Contacto</h2>
+    <p>Estoy disponible para oportunidades de etapa productiva y proyectos relacionados con desarrollo de software.</p>
+    <ul>
+      <li><a href="mailto:juanfelipebarriosm@gmail.com">juanfelipebarriosm@gmail.com</a></li>
+      <li>LinkedIn: <a href="https://www.linkedin.com/in/juan-barrios-dev" target="_blank">juan-barrios</a></li>
+      <li>GitHub: <a href="https://github.com/1Zamuken1" target="_blank">1Zamuken1</a></li>
+    </ul>
 
   </div>
 </div>
