@@ -61,10 +61,6 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
       icon = fragment === 'experience' ? 'pi pi-calendar' : 
              fragment === 'stack' ? 'pi pi-database' : 'pi pi-user';
       iconColor = '#e8a94a';
-    } else if (path === '/contact') {
-      label = 'links.md';
-      icon = 'pi pi-envelope';
-      iconColor = '#569cd6';
     } else if (path.startsWith('/projects/')) {
       let pIcon = 'pi pi-file';
       let pColor = '#4ec9b0';
@@ -131,7 +127,6 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
     // Set active menu based on path
     if (path.startsWith('/projects')) this.activeMenu.set('projects');
     else if (path === '/about') this.activeMenu.set('about');
-    else if (path === '/contact') this.activeMenu.set('contact');
     else this.activeMenu.set('home');
 
     // Ignore project internal fragments (like #readme, #stack) from creating new tabs,
