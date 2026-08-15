@@ -1,4 +1,5 @@
-<div class="blueprint-viewer">
+<div class="blueprint-viewer" [attr.data-theme]="currentTheme()">
+  
   <!-- Viewport (pan + zoom container) -->
   <div
     class="blueprint-viewport"
@@ -12,89 +13,130 @@
     (touchmove)="onTouchMove($event)"
     (touchend)="onTouchEnd($event)"
     (touchcancel)="onTouchEnd($event)"
-   >
-    <div class="blueprint-stage"
-         #canvas
-         [style.transform]="'translate(' + offsetX() + 'px, ' + offsetY() + 'px) scale(' + zoom() + ')'"
-         [style.transform-origin]="'0 0'">
-         
-      <!-- Canvas Overlay for SVG Paths -->
-      <svg class="blueprint-canvas-overlay" width="100%" height="100%" preserveAspectRatio="none">
+  >
+    <div class="blueprint-stage" #canvas [style.transform]="getTransformStyle()">
+      
+      <!-- Unico Canvas SVG para todo (Background + Conectores + Nodos) -->
+      <svg
+        class="blueprint-svg-canvas"
+        width="100%"
+        height="100%"
+        overflow="visible"
+      >
         <defs>
           <pattern id="blueprint-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path class="grid-line" d="M 40 0 L 0 0 0 40" />
+            <path class="grid-line" [attr.d]="getGridPath()" />
           </pattern>
-          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="2.5"
-                  orient="auto" markerUnits="strokeWidth">
-            <path class="arrow-head" d="M0,0 L4,2.5 L0,5 Z" />
+          
+          <!-- Marcadores dinámicos según estado de interacción -->
+          <marker id="arrowhead-default" markerWidth="8" markerHeight="8" refX="7" refY="2.5" orient="auto">
+            <path class="arrow-head arrow-head--default" d="M0,0 L4,2.5 L0,5 Z" />
           </marker>
+          <marker id="arrowhead-hover" markerWidth="8" markerHeight="8" refX="7" refY="2.5" orient="auto">
+            <path class="arrow-head arrow-head--hover" d="M0,0 L4,2.5 L0,5 Z" />
+          </marker>
+          
+          <!-- Filtro para el brillo (glow) activo — sutil, sin blur agresivo -->
+          <filter id="glow-active" x="-10%" y="-10%" width="120%" height="120%">
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
-        
-        <!-- Grid background -->
-        <rect class="grid-bg" width="100%" height="100%" fill="url(#blueprint-grid)" />
 
-        <!-- Connectors -->
-        <g class="blueprint-connectors">
-          @for (conn of connectors(); track conn.fromId + '->' + conn.toId) {
+        <!-- 1. Grid Background -->
+        @if (layout()?.canvas?.showGrid !== false) {
+          <rect class="grid-bg" x="-200%" y="-200%" width="500%" height="500%" fill="url(#blueprint-grid)" />
+        }
+
+        <!-- 2. Aristas (Conectores SVG) — renderizados ANTES = quedan DEBAJO -->
+        <g class="layer-edges">
+          @for (conn of computedConnectors(); track conn.id) {
             <path
               class="connector-line"
               [class.connector--highlighted]="isConnectorHighlighted(conn)"
               [class.connector--dimmed]="isConnectorDimmed(conn)"
               [attr.d]="conn.path"
-              marker-end="url(#arrowhead)"
+              [attr.stroke-width]="conn.strokeWidth"
+              [attr.stroke-dasharray]="conn.strokeDasharray"
+              [attr.marker-end]="'url(#arrowhead-' + getConnectorMarker(conn) + ')'"
             />
+            
+            @if (conn.label) {
+              <text
+                class="connector-label"
+                [attr.x]="conn.labelX"
+                [attr.y]="conn.labelY"
+                text-anchor="middle"
+                dominant-baseline="middle"
+              >
+                {{ conn.label }}
+              </text>
+            }
           }
         </g>
-      </svg>
 
-      <!-- Nodes Layout (Logical Zones) -->
-      <div class="blueprint-zones">
-        @for (group of groupedNodes(); track group.name) {
-          <div class="bp-zone" [attr.data-zone]="group.name">
-            <div class="bp-zone-header">
-              <span class="bp-zone-title">{{ group.name | uppercase }}</span>
-            </div>
-            
-            <div class="bp-zone-nodes">
-              @for (node of group.nodes; track node.id) {
-                <div
-                  #nodeEl
-                  class="bp-node"
-                  [class.bp-node--primary]="node.type === 'primary'"
-                  [class.bp-node--secondary]="node.type === 'secondary'"
-                  [class.bp-node--highlighted]="isNodeHighlighted(node)"
-                  [class.bp-node--dimmed]="isNodeDimmed(node)"
-                  (click)="onNodeClick(node)"
-                  (mouseenter)="onNodeHover(node, true)"
-                  (mouseleave)="onNodeHover(node, false)"
-                  [attr.data-node-id]="node.id"
-                >
-                  <div class="bp-node-header">
-                    <i [class]="nodeIconClass(node.icon)" class="bp-node-icon"></i>
-                    <span class="bp-node-title">{{ node.label }}</span>
+        <!-- 3. Nodos SVG — renderizados DESPUES = quedan ENCIMA -->
+        <g class="layer-nodes">
+          @for (node of layoutNodes(); track node.id) {
+            <g
+              class="svg-node"
+              [class.node--highlighted]="isNodeHighlighted(node)"
+              [class.node--dimmed]="isNodeDimmed(node)"
+              [attr.transform]="'translate(' + node.x + ',' + node.y + ')'"
+              (click)="onNodeClick(node)"
+              (mouseenter)="onNodeHover(node, true)"
+              (mouseleave)="onNodeHover(node, false)"
+            >
+              <!-- Fondo del nodo (Rect) -->
+              <rect
+                class="node-bg"
+                [attr.width]="node.width"
+                [attr.height]="node.height"
+                rx="6"
+                ry="6"
+                [attr.fill]="getNodeFill(node)"
+                [attr.stroke]="getNodeStroke(node)"
+                [attr.stroke-width]="getNodeStrokeWidth(node)"
+              />
+
+              <foreignObject [attr.x]="12" [attr.y]="12" [attr.width]="node.width - 24" [attr.height]="node.height - 24">
+                <div class="node-html-content" xmlns="http://www.w3.org/1999/xhtml">
+                  <div class="node-header">
+                    <i [class]="getIconChar(node.icon)" class="node-icon" [style.color]="getNodeStroke(node)"></i>
+                    <span class="node-title" [style.color]="getNodeTextColor(node)">{{ node.label }}</span>
                   </div>
-                  <p class="bp-node-description">{{ node.description }}</p>
+                  <p class="node-desc">{{ truncateText(node.description, 60) }}</p>
                 </div>
+              </foreignObject>
+              
+              <!-- (Opcional Debug) Mostrar Puertos -->
+              @if (showPorts()) {
+                @for (port of node.ports.top; track $index) { <circle [attr.cx]="port.x - node.x" [attr.cy]="port.y - node.y" r="3" fill="red"/> }
+                @for (port of node.ports.bottom; track $index) { <circle [attr.cx]="port.x - node.x" [attr.cy]="port.y - node.y" r="3" fill="red"/> }
+                @for (port of node.ports.left; track $index) { <circle [attr.cx]="port.x - node.x" [attr.cy]="port.y - node.y" r="3" fill="red"/> }
+                @for (port of node.ports.right; track $index) { <circle [attr.cx]="port.x - node.x" [attr.cy]="port.y - node.y" r="3" fill="red"/> }
               }
-            </div>
-          </div>
-        }
-      </div> <!-- /.blueprint-zones -->
-      
+            </g>
+          }
+        </g>
+        
+      </svg>
     </div> <!-- /.blueprint-stage -->
   </div> <!-- /.blueprint-viewport -->
 
-  <!-- HUD técnico (CAD-style) -->
+  <!-- HUD Técnico y Controles (Fuera del Canvas, fijos en UI) -->
   <div class="blueprint-hud">
-    <span class="hud-item">Blueprint {{ version() }}</span>
+    <span class="hud-item">SVG Blueprint {{ version() }}</span>
     <span class="hud-item">Zoom {{ zoom() | number:'1.0-2' }}x</span>
-    <span class="hud-item">Nodes {{ (nodes() || []).length }}</span>
-    <span class="hud-item">Connections {{ (connectors() || []).length }}</span>
+    <span class="hud-item">Nodes {{ layoutNodes().length }}</span>
+    <span class="hud-item">Connections {{ computedConnectors().length }}</span>
   </div>
 
-  <!-- HUD controls -->
   <div class="blueprint-controls">
-    <button class="bp-btn" (click)="resetZoom()" title="Reset zoom" aria-label="Reset zoom">
+    <button class="bp-btn" (click)="resetZoom()" title="Reset zoom">
       <i class="pi pi-refresh"></i>
     </button>
   </div>

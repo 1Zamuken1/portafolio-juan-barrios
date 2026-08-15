@@ -1,30 +1,24 @@
-import {
-  Component,
-  input,
-  signal,
-  computed,
-  effect,
-  inject,
-  PLATFORM_ID,
-  viewChildren,
-  ElementRef,
-  afterNextRender,
-  OnDestroy,
-  viewChild
-} from '@angular/core';
+import { Component, input, signal, computed, inject, PLATFORM_ID, ElementRef, OnDestroy, viewChild, effect } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
-import { BlueprintNode, BlueprintEdge, BlueprintLayout } from '../../models/blueprint.model';
+import { BlueprintNode, BlueprintEdge, BlueprintLayout, ComputedNodeLayout } from '../../models/blueprint.model';
+import { BlueprintPositioningService } from './services/blueprint-positioning.service';
+import { BlueprintPathCalculator } from './services/blueprint-path-calculator';
+import { BlueprintColorService } from './services/blueprint-color.service';
+import { BlueprintLayoutService } from './services/blueprint-layout.service';
 
-interface ZoneGroup {
-  name: string;
-  nodes: BlueprintNode[];
-}
-
-interface SVGConnector {
-  fromId: string;
-  toId: string;
+export interface ComputedConnector {
+  id: string;
+  from: string;
+  to: string;
   path: string;
+  label?: string;
+  labelX: number;
+  labelY: number;
+  strokeWidth: number;
+  strokeDasharray: string;
 }
+
+export type ExtendedBlueprintNode = BlueprintNode & ComputedNodeLayout;
 
 @Component({
   selector: 'app-blueprint-viewer',
@@ -34,312 +28,207 @@ interface SVGConnector {
   styleUrl: './blueprint-viewer.component.css',
 })
 export class BlueprintViewerComponent implements OnDestroy {
-  private platformId = inject(PLATFORM_ID);
-  private isBrowser = isPlatformBrowser(this.platformId);
-  private resizeObserver: ResizeObserver | null = null;
-
+  // Inputs
   readonly nodes = input<BlueprintNode[]>([]);
   readonly edges = input<BlueprintEdge[]>([]);
   readonly layout = input<BlueprintLayout | undefined>(undefined);
-  readonly version = input<string>('v2.1');
-  readonly platform = input<string>('Desktop');
+  readonly version = input<string>('v3.0');
+  
+  // Platform check
+  private platformId = inject(PLATFORM_ID);
+  private isBrowser = isPlatformBrowser(this.platformId);
+  readonly canvasEl = viewChild<ElementRef<HTMLElement>>('canvas');
 
+  // Services
+  private positioningService = inject(BlueprintPositioningService);
+  private pathCalculator = inject(BlueprintPathCalculator);
+  private colorService = inject(BlueprintColorService);
+  private layoutService = inject(BlueprintLayoutService);
+
+  // Computed Layouts
+  readonly layoutNodes = computed(() => {
+    const nodes = this.nodes() ?? [];
+    if (!nodes.length) return [];
+    
+    const validated = nodes.map(n => this.layoutService.calculateNodeLayout(n));
+    
+    const withPorts = validated.map(n => ({
+      ...n,
+      ports: this.positioningService.calculatePorts(n, this.edges() ?? [])
+    }));
+    
+    return nodes.map(originalNode => {
+      const computedLayout = withPorts.find(l => l.nodeId === originalNode.id)!;
+      return {
+        ...originalNode,
+        ...computedLayout
+      } as ExtendedBlueprintNode;
+    });
+  });
+  
+  readonly computedConnectors = computed(() => {
+    const edges = this.edges() ?? [];
+    const nodes = this.layoutNodes();
+    const nodeMap = new Map(nodes.map(n => [n.id, n]));
+    
+    let channelIndex = 0;
+    const usedPorts = new Map<string, number>();
+
+    const getPort = (nodeId: string, side: string, node: ExtendedBlueprintNode) => {
+      const key = `${nodeId}-${side}`;
+      const count = usedPorts.get(key) || 0;
+      usedPorts.set(key, count + 1);
+      return (node.ports as any)[side]?.[count] || { x: node.centerX, y: node.centerY };
+    };
+
+    return edges.map(edge => {
+      const fromNode = nodeMap.get(edge.from);
+      const toNode = nodeMap.get(edge.to);
+      if (!fromNode || !toNode) return null;
+      
+      const fromSide = edge.fromPort && edge.fromPort !== 'auto' 
+          ? edge.fromPort 
+          : this.positioningService.autoDetectPort(fromNode, toNode, true);
+          
+      const toSide = edge.toPort && edge.toPort !== 'auto' 
+          ? edge.toPort 
+          : this.positioningService.autoDetectPort(fromNode, toNode, false);
+
+      const fromPort = getPort(edge.from, fromSide, fromNode);
+      const toPort = getPort(edge.to, toSide, toNode);
+      
+      // Calculate offset based on how many edges share these two nodes
+      const segmentKey = [edge.from, edge.to].sort().join('-');
+      const segmentCount = usedPorts.get(segmentKey) || 0;
+      usedPorts.set(segmentKey, segmentCount + 1);
+      
+      const offset = segmentCount * 12;
+
+      const path = this.pathCalculator.calculatePath(
+        fromPort, toPort,
+        fromSide, toSide,
+        edge.routeType ?? 'orthogonal',
+        offset
+      );
+      
+      return {
+        id: `${edge.from}→${edge.to}`,
+        from: edge.from,
+        to: edge.to,
+        path,
+        label: edge.label,
+        labelX: (fromPort.x + toPort.x) / 2,
+        labelY: (fromPort.y + toPort.y) / 2,
+        strokeWidth: edge.strokeWidth ?? 2,
+        strokeDasharray: edge.strokeDasharray ?? '6 4',
+      };
+    }).filter(c => c !== null) as ComputedConnector[];
+  });
+  
+  private detectTheme(): 'light' | 'dark' {
+    if (!this.isBrowser) return 'dark';
+    const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return isDark ? 'dark' : 'light'; 
+  }
+  
+  readonly currentTheme = signal<'light' | 'dark'>('dark');
+
+  private themeMediaQuery: MediaQueryList | null = null;
+  private themeHandler = (e: MediaQueryListEvent) => {
+    this.currentTheme.set(e.matches ? 'dark' : 'light');
+  };
+
+  // Interactivity state
   readonly zoom = signal(1);
   readonly offsetX = signal(0);
   readonly offsetY = signal(0);
   readonly highlightedNodeId = signal<string | null>(null);
-  
   readonly isPanning = signal(false);
+  readonly showPorts = signal(false); // Can be toggled for debugging
+  
   private panStartX = 0;
   private panStartY = 0;
 
-  // View queries for DOM elements to draw edges
-  readonly nodeEls = viewChildren<ElementRef<HTMLElement>>('nodeEl');
-  readonly canvasEl = viewChild<ElementRef<HTMLElement>>('canvas');
-
-  // Calculated SVG Paths
-  readonly connectors = signal<SVGConnector[]>([]);
-
-  // Logical sorting order for zones
-  private readonly zoneOrder = [
-    'client', 'input', 'application', 'core', 'automation', 
-    'persistence', 'database', 'external', 'export'
-  ];
-
-  readonly groupedNodes = computed<ZoneGroup[]>(() => {
-    const allNodes = this.nodes() ?? [];
-    if (!allNodes.length) return [];
-
-    const map = new Map<string, BlueprintNode[]>();
-    for (const n of allNodes) {
-      const g = n.group || 'default';
-      if (!map.has(g)) map.set(g, []);
-      map.get(g)!.push(n);
-    }
-
-    const groups: ZoneGroup[] = [];
-    for (const [name, nodes] of map.entries()) {
-      groups.push({ name, nodes });
-    }
-
-    groups.sort((a, b) => {
-      let idxA = this.zoneOrder.indexOf(a.name.toLowerCase());
-      let idxB = this.zoneOrder.indexOf(b.name.toLowerCase());
-      if (idxA === -1) idxA = 999;
-      if (idxB === -1) idxB = 999;
-      return idxA - idxB;
-    });
-
-    return groups;
-  });
-
   constructor() {
-    afterNextRender(() => {
-      if (!this.isBrowser) return;
-      // Setup resize observer on the canvas to redraw paths
-      const canvas = this.canvasEl()?.nativeElement;
-      if (canvas) {
-        this.resizeObserver = new ResizeObserver(() => {
-          this.recalculatePaths();
-        });
-        this.resizeObserver.observe(canvas);
-      }
-    });
+    // Initialize theme detection
+    if (this.isBrowser) {
+      this.currentTheme.set(this.detectTheme());
+      this.themeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      this.themeMediaQuery.addEventListener('change', this.themeHandler);
+    }
 
+    // Apply initial layout settings when they change
     effect(() => {
-      // Trigger path recalculation when nodes or zoom change
-      this.nodes();
-      this.edges();
-      if (this.isBrowser) {
-        setTimeout(() => this.recalculatePaths(), 50);
+      const lay = this.layout();
+      if (lay) {
+        if (lay.initialZoom !== undefined) {
+          this.zoom.set(lay.initialZoom);
+          this.offsetX.set(lay.initialPanX ?? 0);
+          this.offsetY.set(lay.initialPanY ?? 0);
+        } else {
+          // If no initial zoom, autofit the diagram to the screen
+          setTimeout(() => this.autoFit(), 50);
+        }
       }
-    });
+    }, { allowSignalWrites: true });
   }
 
   ngOnDestroy() {
-    this.resizeObserver?.disconnect();
+    if (this.themeMediaQuery) {
+      this.themeMediaQuery.removeEventListener('change', this.themeHandler);
+    }
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // Path Routing Engine (DOM based)
-  // ═══════════════════════════════════════════════════════════════
+  // --- Public methods for template ---
+  getNodeFill(node: ExtendedBlueprintNode): string {
+    return this.colorService.getNodeFill(node, this.currentTheme());
+  }
   
-  private recalculatePaths() {
-    if (!this.isBrowser) return;
-    const canvas = this.canvasEl()?.nativeElement;
-    const nodeElements = this.nodeEls();
-    const currentEdges = this.edges();
-    if (!canvas || !nodeElements.length || !currentEdges.length) return;
-
-    const canvasRect = canvas.getBoundingClientRect();
-    const domMap = new Map<string, DOMRect>();
-    
-    nodeElements.forEach(elRef => {
-      const el = elRef.nativeElement;
-      const id = el.getAttribute('data-node-id');
-      if (id) {
-        domMap.set(id, el.getBoundingClientRect());
-      }
-    });
-
-    // Track how many connections depart/arrive at each side of each node
-    // so we can fan out attachment points and avoid stacking
-    const portCounters = new Map<string, number>(); // "nodeId-side" -> count
-    const getPort = (nodeId: string, side: 'left' | 'right' | 'top' | 'bottom'): number => {
-      const key = `${nodeId}-${side}`;
-      const count = portCounters.get(key) ?? 0;
-      portCounters.set(key, count + 1);
-      return count;
-    };
-
-    // Pre-scan to count total ports per side for centering
-    const portTotals = new Map<string, number>();
-    for (const edge of currentEdges) {
-      const rectA = domMap.get(edge.from);
-      const rectB = domMap.get(edge.to);
-      if (!rectA || !rectB) continue;
-      
-      const sides = this.decideSides(rectA, rectB, canvasRect);
-      const keyFrom = `${edge.from}-${sides.fromSide}`;
-      const keyTo = `${edge.to}-${sides.toSide}`;
-      portTotals.set(keyFrom, (portTotals.get(keyFrom) ?? 0) + 1);
-      portTotals.set(keyTo, (portTotals.get(keyTo) ?? 0) + 1);
-    }
-
-    // Track used midpoint channels to offset parallel routes
-    let channelIndex = 0;
-
-    const newConnectors: SVGConnector[] = [];
-
-    for (const edge of currentEdges) {
-      const rectA = domMap.get(edge.from);
-      const rectB = domMap.get(edge.to);
-      if (!rectA || !rectB) continue;
-
-      const ax = rectA.left - canvasRect.left;
-      const ay = rectA.top - canvasRect.top;
-      const aw = rectA.width;
-      const ah = rectA.height;
-
-      const bx = rectB.left - canvasRect.left;
-      const by = rectB.top - canvasRect.top;
-      const bw = rectB.width;
-      const bh = rectB.height;
-
-      const sides = this.decideSides(rectA, rectB, canvasRect);
-      
-      // Get port indices for fanning
-      const fromPortIdx = getPort(edge.from, sides.fromSide);
-      const toPortIdx = getPort(edge.to, sides.toSide);
-      const fromTotal = portTotals.get(`${edge.from}-${sides.fromSide}`) ?? 1;
-      const toTotal = portTotals.get(`${edge.to}-${sides.toSide}`) ?? 1;
-
-      // Calculate attachment points with fan-out
-      const startPt = this.getAttachmentPoint(ax, ay, aw, ah, sides.fromSide, fromPortIdx, fromTotal);
-      const endPt = this.getAttachmentPoint(bx, by, bw, bh, sides.toSide, toPortIdx, toTotal);
-
-      // Check if this connection skips a column to route it via a "bus"
-      // Si la distancia horizontal es mayor a 1 columna + 1 gap (aprox 1.5 anchos de nodo)
-      const isLongJump = Math.abs(startPt.x - endPt.x) > (aw * 1.5);
-
-      // Build orthogonal path with unique channel offset
-      const offset = channelIndex * 12;
-      channelIndex++;
-      
-      const path = this.buildOrthogonalPath(startPt, endPt, sides.fromSide, sides.toSide, offset, isLongJump);
-      
-      newConnectors.push({ fromId: edge.from, toId: edge.to, path });
-    }
-
-    this.connectors.set(newConnectors);
+  getNodeStroke(node: ExtendedBlueprintNode): string {
+    return this.colorService.getNodeStroke(node, this.currentTheme());
+  }
+  
+  getNodeTextColor(node: ExtendedBlueprintNode): string {
+    return this.colorService.getNodeTextColor(node, this.currentTheme());
+  }
+  
+  getNodeStrokeWidth(node: ExtendedBlueprintNode): number {
+    return this.colorService.getNodeStrokeWidth(node);
   }
 
-  /** Decide which sides of two rects to connect */
-  private decideSides(
-    rectA: DOMRect, rectB: DOMRect, canvasRect: DOMRect
-  ): { fromSide: 'left' | 'right' | 'top' | 'bottom'; toSide: 'left' | 'right' | 'top' | 'bottom' } {
-    const ax = rectA.left - canvasRect.left;
-    const ay = rectA.top - canvasRect.top;
-    const aw = rectA.width;
-    const ah = rectA.height;
-    const bx = rectB.left - canvasRect.left;
-    const by = rectB.top - canvasRect.top;
-    const bw = rectB.width;
-    const bh = rectB.height;
-    
-    const acx = ax + aw / 2;
-    const acy = ay + ah / 2;
-    const bcx = bx + bw / 2;
-    const bcy = by + bh / 2;
-
-    // Check if vertically aligned (same column)
-    if (Math.abs(acx - bcx) < Math.max(aw, bw) / 2) {
-      return bcy > acy
-        ? { fromSide: 'bottom', toSide: 'top' }
-        : { fromSide: 'top', toSide: 'bottom' };
-    }
-    
-    // Horizontal flow
-    return bcx > acx
-      ? { fromSide: 'right', toSide: 'left' }
-      : { fromSide: 'left', toSide: 'right' };
+  getNodeGlowColor(node: ExtendedBlueprintNode): string {
+    return this.colorService.getNodeGlowColor(node, this.currentTheme());
+  }
+  
+  getConnectorMarker(conn: ComputedConnector): string {
+    return this.isConnectorHighlighted(conn) ? 'hover' : 'default';
+  }
+  
+  getViewBox(): string {
+    const w = this.layout()?.canvas?.width ?? 2000;
+    const h = this.layout()?.canvas?.height ?? 1600;
+    return `0 0 ${w} ${h}`;
+  }
+  
+  getTransformStyle(): string {
+    return `translate(${this.offsetX()}px, ${this.offsetY()}px) scale(${this.zoom()})`;
+  }
+  
+  getGridPath(): string {
+    const size = this.layout()?.canvas?.gridSize ?? 40;
+    return `M ${size} 0 L 0 0 0 ${size}`;
   }
 
-  /** Get an attachment point on a node's edge, fanned out evenly among multiple ports */
-  private getAttachmentPoint(
-    x: number, y: number, w: number, h: number,
-    side: 'left' | 'right' | 'top' | 'bottom',
-    portIndex: number, portTotal: number
-  ): { x: number; y: number } {
-    const margin = 12; // inset from corners
-    
-    switch (side) {
-      case 'right': {
-        const usableH = h - margin * 2;
-        const step = portTotal > 1 ? usableH / (portTotal - 1) : usableH / 2;
-        const py = portTotal > 1 ? y + margin + portIndex * step : y + h / 2;
-        return { x: x + w, y: py };
-      }
-      case 'left': {
-        const usableH = h - margin * 2;
-        const step = portTotal > 1 ? usableH / (portTotal - 1) : usableH / 2;
-        const py = portTotal > 1 ? y + margin + portIndex * step : y + h / 2;
-        return { x: x, y: py };
-      }
-      case 'bottom': {
-        const usableW = w - margin * 2;
-        const step = portTotal > 1 ? usableW / (portTotal - 1) : usableW / 2;
-        const px = portTotal > 1 ? x + margin + portIndex * step : x + w / 2;
-        return { x: px, y: y + h };
-      }
-      case 'top': {
-        const usableW = w - margin * 2;
-        const step = portTotal > 1 ? usableW / (portTotal - 1) : usableW / 2;
-        const px = portTotal > 1 ? x + margin + portIndex * step : x + w / 2;
-        return { x: px, y: y };
-      }
-    }
+  getIconChar(icon?: string): string {
+    return icon ?? ''; 
   }
 
-  /** Build an orthogonal (right-angle) path between two points with a unique channel offset */
-  private buildOrthogonalPath(
-    start: { x: number; y: number },
-    end: { x: number; y: number },
-    fromSide: string,
-    toSide: string,
-    offset: number,
-    isLongJump: boolean
-  ): string {
-    const s = start;
-    const e = end;
-
-    if (isLongJump) {
-      // Enrutar por un "Bus" superior o inferior para evitar cruzar nodos intermedios
-      // Subimos/bajamos a una Y libre. Usaremos un bus inferior si el origen está bajo, sino superior.
-      const goUp = Math.min(s.y, e.y) < 200;
-      const busY = goUp ? Math.min(s.y, e.y) - 60 - (offset * 1.5) : Math.max(s.y, e.y) + 60 + (offset * 1.5);
-      
-      let path = `M ${s.x} ${s.y}`;
-      // Salir del nodo
-      if (fromSide === 'right') path += ` L ${s.x + 20} ${s.y} L ${s.x + 20} ${busY}`;
-      else if (fromSide === 'left') path += ` L ${s.x - 20} ${s.y} L ${s.x - 20} ${busY}`;
-      else path += ` L ${s.x} ${busY}`;
-      
-      // Viajar por el bus horizontal
-      path += ` L ${e.x} ${busY}`;
-      
-      // Entrar al destino
-      if (toSide === 'right') path += ` L ${e.x + 20} ${busY} L ${e.x + 20} ${e.y} L ${e.x} ${e.y}`;
-      else if (toSide === 'left') path += ` L ${e.x - 20} ${busY} L ${e.x - 20} ${e.y} L ${e.x} ${e.y}`;
-      else path += ` L ${e.x} ${e.y}`;
-      
-      return path;
-    }
-
-    // If both horizontal (right→left or left→right), use a vertical midpoint
-    if ((fromSide === 'right' && toSide === 'left') || (fromSide === 'left' && toSide === 'right')) {
-      const midX = s.x + (e.x - s.x) / 2 + offset;
-      return `M ${s.x} ${s.y} L ${midX} ${s.y} L ${midX} ${e.y} L ${e.x} ${e.y}`;
-    }
-    
-    // If both vertical (bottom→top or top→bottom), use a horizontal midpoint
-    if ((fromSide === 'bottom' && toSide === 'top') || (fromSide === 'top' && toSide === 'bottom')) {
-      const midY = s.y + (e.y - s.y) / 2 + offset;
-      return `M ${s.x} ${s.y} L ${s.x} ${midY} L ${e.x} ${midY} L ${e.x} ${e.y}`;
-    }
-
-    // Mixed sides (right→top, bottom→left, etc.) — use an L-shape
-    if (fromSide === 'right' || fromSide === 'left') {
-      return `M ${s.x} ${s.y} L ${e.x} ${s.y} L ${e.x} ${e.y}`;
-    }
-    
-    return `M ${s.x} ${s.y} L ${s.x} ${e.y} L ${e.x} ${e.y}`;
+  truncateText(text: string | undefined, max: number): string {
+    if (!text) return '';
+    return text.length > max ? text.substring(0, max) + '...' : text;
   }
-
-  // ═══════════════════════════════════════════════════════════════
-  // Interaction
-  // ═══════════════════════════════════════════════════════════════
-
+  
+  // --- Interaction ---
   onNodeClick(node: BlueprintNode) {
     this.highlightedNodeId.update(id => (id === node.id ? null : node.id));
   }
@@ -364,34 +253,27 @@ export class BlueprintViewerComponent implements OnDestroy {
     return !this.isConnectedTo(node.id, h);
   }
 
-  isConnectorHighlighted(conn: SVGConnector): boolean {
+  isConnectorHighlighted(conn: ComputedConnector): boolean {
     const h = this.highlightedNodeId();
     if (!h) return false;
-    return this.isConnectedTo(conn.fromId, h) && this.isConnectedTo(conn.toId, h);
+    return conn.from === h || conn.to === h;
   }
 
-  isConnectorDimmed(conn: SVGConnector): boolean {
+  isConnectorDimmed(conn: ComputedConnector): boolean {
     const h = this.highlightedNodeId();
     if (!h) return false;
-    return !(this.isConnectedTo(conn.fromId, h) && this.isConnectedTo(conn.toId, h));
+    return !(conn.from === h || conn.to === h);
   }
 
   private isConnectedTo(target: string, root: string): boolean {
     if (target === root) return true;
     const inputEdges = this.edges() ?? [];
-    
-    // Solo resaltar vecinos directos (padres e hijos) para evitar que todo el grafo se ilumine
     for (const e of inputEdges) {
-      if (e.from === root && e.to === target) return true;
-      if (e.to === root && e.from === target) return true;
+      if ((e.from === root && e.to === target) || (e.to === root && e.from === target)) {
+        return true;
+      }
     }
-    
     return false;
-  }
-
-  nodeIconClass(icon: string): string {
-    if (!icon) return 'pi pi-circle';
-    return icon;
   }
 
   onWheel(event: WheelEvent) {
@@ -453,11 +335,7 @@ export class BlueprintViewerComponent implements OnDestroy {
 
   onTouchMove(event: TouchEvent) {
     if (!this.isBrowser) return;
-    
-    // Bloquear el scroll nativo dentro de este componente
-    if (event.cancelable) {
-      event.preventDefault();
-    }
+    if (event.cancelable) event.preventDefault();
 
     if (event.touches.length === 1 && this.isPanning()) {
       this.offsetX.set(event.touches[0].clientX - this.panStartX);
@@ -474,7 +352,6 @@ export class BlueprintViewerComponent implements OnDestroy {
 
   onTouchEnd(event?: TouchEvent) {
     if (event && event.touches.length > 0) {
-      // Si todavía quedan dedos en pantalla, resetear los anclajes de pan
       this.panStartX = event.touches[0].clientX - this.offsetX();
       this.panStartY = event.touches[0].clientY - this.offsetY();
     } else {
@@ -488,10 +365,67 @@ export class BlueprintViewerComponent implements OnDestroy {
     return Math.sqrt(dx * dx + dy * dy);
   }
 
+  autoFit() {
+    const nodes = this.layoutNodes();
+    if (!nodes || nodes.length === 0 || !this.isBrowser || !this.canvasEl()) return;
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const node of nodes) {
+      const nx = node.x ?? 0;
+      const ny = node.y ?? 0;
+      const nw = node.width ?? 250;
+      const nh = node.height ?? 96;
+      if (nx < minX) minX = nx;
+      if (ny < minY) minY = ny;
+      if (nx + nw > maxX) maxX = nx + nw;
+      if (ny + nh > maxY) maxY = ny + nh;
+    }
+
+    if (minX === Infinity) return;
+
+    // Add some padding around the bounding box
+    const padding = 60;
+    minX -= padding;
+    minY -= padding;
+    maxX += padding;
+    maxY += padding;
+
+    const contentW = maxX - minX;
+    const contentH = maxY - minY;
+
+    const canvasElement = this.canvasEl()!.nativeElement;
+    const viewport = canvasElement.parentElement;
+    if (!viewport) return;
+
+    const vpW = viewport.clientWidth;
+    const vpH = viewport.clientHeight;
+    if (vpW === 0 || vpH === 0) return;
+
+    const scaleX = vpW / contentW;
+    const scaleY = vpH / contentH;
+    
+    // Fit to the smallest scale so it fits entirely, clamp to sensible values
+    let newZoom = Math.min(scaleX, scaleY);
+    newZoom = Math.min(Math.max(newZoom, 0.4), 1.3);
+    
+    // Center it
+    const newOffsetX = (vpW - contentW * newZoom) / 2 - minX * newZoom;
+    const newOffsetY = (vpH - contentH * newZoom) / 2 - minY * newZoom;
+
+    this.zoom.set(newZoom);
+    this.offsetX.set(newOffsetX);
+    this.offsetY.set(newOffsetY);
+  }
+
   resetZoom() {
-    this.zoom.set(1);
-    this.offsetX.set(0);
-    this.offsetY.set(0);
+    const lay = this.layout();
+    if (lay?.initialZoom !== undefined) {
+      this.zoom.set(lay.initialZoom);
+      this.offsetX.set(lay.initialPanX ?? 0);
+      this.offsetY.set(lay.initialPanY ?? 0);
+    } else {
+      this.autoFit();
+    }
     this.highlightedNodeId.set(null);
   }
 }

@@ -143,7 +143,14 @@
       "Estado": "Producción"
     },
     "architectureLayout": {
-      "orientation": "swimlanes"
+      "orientation": "freeform",
+      "canvas": {
+        "width": 1800,
+        "height": 900,
+        "gridSize": 40,
+        "showGrid": true
+      },
+      "initialZoom": 0.85
     },
     "architectureNodes": [
       {
@@ -152,7 +159,11 @@
         "icon": "pi pi-home",
         "description": "Endpoint de entrada principal al sistema web.",
         "group": "client",
-        "type": "primary"
+        "type": "primary",
+        "x": 80,
+        "y": 80,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "views",
@@ -160,7 +171,11 @@
         "icon": "pi pi-desktop",
         "description": "Renderizado dinámico de las pantallas del portafolio.",
         "group": "client",
-        "type": "secondary"
+        "type": "secondary",
+        "x": 80,
+        "y": 240,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "services",
@@ -168,7 +183,11 @@
         "icon": "pi pi-cog",
         "description": "Lógica de negocio y coordinación entre módulos.",
         "group": "application",
-        "type": "primary"
+        "type": "primary",
+        "x": 460,
+        "y": 80,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "auth",
@@ -176,7 +195,11 @@
         "icon": "pi pi-lock",
         "description": "Gestión de identidad y acceso de usuarios.",
         "group": "application",
-        "type": "secondary"
+        "type": "secondary",
+        "x": 460,
+        "y": 240,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "business",
@@ -184,7 +207,11 @@
         "icon": "pi pi-sitemap",
         "description": "Reglas y flujos propios del dominio financiero.",
         "group": "application",
-        "type": "primary"
+        "type": "primary",
+        "x": 460,
+        "y": 400,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "persistence",
@@ -192,7 +219,11 @@
         "icon": "pi pi-database",
         "description": "Gestión y lectura de información desde archivos.",
         "group": "persistence",
-        "type": "primary"
+        "type": "primary",
+        "x": 840,
+        "y": 200,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "sqlite",
@@ -200,7 +231,11 @@
         "icon": "devicon-sqlite-plain",
         "description": "Base de datos ligera para desarrollo y testing.",
         "group": "database",
-        "type": "secondary"
+        "type": "secondary",
+        "x": 1220,
+        "y": 120,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "postgres",
@@ -208,7 +243,11 @@
         "icon": "devicon-postgresql-plain",
         "description": "Base de datos robusta para producción.",
         "group": "database",
-        "type": "primary"
+        "type": "primary",
+        "x": 1220,
+        "y": 280,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "ai",
@@ -216,7 +255,11 @@
         "icon": "pi pi-sparkles",
         "description": "Procesamiento inteligente (Gemini/Groq).",
         "group": "external",
-        "type": "primary"
+        "type": "primary",
+        "x": 840,
+        "y": 450,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "export",
@@ -224,7 +267,11 @@
         "icon": "pi pi-file-export",
         "description": "Serialización a CSV/PDF/Excel.",
         "group": "application",
-        "type": "secondary"
+        "type": "secondary",
+        "x": 460,
+        "y": 560,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "reports",
@@ -232,49 +279,82 @@
         "icon": "pi pi-file-pdf",
         "description": "Salida documental.",
         "group": "client",
-        "type": "secondary"
+        "type": "secondary",
+        "x": 80,
+        "y": 400,
+        "width": 250,
+        "height": 96
       }
     ],
     "architectureEdges": [
       {
         "from": "landing",
-        "to": "views"
+        "to": "views",
+        "routeType": "orthogonal"
       },
       {
         "from": "views",
-        "to": "services"
+        "to": "services",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "services",
-        "to": "auth"
+        "to": "auth",
+        "routeType": "orthogonal"
+      },
+      {
+        "from": "services",
+        "to": "business",
+        "routeType": "orthogonal"
       },
       {
         "from": "auth",
-        "to": "business"
+        "to": "persistence",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "business",
-        "to": "persistence"
+        "to": "persistence",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "persistence",
-        "to": "sqlite"
+        "to": "sqlite",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "persistence",
-        "to": "postgres"
+        "to": "postgres",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "business",
-        "to": "ai"
+        "to": "ai",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
-        "from": "ai",
-        "to": "export"
+        "from": "business",
+        "to": "export",
+        "routeType": "orthogonal"
       },
       {
         "from": "export",
-        "to": "reports"
+        "to": "reports",
+        "fromPort": "left",
+        "toPort": "right",
+        "routeType": "orthogonal"
       }
     ],
     "challenges": [
@@ -440,7 +520,14 @@
       "Status": "Active Development"
     },
     "architectureLayout": {
-      "orientation": "swimlanes"
+      "orientation": "freeform",
+      "canvas": {
+        "width": 1800,
+        "height": 600,
+        "gridSize": 40,
+        "showGrid": true
+      },
+      "initialZoom": 0.9
     },
     "architectureNodes": [
       {
@@ -449,7 +536,11 @@
         "icon": "pi pi-desktop",
         "description": "Interfaz empaquetada.",
         "group": "client",
-        "type": "primary"
+        "type": "primary",
+        "x": 80,
+        "y": 80,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "electron",
@@ -457,7 +548,11 @@
         "icon": "devicon-electron-original",
         "description": "Orquestador principal.",
         "group": "application",
-        "type": "primary"
+        "type": "primary",
+        "x": 460,
+        "y": 80,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "playwright",
@@ -465,7 +560,11 @@
         "icon": "devicon-playwright-original",
         "description": "Motor headless SGVA.",
         "group": "automation",
-        "type": "primary"
+        "type": "primary",
+        "x": 840,
+        "y": 80,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "parser",
@@ -473,7 +572,11 @@
         "icon": "pi pi-box",
         "description": "Normaliza HTML extraído.",
         "group": "application",
-        "type": "secondary"
+        "type": "secondary",
+        "x": 1220,
+        "y": 80,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "groq",
@@ -481,7 +584,11 @@
         "icon": "devicon-thealgorithms-plain",
         "description": "Motor de lenguaje estructurado.",
         "group": "external",
-        "type": "primary"
+        "type": "primary",
+        "x": 1220,
+        "y": 280,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "cache",
@@ -489,7 +596,11 @@
         "icon": "pi pi-database",
         "description": "Almacenamiento local JSON.",
         "group": "persistence",
-        "type": "secondary"
+        "type": "secondary",
+        "x": 840,
+        "y": 280,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "excel",
@@ -497,7 +608,11 @@
         "icon": "pi pi-file-export",
         "description": "Excel / Markdown.",
         "group": "application",
-        "type": "secondary"
+        "type": "secondary",
+        "x": 460,
+        "y": 280,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "ui",
@@ -505,37 +620,60 @@
         "icon": "pi pi-mouse",
         "description": "Panel interactivo.",
         "group": "client",
-        "type": "secondary"
+        "type": "secondary",
+        "x": 80,
+        "y": 280,
+        "width": 250,
+        "height": 96
       }
     ],
     "architectureEdges": [
       {
         "from": "desktop",
-        "to": "electron"
+        "to": "electron",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "electron",
-        "to": "playwright"
+        "to": "playwright",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "playwright",
-        "to": "parser"
+        "to": "parser",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "parser",
-        "to": "groq"
+        "to": "groq",
+        "routeType": "orthogonal"
       },
       {
         "from": "groq",
-        "to": "cache"
+        "to": "cache",
+        "fromPort": "left",
+        "toPort": "right",
+        "routeType": "orthogonal"
       },
       {
         "from": "cache",
-        "to": "excel"
+        "to": "excel",
+        "fromPort": "left",
+        "toPort": "right",
+        "routeType": "orthogonal"
       },
       {
         "from": "excel",
-        "to": "ui"
+        "to": "ui",
+        "fromPort": "left",
+        "toPort": "right",
+        "routeType": "orthogonal"
       }
     ],
     "challenges": [
@@ -688,7 +826,14 @@
       "Estado": "Publicado"
     },
     "architectureLayout": {
-      "orientation": "swimlanes"
+      "orientation": "freeform",
+      "canvas": {
+        "width": 1800,
+        "height": 700,
+        "gridSize": 40,
+        "showGrid": true
+      },
+      "initialZoom": 0.9
     },
     "architectureNodes": [
       {
@@ -697,7 +842,11 @@
         "icon": "pi pi-user",
         "description": "Actor principal.",
         "group": "client",
-        "type": "primary"
+        "type": "primary",
+        "x": 80,
+        "y": 200,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "url",
@@ -705,7 +854,11 @@
         "icon": "pi pi-link",
         "description": "Target app.",
         "group": "client",
-        "type": "secondary"
+        "type": "secondary",
+        "x": 400,
+        "y": 200,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "detect",
@@ -713,7 +866,11 @@
         "icon": "pi pi-search",
         "description": "Detecta framework.",
         "group": "application",
-        "type": "primary"
+        "type": "primary",
+        "x": 720,
+        "y": 200,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "cheerio",
@@ -721,7 +878,11 @@
         "icon": "pi pi-file",
         "description": "Static parse.",
         "group": "automation",
-        "type": "secondary"
+        "type": "secondary",
+        "x": 720,
+        "y": 60,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "playwright",
@@ -729,7 +890,11 @@
         "icon": "devicon-playwright-original",
         "description": "Render SPAs.",
         "group": "automation",
-        "type": "primary"
+        "type": "primary",
+        "x": 720,
+        "y": 380,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "audits",
@@ -737,7 +902,11 @@
         "icon": "pi pi-bolt",
         "description": "SEO Metrics.",
         "group": "application",
-        "type": "primary"
+        "type": "primary",
+        "x": 1080,
+        "y": 200,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "aggregate",
@@ -745,7 +914,11 @@
         "icon": "pi pi-sitemap",
         "description": "Consolida resultados.",
         "group": "application",
-        "type": "secondary"
+        "type": "secondary",
+        "x": 1400,
+        "y": 200,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "export",
@@ -753,41 +926,67 @@
         "icon": "pi pi-file-export",
         "description": "JSON / MD.",
         "group": "persistence",
-        "type": "secondary"
+        "type": "secondary",
+        "x": 1400,
+        "y": 400,
+        "width": 250,
+        "height": 96
       }
     ],
     "architectureEdges": [
       {
         "from": "user",
-        "to": "url"
+        "to": "url",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "url",
-        "to": "detect"
+        "to": "detect",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "detect",
-        "to": "cheerio"
+        "to": "cheerio",
+        "fromPort": "top",
+        "toPort": "bottom",
+        "routeType": "orthogonal"
       },
       {
         "from": "detect",
-        "to": "playwright"
+        "to": "playwright",
+        "fromPort": "bottom",
+        "toPort": "top",
+        "routeType": "orthogonal"
       },
       {
         "from": "cheerio",
-        "to": "audits"
+        "to": "audits",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "playwright",
-        "to": "audits"
+        "to": "audits",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "audits",
-        "to": "aggregate"
+        "to": "aggregate",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "aggregate",
-        "to": "export"
+        "to": "export",
+        "routeType": "orthogonal"
       }
     ],
     "challenges": [
@@ -935,7 +1134,14 @@
       "Estado": "Completado"
     },
     "architectureLayout": {
-      "orientation": "swimlanes"
+      "orientation": "freeform",
+      "canvas": {
+        "width": 1800,
+        "height": 600,
+        "gridSize": 40,
+        "showGrid": true
+      },
+      "initialZoom": 0.9
     },
     "architectureNodes": [
       {
@@ -944,7 +1150,11 @@
         "icon": "devicon-angular-original",
         "description": "Cliente reactivo.",
         "group": "client",
-        "type": "primary"
+        "type": "primary",
+        "x": 80,
+        "y": 160,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "api",
@@ -952,7 +1162,11 @@
         "icon": "devicon-spring-original",
         "description": "Spring Boot.",
         "group": "application",
-        "type": "primary"
+        "type": "primary",
+        "x": 460,
+        "y": 160,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "security",
@@ -960,7 +1174,11 @@
         "icon": "pi pi-lock",
         "description": "JWT Tokens.",
         "group": "application",
-        "type": "secondary"
+        "type": "secondary",
+        "x": 840,
+        "y": 160,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "persistence",
@@ -968,7 +1186,11 @@
         "icon": "devicon-java-plain",
         "description": "ORM transactions.",
         "group": "persistence",
-        "type": "primary"
+        "type": "primary",
+        "x": 1220,
+        "y": 160,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "mysql",
@@ -976,7 +1198,11 @@
         "icon": "devicon-mysql-plain",
         "description": "Base de datos.",
         "group": "database",
-        "type": "primary"
+        "type": "primary",
+        "x": 1220,
+        "y": 360,
+        "width": 250,
+        "height": 96
       },
       {
         "id": "audit",
@@ -984,29 +1210,44 @@
         "icon": "devicon-sonarqube-plain",
         "description": "Quality gate.",
         "group": "external",
-        "type": "secondary"
+        "type": "secondary",
+        "x": 460,
+        "y": 360,
+        "width": 250,
+        "height": 96
       }
     ],
     "architectureEdges": [
       {
         "from": "spa",
-        "to": "api"
+        "to": "api",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "api",
-        "to": "security"
+        "to": "security",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "security",
-        "to": "persistence"
+        "to": "persistence",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
       },
       {
         "from": "persistence",
-        "to": "mysql"
+        "to": "mysql",
+        "routeType": "orthogonal"
       },
       {
         "from": "api",
-        "to": "audit"
+        "to": "audit",
+        "routeType": "orthogonal"
       }
     ],
     "challenges": [

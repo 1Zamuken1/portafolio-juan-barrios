@@ -1,283 +1,259 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   width: 100%;
   height: 100%;
+  min-height: 0;
   position: relative;
-  color: #d4d4d4;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-  font-size: 12px;
   overflow: hidden;
 }
 
-/* Viewport: receives pan/zoom events; clips/s rolls the canvas */
-.blueprint-viewport {
-  position: relative;
+/* ═══════════════════════════════════════════════════════════════
+   Container & Viewport
+   ═══════════════════════════════════════════════════════════════ */
+.blueprint-viewer {
   width: 100%;
-  height: 100%;
-  min-height: 560px;
-  overflow: auto;
-  cursor: grab;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: #1a1f36;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  user-select: none;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.blueprint-viewport.viewport--panning {
+.blueprint-viewport {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none; /* Disable browser zooming/panning on mobile */
+  position: relative;
+}
+
+.viewport--panning {
   cursor: grabbing;
 }
 
-/* The stage holds the canvas + nodes and receives the pan/zoom transform */
 .blueprint-stage {
-  position: relative;
-  min-width: min-content;
-  min-height: min-content;
-  will-change: transform;
-}
-
-/* The canvas is sized by its viewBox attributes; nodes share the same coords */
-.blueprint-canvas-overlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none;
-  z-index: 0;
+  transform-origin: 0 0;
 }
 
-.blueprint-zones {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  gap: 160px;
-  padding: 80px 120px;
-  min-height: 100%;
-}
-
-.bp-zone {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  min-width: 250px;
-}
-
-/* Subtly delineate swimlanes */
-.bp-zone::before {
-  content: '';
-  position: absolute;
-  top: -30px; 
-  bottom: -30px;
-  left: -30px; 
-  right: -30px;
-  background: rgba(42, 58, 89, 0.03);
-  border-radius: 12px;
-  z-index: -1;
-  pointer-events: none;
-}
-
-.bp-zone-header {
-  margin-bottom: 32px;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.35);
+/* ═══════════════════════════════════════════════════════════════
+   SVG Canvas
+   ═══════════════════════════════════════════════════════════════ */
+.blueprint-svg-canvas {
+  display: block;
   width: 100%;
-  text-align: center;
+  height: 100%;
 }
 
-.bp-zone-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  color: #ffffff;
-  opacity: 0.9;
-}
-
-.bp-zone-nodes {
-  display: flex;
-  flex-direction: column;
-  gap: 60px;
-  align-items: center;
-  flex-grow: 1;
-  justify-content: center;
-}
-
-/* ===== Grid background (dark blueprint style) ===== */
 .grid-bg {
-  fill: #4288EB;
-}
-
-.grid-line {
-  stroke: rgba(255, 255, 255, 0.2);
-  stroke-width: 1;
-}
-
-/* ===== Connectors ===== */
-.connector-line {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.85);
-  stroke-width: 2;
-  stroke-dasharray: 6 4;
-  marker-end: url(#arrowhead);
-  transition: stroke 0.18s ease, stroke-width 0.18s ease, opacity 0.18s ease;
-}
-
-.connector-line:hover,
-.connector--highlighted {
-  stroke: #FFD700;
-  stroke-width: 2.8;
-  stroke-dasharray: 0;
-}
-
-.connector--highlighted {
   opacity: 1;
 }
 
-.connector--dimmed {
-  opacity: 0.22;
+.grid-line {
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 0.5;
+  fill: none;
 }
 
-.arrow-head {
-  fill: rgba(255, 255, 255, 0.85);
-  transition: fill 0.18s ease;
+/* ═══════════════════════════════════════════════════════════════
+   SVG Nodes
+   ═══════════════════════════════════════════════════════════════ */
+.layer-nodes {
+  pointer-events: all;
 }
 
-/* ===== Nodes ===== */
-.bp-node {
-  position: relative;
-  width: 250px;
-  height: 96px;
-  flex-shrink: 0;
-  box-sizing: border-box;
-  background: #0b1a2e; /* Fondo muy oscuro para contraste fuerte pero armonioso */
-  border: 1.5px solid rgba(255, 255, 255, 0.5);
-  border-radius: 6px;
-  padding: 10px 12px;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  transition: all 0.18s ease;
-  pointer-events: auto;
+.svg-node {
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: opacity 0.3s ease;
 }
 
-.bp-node:hover,
-.bp-node--highlighted {
-  border-color: #FFD700;
-  box-shadow: 0 0 16px rgba(255, 215, 0, 0.4);
-  transform: translateY(-2px);
-  z-index: 10;
+.node-bg {
+  transition: stroke-width 0.25s ease, stroke 0.25s ease;
 }
 
-.bp-node--dimmed {
-  opacity: 0.35;
+.svg-node:hover .node-bg {
+  stroke-width: 3;
 }
 
-.bp-node-header {
+.node--dimmed {
+  opacity: 0.2;
+  transition: opacity 0.3s ease;
+}
+
+.node--highlighted .node-bg {
+  stroke-width: 3;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   foreignObject HTML Content (inside SVG nodes)
+   ═══════════════════════════════════════════════════════════════ */
+.node-html-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+}
+
+.node-header {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-weight: 600;
+  font-size: 13px;
   margin-bottom: 6px;
+  line-height: 1.2;
 }
 
-.bp-node-icon {
-  font-size: 15px;
-  color: #ffffff;
-  min-width: 18px;
-  text-align: center;
+.node-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
 }
 
-.bp-node-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: 0.04em;
+.node-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.01em;
 }
 
-.bp-node-description {
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.35;
+.node-desc {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
   margin: 0;
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* ===== HUD (CAD-style) ===== */
+[data-theme="light"] .node-desc {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Connectors (Edges / SVG Paths)
+   ═══════════════════════════════════════════════════════════════ */
+.layer-edges {
+  pointer-events: none;
+}
+
+.connector-line {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.55);
+  transition: stroke 0.3s ease, opacity 0.3s ease;
+}
+
+.connector--highlighted {
+  stroke: #FFD700;
+  stroke-width: 2.5 !important;
+  stroke-dasharray: none !important;
+}
+
+.connector--dimmed {
+  opacity: 0.12;
+}
+
+.arrow-head {
+  transition: fill 0.3s ease;
+}
+
+.arrow-head--default {
+  fill: rgba(255, 255, 255, 0.5);
+}
+
+.arrow-head--hover {
+  fill: #FFD700;
+}
+
+.connector-label {
+  fill: rgba(255, 255, 255, 0.8);
+  font-size: 11px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HUD & Controls (Overlay)
+   ═══════════════════════════════════════════════════════════════ */
 .blueprint-hud {
   position: absolute;
   bottom: 12px;
   left: 12px;
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
-  padding: 6px 10px;
-  background: rgba(12, 16, 23, 0.85);
-  border: 1px solid #2d3748;
-  border-radius: 4px;
-  backdrop-filter: blur(8px);
-  font-variant-numeric: tabular-nums;
+  pointer-events: none;
   z-index: 10;
 }
 
 .hud-item {
-  color: #d4d4d4;
+  background: rgba(10, 15, 30, 0.75);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 3px 8px;
+  border-radius: 4px;
   font-size: 11px;
-  display: flex;
-  align-items: center;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(4px);
+  letter-spacing: 0.02em;
 }
 
-.hud-item::before {
-  content: '';
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-right: 6px;
-  border-radius: 2px;
-  background: #4ec9b0;
-  box-shadow: 0 0 6px rgba(78, 201, 176, 0.6);
-}
-
-/* ===== Controls ===== */
 .blueprint-controls {
   position: absolute;
-  bottom: 12px;
+  top: 12px;
   right: 12px;
   display: flex;
+  flex-direction: column;
   gap: 6px;
   z-index: 10;
 }
 
 .bp-btn {
-  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background: rgba(10, 15, 30, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  background: rgba(12, 16, 23, 0.85);
-  border: 1px solid #2d3748;
-  border-radius: 4px;
-  color: #d4d4d4;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.15s ease;
-  backdrop-filter: blur(6px);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .bp-btn:hover {
-  border-color: #4ec9b0;
-  color: #4ec9b0;
-  box-shadow: 0 0 10px rgba(78, 201, 176, 0.35);
+  background: rgba(30, 50, 90, 0.95);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-/* ===== Mobile / responsive ===== */
-@media (max-width: 768px) {
-  .bp-node {
-    width: 200px;
-    height: 90px;
-    padding: 8px 10px;
-  }
-  .blueprint-viewport {
-    min-height: 420px;
-  }
+.bp-btn:active {
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Debug Ports
+   ═══════════════════════════════════════════════════════════════ */
+.bp-port {
+  pointer-events: none;
 }
