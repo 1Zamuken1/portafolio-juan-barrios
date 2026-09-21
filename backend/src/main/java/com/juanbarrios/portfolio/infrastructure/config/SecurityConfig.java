@@ -31,7 +31,14 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
-                    .anyRequest().authenticated() 
+                    // Cuando algo falla, Spring reenvia internamente a /error.
+                    // Sin este permiso esa ruta cae en anyRequest().authenticated()
+                    // y la respuesta que llega al cliente es un 403 vacio, en vez
+                    // del 400 o el 500 real. Eso enmascara la causa por completo:
+                    // un cuerpo JSON mal formado y una excepcion de persistencia
+                    // se ven exactamente igual desde fuera.
+                    .requestMatchers("/error").permitAll()
+                    .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
