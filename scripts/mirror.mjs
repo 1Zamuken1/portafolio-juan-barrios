@@ -23,8 +23,13 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DATOS = join(RAIZ, 'src', 'assets', 'data');
 
 const API = process.env.MIRROR_API ?? 'https://portafolio-juan-barrios.onrender.com/api';
-const USUARIO = process.env.MIRROR_USER;
-const CLAVE = process.env.MIRROR_PASSWORD;
+// Se recortan los extremos: al pegar una credencial en una terminal de
+// Windows es facil arrastrar un retorno de carro, y eso da un 401 confuso
+// porque la clave viaja con un caracter de mas.
+const limpiar = (v) => (typeof v === 'string' ? v.trim() : v);
+
+const USUARIO = limpiar(process.env.MIRROR_USER);
+const CLAVE = limpiar(process.env.MIRROR_PASSWORD);
 
 const ficheros = {
   projects: join(DATOS, 'projects.json'),
