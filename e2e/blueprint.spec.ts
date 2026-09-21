@@ -158,16 +158,20 @@ test.describe('Blueprint viewer renders on case-study pages', () => {
           return V1.x > Math.min(H1.x, H2.x) && V1.x < Math.max(H1.x, H2.x)
             && H1.y > Math.min(V1.y, V2.y) && H1.y < Math.max(V1.y, V2.y);
         };
-        const rutas = [...document.querySelectorAll('.connector-line')].map(e => puntos(e.getAttribute('d') || ''));
-        // Dos rutas son hermanas si comparten un extremo (mismo punto inicial
-        // o final), que es lo que ocurre al salir del mismo nodo.
-        const mismo = (p: any, q: any) => Math.abs(p.x - q.x) < 60 && Math.abs(p.y - q.y) < 60;
+        // Hermanas = comparten nodo de origen o de destino. Se lee de los
+        // atributos del propio trazo, no de la proximidad de sus extremos:
+        // dos puertos del mismo lado pueden estar a 200u de distancia.
+        const rutas = [...document.querySelectorAll('.connector-line')].map(e => ({
+          from: e.getAttribute('data-from'),
+          to: e.getAttribute('data-to'),
+          p: puntos(e.getAttribute('d') || '')
+        }));
         let n = 0;
         for (let i = 0; i < rutas.length; i++) {
           for (let j = i + 1; j < rutas.length; j++) {
-            const A = rutas[i], B = rutas[j];
+            const A = rutas[i].p, B = rutas[j].p;
             if (!A.length || !B.length) continue;
-            const hermanas = mismo(A[0], B[0]) || mismo(A[A.length - 1], B[B.length - 1]);
+            const hermanas = rutas[i].from === rutas[j].from || rutas[i].to === rutas[j].to;
             if (!hermanas) continue;
             for (let a = 0; a < A.length - 1; a++) {
               for (let b = 0; b < B.length - 1; b++) {

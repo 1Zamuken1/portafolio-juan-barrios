@@ -120,6 +120,8 @@
               class="connector-line"
               [class.connector--highlighted]="isConnectorHighlighted(conn)"
               [class.connector--dimmed]="isConnectorDimmed(conn)"
+              [attr.data-from]="conn.from"
+              [attr.data-to]="conn.to"
               [attr.d]="conn.path"
               [attr.stroke-width]="conn.strokeWidth"
               [attr.stroke-dasharray]="conn.strokeDasharray"
