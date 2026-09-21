@@ -105,6 +105,41 @@ test.describe('Blueprint viewer renders on case-study pages', () => {
       expect(solapes.extremosDentro).toBe(0);
       expect(solapes.cruces).toBe(0);
 
+      // Dos rutas distintas no pueden compartir carril: se dibujarian una
+      // encima de la otra. Se nota sobre todo en diagramas con muchos nodos.
+      const carriles = await page.evaluate(() => {
+        const puntos = (d: string) => {
+          const out: Array<{ x: number; y: number }> = [];
+          const re = /([ML])\s*(-?[\d.]+)\s+(-?[\d.]+)/g;
+          let m: RegExpExecArray | null;
+          while ((m = re.exec(d))) out.push({ x: +m[2], y: +m[3] });
+          return out;
+        };
+        type Seg = { ruta: number; eje: string; c: number; min: number; max: number };
+        const segs: Seg[] = [];
+        [...document.querySelectorAll('.connector-line')].forEach((el, i) => {
+          const P = puntos(el.getAttribute('d') || '');
+          for (let k = 0; k < P.length - 1; k++) {
+            const a = P[k], b = P[k + 1];
+            if (Math.abs(a.y - b.y) < 0.01) {
+              segs.push({ ruta: i, eje: 'h', c: a.y, min: Math.min(a.x, b.x), max: Math.max(a.x, b.x) });
+            } else if (Math.abs(a.x - b.x) < 0.01) {
+              segs.push({ ruta: i, eje: 'v', c: a.x, min: Math.min(a.y, b.y), max: Math.max(a.y, b.y) });
+            }
+          }
+        });
+        let solapes = 0;
+        for (let i = 0; i < segs.length; i++) {
+          for (let j = i + 1; j < segs.length; j++) {
+            const A = segs[i], B = segs[j];
+            if (A.ruta === B.ruta || A.eje !== B.eje || Math.abs(A.c - B.c) > 0.5) continue;
+            if (Math.min(A.max, B.max) - Math.max(A.min, B.min) > 1) solapes++;
+          }
+        }
+        return solapes;
+      });
+      expect(carriles).toBe(0);
+
       // Ningun conector puede quedar con un path degenerado.
       const paths = await page.locator('.connector-line').evaluateAll((els) =>
         els.map((e) => e.getAttribute('d') || '')

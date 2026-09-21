@@ -18,6 +18,12 @@ const PORT_STUB = 32;
 /** Holgura al comprobar si un tramo entra en un nodo: evita falsos positivos en los bordes. */
 const HIT_TOLERANCE = 2;
 
+/** Separacion entre carriles paralelos cuando dos rutas comparten corredor. */
+const CHANNEL_SPACING = 14;
+
+/** Desplazamientos que se prueban al buscar carril libre, en orden. */
+const CHANNEL_TRIES = [0, 1, -1, 2, -2, 3, -3, 4, -4];
+
 @Injectable({
   providedIn: 'root'
 })
@@ -39,6 +45,105 @@ export class BlueprintPathCalculator {
     }
 
     return this.buildOrthogonalPath(startPoint, endPoint, fromSide, toSide, channelOffset, obstacles);
+  }
+
+  /**
+   * Igual que calculatePath pero devuelve los vertices, para poder
+   * post-procesar las rutas antes de serializarlas.
+   */
+  calculateRoutePoints(
+    startPoint: Point,
+    endPoint: Point,
+    fromSide: string,
+    toSide: string,
+    channelOffset: number = 0,
+    obstacles: ObstacleRect[] = []
+  ): Point[] {
+    const candidates = this.buildCandidates(startPoint, endPoint, fromSide, toSide, channelOffset);
+    if (!obstacles.length) return candidates[0];
+
+    let best = candidates[0];
+    let bestHits = Infinity;
+    for (const points of candidates) {
+      const hits = this.countCollisions(points, obstacles);
+      if (hits === 0) return points;
+      if (hits < bestHits) {
+        bestHits = hits;
+        best = points;
+      }
+    }
+    return best;
+  }
+
+  /**
+   * Reparte en carriles paralelos los tramos que dos rutas distintas comparten.
+   *
+   * El offset por par de nodos no basta: dos aristas sin relacion pueden
+   * coincidir en el mismo corredor y dibujarse una encima de la otra. Aqui se
+   * recorren los tramos interiores y, si el carril ya esta ocupado, se desplaza
+   * al primero libre que no choque con ningun nodo.
+   *
+   * Solo se mueven tramos interiores: el primero y el ultimo estan anclados al
+   * puerto y no pueden despegarse del borde del nodo.
+   */
+  separateChannels(routes: Array<Point[] | null>, obstaclesPerRoute: ObstacleRect[][]): void {
+    // carril ocupado -> intervalos [min, max] ya reservados
+    const lanes = new Map<string, Array<[number, number]>>();
+
+    const reserve = (key: string, min: number, max: number) => {
+      const list = lanes.get(key);
+      if (list) list.push([min, max]);
+      else lanes.set(key, [[min, max]]);
+    };
+
+    const libre = (key: string, min: number, max: number) => {
+      const list = lanes.get(key);
+      if (!list) return true;
+      return !list.some(([a, b]) => Math.min(max, b) - Math.max(min, a) > 1);
+    };
+
+    routes.forEach((points, routeIndex) => {
+      if (!points || points.length < 3) return;
+      const obstacles = obstaclesPerRoute[routeIndex] ?? [];
+
+      for (let i = 1; i < points.length - 2; i++) {
+        const a = points[i];
+        const b = points[i + 1];
+
+        const horizontal = Math.abs(a.y - b.y) < 0.001;
+        const vertical = Math.abs(a.x - b.x) < 0.001;
+        if (!horizontal && !vertical) continue;
+
+        const axis = horizontal ? 'h' : 'v';
+        const base = horizontal ? a.y : a.x;
+        const min = horizontal ? Math.min(a.x, b.x) : Math.min(a.y, b.y);
+        const max = horizontal ? Math.max(a.x, b.x) : Math.max(a.y, b.y);
+
+        let elegido = base;
+        for (const paso of CHANNEL_TRIES) {
+          const candidato = base + paso * CHANNEL_SPACING;
+          const key = `${axis}:${Math.round(candidato)}`;
+          if (!libre(key, min, max)) continue;
+
+          // Un carril libre no sirve si atraviesa una tarjeta.
+          const probeA = horizontal ? { x: a.x, y: candidato } : { x: candidato, y: a.y };
+          const probeB = horizontal ? { x: b.x, y: candidato } : { x: candidato, y: b.y };
+          if (obstacles.some(r => this.segmentHitsRect(probeA, probeB, r))) continue;
+
+          elegido = candidato;
+          break;
+        }
+
+        if (horizontal) {
+          a.y = elegido;
+          b.y = elegido;
+        } else {
+          a.x = elegido;
+          b.x = elegido;
+        }
+        reserve(`${axis}:${Math.round(elegido)}`, min, max);
+      }
+    });
   }
 
   /** Construye una ruta a partir de puntos de flexion explicitos del JSON. */

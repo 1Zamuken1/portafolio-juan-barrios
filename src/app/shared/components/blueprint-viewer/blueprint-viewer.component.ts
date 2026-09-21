@@ -113,7 +113,7 @@ export class BlueprintViewerComponent implements OnDestroy {
       bump(`${r.edge.to}-${r.toSide}`);
     }
 
-    // 3. Trazar cada ruta anclando los extremos al BORDE del nodo.
+    // 3. Anclar cada extremo al BORDE del nodo y trazar la ruta.
     const sideUsed = new Map<string, number>();
     const takeIndex = (key: string) => {
       const i = sideUsed.get(key) ?? 0;
@@ -122,7 +122,7 @@ export class BlueprintViewerComponent implements OnDestroy {
     };
     const segmentUsed = new Map<string, number>();
 
-    return resolved.map(({ edge, fromNode, toNode, fromSide, toSide }) => {
+    const trazos = resolved.map(({ edge, fromNode, toNode, fromSide, toSide }) => {
       const fromKey = `${edge.from}-${fromSide}`;
       const toKey = `${edge.to}-${toSide}`;
 
@@ -144,29 +144,47 @@ export class BlueprintViewerComponent implements OnDestroy {
         .filter(n => n.id !== edge.from && n.id !== edge.to)
         .map(n => ({ x: n.x, y: n.y, width: n.width, height: n.height }));
 
-      // Los bendPoints del JSON, si existen, mandan sobre el calculo automatico.
-      const path = edge.bendPoints?.length
-        ? this.pathCalculator.buildPathFromPoints(edge.bendPoints)
-        : this.pathCalculator.calculatePath(
-            fromPort, toPort,
-            fromSide, toSide,
-            edge.routeType ?? 'orthogonal',
-            offset,
-            obstacles
-          );
+      const routeType = edge.routeType ?? 'orthogonal';
+
+      // Los bendPoints del JSON mandan sobre el calculo automatico.
+      if (edge.bendPoints?.length) {
+        return { edge, fromPort, toPort, obstacles, points: null, path: this.pathCalculator.buildPathFromPoints(edge.bendPoints) };
+      }
+
+      // Solo las rutas ortogonales se reparten en carriles; las curvas y rectas
+      // se serializan tal cual.
+      if (routeType !== 'orthogonal') {
+        return {
+          edge, fromPort, toPort, obstacles, points: null,
+          path: this.pathCalculator.calculatePath(fromPort, toPort, fromSide, toSide, routeType, offset, obstacles)
+        };
+      }
 
       return {
-        id: `${edge.from}→${edge.to}`,
-        from: edge.from,
-        to: edge.to,
-        path,
-        label: edge.label,
-        labelX: (fromPort.x + toPort.x) / 2,
-        labelY: (fromPort.y + toPort.y) / 2,
-        strokeWidth: edge.strokeWidth ?? 2,
-        strokeDasharray: edge.strokeDasharray ?? '6 4',
+        edge, fromPort, toPort, obstacles,
+        points: this.pathCalculator.calculateRoutePoints(fromPort, toPort, fromSide, toSide, offset, obstacles),
+        path: ''
       };
-    }) as ComputedConnector[];
+    });
+
+    // 4. Repartir en carriles los tramos que varias rutas comparten, para que
+    //    no se dibujen una encima de otra.
+    this.pathCalculator.separateChannels(
+      trazos.map(t => t.points),
+      trazos.map(t => t.obstacles)
+    );
+
+    return trazos.map(({ edge, fromPort, toPort, points, path }) => ({
+      id: `${edge.from}→${edge.to}`,
+      from: edge.from,
+      to: edge.to,
+      path: points ? this.pathCalculator.buildPathFromPoints(points) : path,
+      label: edge.label,
+      labelX: (fromPort.x + toPort.x) / 2,
+      labelY: (fromPort.y + toPort.y) / 2,
+      strokeWidth: edge.strokeWidth ?? 2,
+      strokeDasharray: edge.strokeDasharray ?? '6 4',
+    })) as ComputedConnector[];
   });
 
   /** Tema activo de la aplicacion. Sigue a ThemeService, no al sistema operativo. */
