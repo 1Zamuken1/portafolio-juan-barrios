@@ -417,6 +417,34 @@ Reglas al tocar codigo que se prerenderiza:
 - `/admin` se queda en `RenderMode.Client`: depende de sesion y del backend.
 - La hidratacion esta activa (`provideClientHydration(withEventReplay())`), asi que el HTML prerenderizado se reaprovecha en vez de repintarse.
 
+### Espejo entre el backend y los JSON
+
+El sitio publico **nunca habla con el backend**: lee `src/assets/data/*.json`, que se compilan dentro del bundle. Eso es lo que mantuvo el portafolio en pie cuando la base gratuita de Render se elimino con todo su contenido dentro.
+
+```bash
+pnpm run mirror:push   # JSON -> API   (siembra o recupera la base)
+pnpm run mirror:pull   # API -> JSON   (refresca el espejo)
+```
+
+Requiere las credenciales de admin, definidas **solo en la terminal**, nunca en el repositorio:
+
+```powershell
+$env:MIRROR_USER="..."; $env:MIRROR_PASSWORD="..."
+```
+
+Reglas que el script respeta y que conviene no romper:
+
+- **Se ejecuta a mano y su resultado se commitea. Nunca en el build.** Si el despliegue de Vercel dependiera de que Render esta despierto, volveria el problema de arranque en frio que todo este diseno evita, y un backend dormido podria tumbar un despliegue.
+- **`pull` conserva el id previo emparejando por `slug`.** La base asigna ids nuevos en cada siembra y las URLs publicas son `/projects/<id>`: sin esto, un ciclo push/pull renumeraria los casos de estudio y romperia enlaces, sitemap y canonical.
+- **`pull` respeta el orden de claves** del fichero anterior, para que el diff sea revisable.
+- **`pull` aborta si la API devuelve cero proyectos**, en vez de vaciar el sitio.
+
+El backend modela los 28 campos, no solo los 11 de antes. Los que tienen forma de documento (diagramas, readme, stack estructurado, metricas) viven en **columnas JSON** con `@JdbcTypeCode(SqlTypes.JSON)`: son claves arbitrarias y colecciones que siempre se leen enteras, y en relacional serian ocho tablas, varias clave-valor. Las coordenadas son enteros y no decimales, para que la exportacion no devuelva `505.0` donde el JSON tiene `505`.
+
+`MirrorRoundTripTest` recorre el circuito completo sin HTTP con el `projects.json` real: lo deserializa, lo guarda, lo relee y lo vuelve a serializar, comparando campo a campo. Como Jackson falla ante campos desconocidos, que el test pase demuestra ademas que el dominio cubre todo lo que hay en el fichero. **Es lo que impide que una sincronizacion borre en silencio los diagramas**, y hoy ese JSON es la unica copia completa que queda del contenido.
+
+> **La base de datos es externa.** Las gratuitas de Render se eliminan a los 30 dias. Se usa Neon con las tres variables `SPRING_DATASOURCE_*` definidas en el dashboard, y **conexion directa, no el pooler**: Hibernate ejecuta DDL al arrancar con `ddl-auto=update`, y el pooler en modo transaccion lo rompe.
+
 ### Tests e2e
 
 ```bash
