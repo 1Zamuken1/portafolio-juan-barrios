@@ -26,4 +26,7 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
-    healthCheckPath: /api/projects
+    # La ruta de salud NO debe tocar la base de datos: si una tabla queda rota,
+    # la comprobacion falla, Render no promueve el despliegue y el arreglo que
+    # repararia esa tabla no llega a entrar nunca. Paso de verdad.
+    healthCheckPath: /api/health
