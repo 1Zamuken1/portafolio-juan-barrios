@@ -87,11 +87,32 @@ async function token() {
       '  Git Bash:    export MIRROR_USER=admin MIRROR_PASSWORD=...'
     );
   }
-  const { token } = await pedir('/auth/login', {
+  const res = await fetch(`${API}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username: USUARIO, password: CLAVE })
   });
+
+  // La API responde 401 con cuerpo vacio, asi que el detalle lo ponemos aqui.
+  if (res.status === 401) {
+    throw new Error(
+      `La API rechazo las credenciales de "${USUARIO}".\n\n` +
+      'Comprueba, por este orden:\n' +
+      '  1. Que el redespliegue de Render haya terminado. Al cambiar una\n' +
+      '     variable, el contenedor viejo sigue sirviendo un rato con el\n' +
+      '     valor anterior. En Render, Events debe mostrar un deploy Live\n' +
+      '     posterior a tu cambio.\n' +
+      '  2. Que MIRROR_USER coincida con ADMIN_USERNAME en Render.\n' +
+      '  3. Que la clave sea la que guardaste en ADMIN_PASSWORD.\n\n' +
+      'Mismo endpoint desde el navegador, por si es mas comodo:\n' +
+      '  https://portafolio-juan-barrios.vercel.app/admin/login'
+    );
+  }
+  if (!res.ok) {
+    throw new Error(`POST /auth/login respondio ${res.status}: ${await res.text()}`);
+  }
+
+  const { token } = await res.json();
   return token;
 }
 
