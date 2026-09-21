@@ -394,7 +394,24 @@ En local, copiar `backend/src/main/resources/application-local.properties.exampl
 
 Los encabezados no llevan las almohadillas en el texto; son un `::before` en CSS. Si se escribe `<h2 class="md-h2">## Algo</h2>` se rompe la indexacion.
 
-> **Limitacion conocida.** No hay SSR ni prerender: los metadatos se escriben en tiempo de ejecucion. Google ejecuta JavaScript y los ve, pero los rastreadores de redes sociales (LinkedIn, WhatsApp, Slack, Facebook) no, y usan siempre los de `index.html`. Para que la vista previa al compartir sea la de cada proyecto hace falta prerenderizar las seis rutas.
+### Prerender (SSG)
+
+El sitio publico se compila a **HTML estatico**: `pnpm run build` genera un `index.html` por ruta con los metadatos y el contenido ya escritos, incluido el diagrama SVG. Asi los rastreadores que no ejecutan JavaScript (LinkedIn, WhatsApp, Slack) ven la ficha correcta de cada pagina.
+
+| Archivo | Proposito |
+|---|---|
+| `src/main.server.ts` | Arranque de servidor. **Debe recibir el `BootstrapContext`**; sin el, la extraccion de rutas falla con NG0401 |
+| `src/app/app.config.server.ts` | `provideServerRendering(withRoutes(serverRoutes))` sobre `appConfig` |
+| `src/app/app.routes.server.ts` | Que se prerenderiza. `/projects/:id` deriva sus parametros de `projects.json` |
+| `angular.json` | `server`, `outputMode: "static"` y `prerender: true` |
+| `vercel.json` | Reescritura a `/index.html` para lo que no esta prerenderizado, como `/admin` |
+
+Reglas al tocar codigo que se prerenderiza:
+
+- **Nada de `window`, `localStorage` ni `document` global sin `isPlatformBrowser`.** Se corrigieron `AuthService`, `VscodeLayoutComponent` y `ProjectsComponent` por esto. `DOCUMENT` inyectado si funciona en servidor.
+- **Los datos publicos se importan, no se piden por HTTP.** `DataService.getStatic*()` importa los JSON directamente: en el prerender no hay servidor que sirva `/assets/data/*.json`. Ademas ahorra tres peticiones en el navegador.
+- `/admin` se queda en `RenderMode.Client`: depende de sesion y del backend.
+- La hidratacion esta activa (`provideClientHydration(withEventReplay())`), asi que el HTML prerenderizado se reaprovecha en vez de repintarse.
 
 ### Tests e2e
 
@@ -402,7 +419,7 @@ Los encabezados no llevan las almohadillas en el texto; son un `::before` en CSS
 pnpm run e2e
 ```
 
-`playwright.config.ts` levanta `ng serve` en el puerto 4212 automáticamente (`reuseExistingServer: true`). Hay dos suites: `e2e/blueprint.spec.ts` (encuadre, solapamientos y carriles del visor) y `e2e/seo.spec.ts` (metadatos por ruta). Los casos se derivan de `src/assets/data/projects.json`: cualquier proyecto que no sea `Draft` y tenga `architectureNodes` genera un test que comprueba que se renderiza un `.svg-node` por nodo del JSON. No hay ids hardcodeados.
+`playwright.config.ts` levanta `ng serve` en el puerto 4212 automáticamente (`reuseExistingServer: true`). Hay tres suites: `e2e/blueprint.spec.ts` (encuadre, solapamientos, carriles y cruces del visor), `e2e/seo.spec.ts` (metadatos por ruta, sobre la app viva) y `e2e/prerender.spec.ts` (el HTML generado por el build, que es lo que ven los rastreadores; se omite si no hay build). Los casos se derivan de `src/assets/data/projects.json`: cualquier proyecto que no sea `Draft` y tenga `architectureNodes` genera un test que comprueba que se renderiza un `.svg-node` por nodo del JSON. No hay ids hardcodeados.
 
 La primera vez hace falta descargar el navegador: `npx playwright install chromium`.
 

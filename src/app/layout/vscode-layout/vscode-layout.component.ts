@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, OnDestroy, signal, computed, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterOutlet, RouterLink, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { DataService } from '../../core/services/data.service';
 import { Project } from '../../shared/models/project.model';
@@ -24,6 +24,7 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
   private dataService = inject(DataService);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
+  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private routerSub?: Subscription;
   private fragmentSub?: Subscription;
 
@@ -102,8 +103,10 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // En movil el explorer es un panel flotante y arranca cerrado, para no
     // comerse el area del editor.
-    this.syncViewport();
-    window.addEventListener('resize', this.onResize, { passive: true });
+    if (this.isBrowser) {
+      this.syncViewport();
+      window.addEventListener('resize', this.onResize, { passive: true });
+    }
 
     // Load static projects immediately
     this.dataService.getStaticProjects().subscribe(data => {
@@ -127,7 +130,7 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.routerSub?.unsubscribe();
     this.fragmentSub?.unsubscribe();
-    window.removeEventListener('resize', this.onResize);
+    if (this.isBrowser) window.removeEventListener('resize', this.onResize);
   }
 
   private onResize = () => this.syncViewport();

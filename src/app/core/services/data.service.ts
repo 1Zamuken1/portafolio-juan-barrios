@@ -1,10 +1,17 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, of, map } from 'rxjs';
 import { Project } from '../../shared/models/project.model';
 import { Experience } from '../../shared/models/experience.model';
 import { AdminSkill, SkillCategory, Skill } from '../../shared/models/skill.model';
 import { environment } from '../../../environments/environment';
+
+// Los datos publicos son un activo de compilacion, no un recurso remoto:
+// asi el prerender puede resolverlos sin servidor y el navegador se ahorra
+// tres peticiones.
+import projectsData from '../../../assets/data/projects.json';
+import experiencesData from '../../../assets/data/experiences.json';
+import skillsData from '../../../assets/data/skills.json';
 
 @Injectable({ providedIn: 'root' })
 export class DataService {
@@ -15,18 +22,16 @@ export class DataService {
   //  STATIC DATA (JSON from assets — for production mirror)
   // ═══════════════════════════════════════════
 
-  private assetsUrl = '/assets/data';
-
   getStaticProjects(): Observable<Project[]> {
-    return this.http.get<Project[]>(`${this.assetsUrl}/projects.json`);
+    return of(projectsData as unknown as Project[]);
   }
 
   getStaticExperiences(): Observable<Experience[]> {
-    return this.http.get<Experience[]>(`${this.assetsUrl}/experiences.json`);
+    return of(experiencesData as unknown as Experience[]);
   }
 
   getStaticSkills(): Observable<SkillCategory[]> {
-    return this.http.get<SkillCategory[]>(`${this.assetsUrl}/skills.json`);
+    return of(skillsData as unknown as SkillCategory[]);
   }
 
   getStaticSkillsFlat(): Observable<AdminSkill[]> {

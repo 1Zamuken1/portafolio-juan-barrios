@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, inject, signal, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, inject, signal, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../core/services/data.service';
 import { Project } from '../../shared/models/project.model';
@@ -23,6 +23,7 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private seo = inject(SeoService);
+  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   project = signal<Project | null>(null);
   loading = signal(true);
@@ -76,6 +77,10 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
         this.project.set(found || null);
         this.loading.set(false);
         if (found) this.applySeo(found);
+
+        // Las animaciones y el scroll son cosa del navegador; en el
+        // prerender no hay layout que animar.
+        if (!this.isBrowser) return;
 
         // Prevent GSAP from overriding the fragment during initial load
         this.isProgrammaticScroll = true;
@@ -158,6 +163,7 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private initAnimations(): void {
+    if (!this.isBrowser) return;
     const scroller = this.projectScroller?.nativeElement;
     if (!scroller) return;
 
