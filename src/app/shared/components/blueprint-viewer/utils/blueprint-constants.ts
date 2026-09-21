@@ -10,13 +10,13 @@
  */
 
 const BLUEPRINT_DARK = {
-  paper: '#1a8ea3',
-  paperDeep: '#127a8e',
-  gridMinor: 'rgba(255, 255, 255, 0.16)',
-  gridMajor: 'rgba(255, 255, 255, 0.34)',
+  paper: '#0e6a7d',
+  paperDeep: '#0a5464',
+  gridMinor: 'rgba(255, 255, 255, 0.13)',
+  gridMajor: 'rgba(255, 255, 255, 0.28)',
   ink: '#FFFFFF',
-  inkSoft: 'rgba(255, 255, 255, 0.74)',
-  inkFaint: 'rgba(255, 255, 255, 0.45)',
+  inkSoft: 'rgba(255, 255, 255, 0.95)',
+  inkFaint: 'rgba(255, 255, 255, 0.85)',
   nodeFill: 'rgba(255, 255, 255, 0.07)',
   nodeFillStrong: 'rgba(255, 255, 255, 0.13)'
 };
@@ -26,23 +26,23 @@ const BLUEPRINT_LIGHT = {
   paperDeep: '#DDEAEE',
   gridMinor: 'rgba(13, 95, 112, 0.12)',
   gridMajor: 'rgba(13, 95, 112, 0.30)',
-  ink: '#0D5F70',
-  inkSoft: 'rgba(13, 95, 112, 0.78)',
-  inkFaint: 'rgba(13, 95, 112, 0.45)',
+  ink: '#08414E',
+  inkSoft: 'rgba(8, 65, 78, 0.92)',
+  inkFaint: 'rgba(8, 65, 78, 0.72)',
   nodeFill: 'rgba(255, 255, 255, 0.70)',
   nodeFillStrong: 'rgba(255, 255, 255, 0.92)'
 };
 
 /** Acento por grupo. Pastel sobre el plano oscuro, saturado sobre el claro. */
 const GROUP_ACCENTS: Record<string, { dark: string; light: string }> = {
-  client:      { dark: '#9AD9FF', light: '#1565C0' },
-  input:       { dark: '#D9BBFF', light: '#6A1B9A' },
-  application: { dark: '#FFB0C8', light: '#AD1457' },
+  client:      { dark: '#A4DDFF', light: '#1565C0' },
+  input:       { dark: '#E3CDFF', light: '#6A1B9A' },
+  application: { dark: '#FFC6D7', light: '#AD1457' },
   core:        { dark: '#FFD59E', light: '#E65100' },
   automation:  { dark: '#B4E7C4', light: '#2E7D32' },
   persistence: { dark: '#9EE8DC', light: '#00796B' },
-  database:    { dark: '#C7B8F7', light: '#4527A0' },
-  external:    { dark: '#FFC49B', light: '#D84315' },
+  database:    { dark: '#DAD0FA', light: '#4527A0' },
+  external:    { dark: '#FFCBA7', light: '#D84315' },
   export:      { dark: '#DCEFA6', light: '#558B2F' },
   default:     { dark: '#FFFFFF', light: '#0D5F70' }
 };

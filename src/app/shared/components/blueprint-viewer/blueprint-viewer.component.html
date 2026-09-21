@@ -24,7 +24,11 @@
         [attr.viewBox]="getViewBox()"
         preserveAspectRatio="xMidYMid meet"
         overflow="visible"
+        role="group"
+        [attr.aria-label]="getDiagramLabel()"
       >
+        <title>{{ getDiagramLabel() }}</title>
+        <desc>{{ getDiagramDescription() }}</desc>
         <defs>
           <!-- Rejilla menor y mayor, como el papel milimetrado de un plano -->
           <pattern
@@ -144,7 +148,15 @@
               [class.node--highlighted]="isNodeHighlighted(node)"
               [class.node--dimmed]="isNodeDimmed(node)"
               [attr.transform]="'translate(' + node.x + ',' + node.y + ')'"
+              tabindex="0"
+              role="button"
+              [attr.aria-label]="getNodeLabel(node)"
+              [attr.aria-pressed]="highlightedNodeId() === node.id"
               (click)="onNodeClick(node)"
+              (keydown.enter)="onNodeClick(node); $event.preventDefault()"
+              (keydown.space)="onNodeClick(node); $event.preventDefault()"
+              (focus)="onNodeHover(node, true)"
+              (blur)="onNodeHover(node, false)"
               (mouseenter)="onNodeHover(node, true)"
               (mouseleave)="onNodeHover(node, false)"
             >

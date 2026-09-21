@@ -65,7 +65,11 @@
   letter-spacing: -0.01em;
 }
 
-.md-h1::before { content: ''; color: #569cd6; }
+/* Las almohadillas son decoracion: viven en CSS y no en el texto, para que
+   los buscadores y los lectores de pantalla lean el encabezado limpio. */
+.md-h1::before { content: '# '; color: #569cd6; }
+.md-h2::before { content: '## '; color: #569cd6; }
+.md-h3::before { content: '### '; color: #569cd6; }
 
 .md-h2 {
   font-size: 1.15rem;

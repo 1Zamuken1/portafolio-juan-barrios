@@ -20,16 +20,16 @@
 }
 
 .blueprint-viewer {
-  --bp-paper: #1a8ea3;
-  --bp-paper-deep: #127a8e;
+  --bp-paper: #0e6a7d;
+  --bp-paper-deep: #0a5464;
   --bp-ink: #ffffff;
-  --bp-ink-soft: rgba(255, 255, 255, 0.74);
-  --bp-ink-faint: rgba(255, 255, 255, 0.45);
-  --bp-grid-minor: rgba(255, 255, 255, 0.16);
-  --bp-grid-major: rgba(255, 255, 255, 0.34);
-  --bp-connector: rgba(255, 255, 255, 0.72);
+  --bp-ink-soft: rgba(255, 255, 255, 0.95);
+  --bp-ink-faint: rgba(255, 255, 255, 0.85);
+  --bp-grid-minor: rgba(255, 255, 255, 0.13);
+  --bp-grid-major: rgba(255, 255, 255, 0.28);
+  --bp-connector: rgba(255, 255, 255, 0.85);
   --bp-mark: #ffe082;
-  --bp-panel: rgba(13, 90, 106, 0.94);
+  --bp-panel: rgba(7, 62, 74, 0.95);
 
   width: 100%;
   flex: 1;
@@ -49,12 +49,12 @@
 .blueprint-viewer[data-theme='light'] {
   --bp-paper: #eef5f7;
   --bp-paper-deep: #dde9ed;
-  --bp-ink: #0d5f70;
-  --bp-ink-soft: rgba(13, 95, 112, 0.78);
-  --bp-ink-faint: rgba(13, 95, 112, 0.45);
+  --bp-ink: #08414e;
+  --bp-ink-soft: rgba(8, 65, 78, 0.92);
+  --bp-ink-faint: rgba(8, 65, 78, 0.72);
   --bp-grid-minor: rgba(13, 95, 112, 0.12);
   --bp-grid-major: rgba(13, 95, 112, 0.30);
-  --bp-connector: rgba(13, 95, 112, 0.65);
+  --bp-connector: rgba(8, 65, 78, 0.8);
   --bp-mark: #b8860b;
   --bp-panel: rgba(255, 255, 255, 0.92);
 }
@@ -156,6 +156,15 @@
   transition: opacity 0.3s ease;
 }
 
+.svg-node:focus {
+  outline: none;
+}
+
+.svg-node:focus-visible .node-bg {
+  stroke-width: 3.5;
+  stroke-dasharray: 5 3;
+}
+
 .node-bg {
   transition: stroke-width 0.25s ease, fill 0.25s ease;
 }
@@ -165,9 +174,9 @@
 }
 
 .node-tag {
-  fill: var(--bp-ink-faint);
+  fill: var(--bp-ink);
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.14em;
 }
 
@@ -215,14 +224,16 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  font-size: 12px;
+  font-size: 13px;
 }
 
+/* Tinta plena: a 11px la opacidad reducida no alcanza el 4.5:1 de AA.
+   La jerarquia la marcan el tamano y el peso, no la transparencia. */
 .node-desc {
   font-size: 11px;
-  color: var(--bp-ink-soft);
+  color: var(--bp-ink);
   margin: 0;
   line-height: 1.4;
   display: -webkit-box;

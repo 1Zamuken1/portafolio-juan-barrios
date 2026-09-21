@@ -251,6 +251,31 @@ export class BlueprintViewerComponent implements OnDestroy {
     return this.colorService.getNodeAccent(node, this.currentTheme());
   }
 
+  /** Etiqueta accesible del diagrama completo. */
+  getDiagramLabel(): string {
+    return `Diagrama de arquitectura: ${this.layoutNodes().length} componentes y ${this.computedConnectors().length} conexiones`;
+  }
+
+  /**
+   * Descripcion larga para lectores de pantalla y rastreadores: enumera las
+   * relaciones, que de otro modo solo existen como trazos SVG.
+   */
+  getDiagramDescription(): string {
+    const nombres = new Map(this.layoutNodes().map(n => [n.id, n.label]));
+    const relaciones = this.computedConnectors()
+      .map(c => `${nombres.get(c.from) ?? c.from} conecta con ${nombres.get(c.to) ?? c.to}`)
+      .join('. ');
+    return relaciones ? `${relaciones}.` : '';
+  }
+
+  /** Etiqueta accesible de un nodo: nombre, grupo y descripcion. */
+  getNodeLabel(node: ExtendedBlueprintNode): string {
+    const partes = [node.label];
+    if (node.group) partes.push(`grupo ${node.group}`);
+    if (node.description) partes.push(node.description);
+    return partes.join('. ');
+  }
+
   /** Siglas del grupo para la esquina de la tarjeta. */
   getGroupTag(node: ExtendedBlueprintNode): string {
     return (node.group ?? '').slice(0, 3).toUpperCase();
