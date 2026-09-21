@@ -1,10 +1,11 @@
-import { Component, input, signal, computed, inject, PLATFORM_ID, ElementRef, OnDestroy, viewChild, effect } from '@angular/core';
+import { Component, input, signal, computed, inject, PLATFORM_ID, ElementRef, viewChild, effect } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { BlueprintNode, BlueprintEdge, BlueprintLayout, ComputedNodeLayout } from '../../models/blueprint.model';
 import { BlueprintPositioningService } from './services/blueprint-positioning.service';
 import { BlueprintPathCalculator } from './services/blueprint-path-calculator';
 import { BlueprintColorService } from './services/blueprint-color.service';
 import { BlueprintLayoutService } from './services/blueprint-layout.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 export interface ComputedConnector {
   id: string;
@@ -27,7 +28,7 @@ export type ExtendedBlueprintNode = BlueprintNode & ComputedNodeLayout;
   templateUrl: './blueprint-viewer.component.html',
   styleUrl: './blueprint-viewer.component.css',
 })
-export class BlueprintViewerComponent implements OnDestroy {
+export class BlueprintViewerComponent {
   // Inputs
   readonly nodes = input<BlueprintNode[]>([]);
   readonly edges = input<BlueprintEdge[]>([]);
@@ -44,6 +45,7 @@ export class BlueprintViewerComponent implements OnDestroy {
   private pathCalculator = inject(BlueprintPathCalculator);
   private colorService = inject(BlueprintColorService);
   private layoutService = inject(BlueprintLayoutService);
+  private themeService = inject(ThemeService);
 
   // Computed Layouts
   readonly layoutNodes = computed(() => {
@@ -125,18 +127,8 @@ export class BlueprintViewerComponent implements OnDestroy {
     }).filter(c => c !== null) as ComputedConnector[];
   });
   
-  private detectTheme(): 'light' | 'dark' {
-    if (!this.isBrowser) return 'dark';
-    const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return isDark ? 'dark' : 'light'; 
-  }
-  
-  readonly currentTheme = signal<'light' | 'dark'>('dark');
-
-  private themeMediaQuery: MediaQueryList | null = null;
-  private themeHandler = (e: MediaQueryListEvent) => {
-    this.currentTheme.set(e.matches ? 'dark' : 'light');
-  };
+  /** Tema activo de la aplicacion. Sigue a ThemeService, no al sistema operativo. */
+  readonly currentTheme = this.themeService.theme;
 
   // Interactivity state
   readonly zoom = signal(1);
@@ -150,13 +142,6 @@ export class BlueprintViewerComponent implements OnDestroy {
   private panStartY = 0;
 
   constructor() {
-    // Initialize theme detection
-    if (this.isBrowser) {
-      this.currentTheme.set(this.detectTheme());
-      this.themeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      this.themeMediaQuery.addEventListener('change', this.themeHandler);
-    }
-
     // Apply initial layout settings when they change
     effect(() => {
       const lay = this.layout();
@@ -170,13 +155,7 @@ export class BlueprintViewerComponent implements OnDestroy {
           setTimeout(() => this.autoFit(), 50);
         }
       }
-    }, { allowSignalWrites: true });
-  }
-
-  ngOnDestroy() {
-    if (this.themeMediaQuery) {
-      this.themeMediaQuery.removeEventListener('change', this.themeHandler);
-    }
+    });
   }
 
   // --- Public methods for template ---
