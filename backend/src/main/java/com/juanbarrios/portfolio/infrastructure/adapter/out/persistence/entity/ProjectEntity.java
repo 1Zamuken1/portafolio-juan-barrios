@@ -1,6 +1,10 @@
 package com.juanbarrios.portfolio.infrastructure.adapter.out.persistence.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.util.List;
 
 /**
  * JPA Entity for Project table. Lives in infrastructure only.
@@ -49,6 +53,15 @@ public class ProjectEntity {
     @Column(name = "display_order")
     private int displayOrder;
 
+    /**
+     * Sondeo: comprueba que Hibernate sepa mapear una coleccion a una columna
+     * JSON tanto en SQLite (desarrollo y CI) como en PostgreSQL (produccion).
+     * Si esto funciona, el resto de campos documento siguen el mismo patron.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "keywords")
+    private List<String> keywords;
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -91,4 +104,7 @@ public class ProjectEntity {
 
     public int getDisplayOrder() { return displayOrder; }
     public void setDisplayOrder(int displayOrder) { this.displayOrder = displayOrder; }
+
+    public List<String> getKeywords() { return keywords; }
+    public void setKeywords(List<String> keywords) { this.keywords = keywords; }
 }
