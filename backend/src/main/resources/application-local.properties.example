@@ -1,0 +1,23 @@
+# ========================================
+# Plantilla de configuracion local
+# ========================================
+# Copiar como application-local.properties (ignorado por git) o exportar
+# estas variables en el entorno antes de arrancar el backend.
+#
+#   Linux / macOS:
+#     export JWT_SECRET="$(openssl rand -base64 32)"
+#     export ADMIN_USERNAME="admin"
+#     export ADMIN_PASSWORD="<contrasena-local>"
+#
+#   Windows PowerShell:
+#     $env:JWT_SECRET = [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Max 256 }))
+#     $env:ADMIN_USERNAME = "admin"
+#     $env:ADMIN_PASSWORD = "<contrasena-local>"
+#
+# Arranque:  ./mvnw spring-boot:run
+
+jwt.secret=Y2FtYmlhbWUtZXN0by1lcy1zb2xvLXVuLWVqZW1wbG8tbG9jYWw=
+jwt.expiration=86400000
+
+admin.username=admin
+admin.password=cambiame-en-local
