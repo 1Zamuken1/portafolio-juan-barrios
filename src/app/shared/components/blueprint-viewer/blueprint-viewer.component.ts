@@ -105,33 +105,78 @@ export class BlueprintViewerComponent implements OnDestroy {
         toSide: string;
       }>;
 
-    // 2. Contar cuantas conexiones comparte cada lado, para repartirlas.
+    const esVertical = (side: string) => side === 'top' || side === 'bottom';
+    const conRuta = (e: BlueprintEdge) => !e.bendPoints?.length;
+
+    // 2. Contar conexiones por lado. Las aristas con bendPoints no reservan
+    //    puerto: su recorrido es literal y no pasa por el reparto.
     const sideTotals = new Map<string, number>();
     const bump = (key: string) => sideTotals.set(key, (sideTotals.get(key) ?? 0) + 1);
     for (const r of resolved) {
+      if (!conRuta(r.edge)) continue;
       bump(`${r.edge.from}-${r.fromSide}`);
       bump(`${r.edge.to}-${r.toSide}`);
     }
 
-    // 3. Anclar cada extremo al BORDE del nodo y trazar la ruta.
-    const sideUsed = new Map<string, number>();
-    const takeIndex = (key: string) => {
-      const i = sideUsed.get(key) ?? 0;
-      sideUsed.set(key, i + 1);
-      return i;
-    };
+    // 3. Ordenar los puertos de cada lado por la posicion del otro extremo.
+    //    Sin esto el reparto sigue el orden de declaracion del JSON, que es
+    //    arbitrario, y dos aristas del mismo lado pueden salir cruzadas.
+    const ordenPuerto = new Map<string, number>();
+    const grupos = new Map<string, Array<{ idx: number; clave: number; lejania: number }>>();
+
+    resolved.forEach((r, i) => {
+      if (!conRuta(r.edge)) return;
+      const ejeDe = (n: ExtendedBlueprintNode, side: string) => esVertical(side) ? n.centerX : n.centerY;
+      const dist = Math.hypot(r.toNode.centerX - r.fromNode.centerX, r.toNode.centerY - r.fromNode.centerY);
+
+      for (const [key, clave] of [
+        [`${r.edge.from}-${r.fromSide}`, ejeDe(r.toNode, r.fromSide)],
+        [`${r.edge.to}-${r.toSide}`, ejeDe(r.fromNode, r.toSide)]
+      ] as Array<[string, number]>) {
+        const lista = grupos.get(key) ?? [];
+        lista.push({ idx: i, clave, lejania: dist });
+        grupos.set(key, lista);
+      }
+    });
+
+    for (const [key, lista] of grupos) {
+      // A igual posicion del destino, el mas cercano primero.
+      lista.sort((a, b) => a.clave - b.clave || a.lejania - b.lejania);
+      lista.forEach((item, orden) => ordenPuerto.set(`${key}#${item.idx}`, orden));
+    }
+
+    // Obstaculos de cada arista: todos los nodos menos sus dos extremos.
+    const obstaclesFor = (edge: BlueprintEdge) => nodes
+      .filter(n => n.id !== edge.from && n.id !== edge.to)
+      .map(n => ({ x: n.x, y: n.y, width: n.width, height: n.height }));
+
+    // 4. Trazado.
     const segmentUsed = new Map<string, number>();
 
-    const trazos = resolved.map(({ edge, fromNode, toNode, fromSide, toSide }) => {
+    const trazos = resolved.map(({ edge, fromNode, toNode, fromSide, toSide }, i) => {
       const fromKey = `${edge.from}-${fromSide}`;
       const toKey = `${edge.to}-${toSide}`;
 
       const fromPort = this.positioningService.portPosition(
-        fromNode, fromSide, takeIndex(fromKey), sideTotals.get(fromKey) ?? 1
+        fromNode, fromSide, ordenPuerto.get(`${fromKey}#${i}`) ?? 0, sideTotals.get(fromKey) ?? 1
       );
       const toPort = this.positioningService.portPosition(
-        toNode, toSide, takeIndex(toKey), sideTotals.get(toKey) ?? 1
+        toNode, toSide, ordenPuerto.get(`${toKey}#${i}`) ?? 0, sideTotals.get(toKey) ?? 1
       );
+
+      const obstacles = obstaclesFor(edge);
+
+      // Los bendPoints del JSON mandan sobre el calculo automatico. Son el
+      // escape para los casos en que el trazado automatico no queda limpio.
+      if (edge.bendPoints?.length) {
+        const puntos = edge.bendPoints;
+        return {
+          edge, obstacles, points: null,
+          fromPort: puntos[0],
+          toPort: puntos[puntos.length - 1],
+          path: this.pathCalculator.buildPathFromPoints(puntos)
+        };
+      }
 
       // Separacion entre aristas paralelas que unen el mismo par de nodos.
       const segmentKey = [edge.from, edge.to].sort().join('-');
@@ -139,20 +184,7 @@ export class BlueprintViewerComponent implements OnDestroy {
       segmentUsed.set(segmentKey, segmentCount + 1);
       const offset = segmentCount * 12;
 
-      // Todos los nodos salvo los dos extremos son obstaculos a esquivar.
-      const obstacles = nodes
-        .filter(n => n.id !== edge.from && n.id !== edge.to)
-        .map(n => ({ x: n.x, y: n.y, width: n.width, height: n.height }));
-
       const routeType = edge.routeType ?? 'orthogonal';
-
-      // Los bendPoints del JSON mandan sobre el calculo automatico.
-      if (edge.bendPoints?.length) {
-        return { edge, fromPort, toPort, obstacles, points: null, path: this.pathCalculator.buildPathFromPoints(edge.bendPoints) };
-      }
-
-      // Solo las rutas ortogonales se reparten en carriles; las curvas y rectas
-      // se serializan tal cual.
       if (routeType !== 'orthogonal') {
         return {
           edge, fromPort, toPort, obstacles, points: null,
@@ -167,7 +199,7 @@ export class BlueprintViewerComponent implements OnDestroy {
       };
     });
 
-    // 4. Repartir en carriles los tramos que varias rutas comparten, para que
+    // 6. Repartir en carriles los tramos que varias rutas comparten, para que
     //    no se dibujen una encima de otra.
     this.pathCalculator.separateChannels(
       trazos.map(t => t.points),

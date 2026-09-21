@@ -303,11 +303,7 @@
         "to": "auth",
         "routeType": "orthogonal"
       },
-      {
-        "from": "services",
-        "to": "business",
-        "routeType": "orthogonal"
-      },
+      { "from": "services", "to": "business", "bendPoints": [{ "x": 505, "y": 176 }, { "x": 505, "y": 208 }, { "x": 418, "y": 208 }, { "x": 418, "y": 368 }, { "x": 585, "y": 368 }, { "x": 585, "y": 400 }] },
       {
         "from": "auth",
         "to": "persistence",

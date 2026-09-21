@@ -140,6 +140,46 @@ test.describe('Blueprint viewer renders on case-study pages', () => {
       });
       expect(carriles).toBe(0);
 
+      // Dos aristas que salen del mismo nodo no pueden cruzarse entre si:
+      // se lee como una sola linea doblada o como dos superpuestas.
+      const crucesHermanos = await page.evaluate(() => {
+        const puntos = (d: string) => {
+          const out: Array<{ x: number; y: number }> = [];
+          const re = /([ML])\s*(-?[\d.]+)\s+(-?[\d.]+)/g;
+          let m: RegExpExecArray | null;
+          while ((m = re.exec(d))) out.push({ x: +m[2], y: +m[3] });
+          return out;
+        };
+        const cruza = (a: any, b: any, c: any, d: any) => {
+          const h1 = Math.abs(a.y - b.y) < 0.01;
+          const h2 = Math.abs(c.y - d.y) < 0.01;
+          if (h1 === h2) return false;
+          const [H1, H2, V1, V2] = h1 ? [a, b, c, d] : [c, d, a, b];
+          return V1.x > Math.min(H1.x, H2.x) && V1.x < Math.max(H1.x, H2.x)
+            && H1.y > Math.min(V1.y, V2.y) && H1.y < Math.max(V1.y, V2.y);
+        };
+        const rutas = [...document.querySelectorAll('.connector-line')].map(e => puntos(e.getAttribute('d') || ''));
+        // Dos rutas son hermanas si comparten un extremo (mismo punto inicial
+        // o final), que es lo que ocurre al salir del mismo nodo.
+        const mismo = (p: any, q: any) => Math.abs(p.x - q.x) < 60 && Math.abs(p.y - q.y) < 60;
+        let n = 0;
+        for (let i = 0; i < rutas.length; i++) {
+          for (let j = i + 1; j < rutas.length; j++) {
+            const A = rutas[i], B = rutas[j];
+            if (!A.length || !B.length) continue;
+            const hermanas = mismo(A[0], B[0]) || mismo(A[A.length - 1], B[B.length - 1]);
+            if (!hermanas) continue;
+            for (let a = 0; a < A.length - 1; a++) {
+              for (let b = 0; b < B.length - 1; b++) {
+                if (cruza(A[a], A[a + 1], B[b], B[b + 1])) { n++; a = A.length; break; }
+              }
+            }
+          }
+        }
+        return n;
+      });
+      expect(crucesHermanos).toBe(0);
+
       // Ningun conector puede quedar con un path degenerado.
       const paths = await page.locator('.connector-line').evaluateAll((els) =>
         els.map((e) => e.getAttribute('d') || '')
