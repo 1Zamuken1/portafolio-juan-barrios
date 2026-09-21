@@ -23,11 +23,9 @@ export interface BlueprintCanvasConfig {
 export interface BlueprintLayout {
   orientation?: 'swimlanes' | 'freeform' | 'hierarchical' | 'circular';
   canvas?: BlueprintCanvasConfig;
-  
-  // Metadata de zoom/pan inicial
-  initialZoom?: number;       // default: 1
-  initialPanX?: number;       // default: 0
-  initialPanY?: number;       // default: 0
+
+  // No hay zoom/pan inicial configurable: el visor siempre encuadra el
+  // contenido con autoFit() al cargar y al redimensionarse el contenedor.
 }
 
 export interface BlueprintEdge {

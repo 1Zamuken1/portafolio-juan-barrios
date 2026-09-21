@@ -101,6 +101,17 @@
   display: flex;
   flex: 1;
   overflow: hidden;
+  position: relative; /* ancla del explorer flotante en movil */
+}
+
+/* Velo bajo el explorer flotante */
+.sidebar-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 8, 24, 0.55);
+  z-index: 30;
+  border: 0;
+  padding: 0;
 }
 
 /* ================================================
@@ -412,9 +423,50 @@
   .tab-sidebar-toggle {
     display: flex;
   }
-  
+
   .hide-mobile {
     display: none !important;
+  }
+
+  /* ---- Explorer como panel deslizante sobre el editor ----
+     En movil el explorer dejaba el area del editor en unos pocos pixeles.
+     Pasa a flotar junto a la activity bar y se desliza desde la izquierda. */
+  .sidebar-explorer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 3.25rem;
+    width: min(17rem, calc(100vw - 3.25rem));
+    z-index: 35;
+    transform: translateX(-102%);
+    transition: transform 0.25s ease;
+    box-shadow: 0 0 2rem rgba(0, 0, 0, 0.45);
+  }
+
+  .sidebar-explorer.open {
+    transform: translateX(0);
+  }
+
+  /* El ancho ya no se anima: en movil el panel se oculta desplazandose. */
+  .sidebar-explorer:not(.open) {
+    width: min(17rem, calc(100vw - 3.25rem));
+  }
+
+  /* El editor ocupa todo el ancho restante, este el panel abierto o no. */
+  .editor-area {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .title-bar-center {
+    display: none;
+  }
+}
+
+/* Sin animacion para quien la haya desactivado en el sistema. */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-explorer {
+    transition: none;
   }
 }
 

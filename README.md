@@ -29,7 +29,7 @@ El portafolio fue construido con un diseño altamente interactivo, oscuro y espa
 
 ## Instalacion y Ejecucion Local
 
-Para correr este proyecto en tu entorno local, asegurate de tener instalado [Node.js](https://nodejs.org/) y el CLI de Angular.
+Para correr este proyecto en tu entorno local, asegurate de tener instalado [Node.js](https://nodejs.org/) y [pnpm](https://pnpm.io/).
 
 1. **Clonar el repositorio**:
    ```bash
@@ -37,16 +37,23 @@ Para correr este proyecto en tu entorno local, asegurate de tener instalado [Nod
    cd portafolio-juan-barrios
    ```
 
-2. **Instalar dependencias**:
+2. **Instalar dependencias** (el gestor del proyecto es pnpm):
    ```bash
-   npm install --legacy-peer-deps
+   pnpm install
    ```
 
 3. **Ejecutar servidor de desarrollo**:
    ```bash
-   npm start
+   pnpm start
    ```
    Abre tu navegador en `http://localhost:4200/`.
+
+4. **Ejecutar los tests end-to-end**:
+   ```bash
+   npx playwright install chromium
+   pnpm run e2e
+   ```
+   Playwright levanta el servidor de desarrollo por su cuenta.
 
 ## Licencia
 

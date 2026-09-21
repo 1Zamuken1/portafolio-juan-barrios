@@ -4,7 +4,7 @@ import { DataService } from '../../core/services/data.service';
 import { AdminSkill } from '../../shared/models/skill.model';
 import { Experience } from '../../shared/models/experience.model';
 import { Project } from '../../shared/models/project.model';
-import { environment } from '../../../environments/environment';
+import { SeoService } from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-about',
@@ -15,6 +15,7 @@ import { environment } from '../../../environments/environment';
 })
 export class AboutComponent implements OnInit {
   private dataService = inject(DataService);
+  private seo = inject(SeoService);
 
   experience = signal<Experience[]>([]);
   skillsByCategory = signal<{ [category: string]: AdminSkill[] }>({});
@@ -22,6 +23,13 @@ export class AboutComponent implements OnInit {
   projects = signal<Project[]>([]);
 
   ngOnInit(): void {
+    this.seo.update({
+      title: 'Sobre mí',
+      description: 'Perfil profesional de Juan Esteban Barrios: experiencia, stack tecnológico y trayectoria como desarrollador backend en Java, Spring Boot, Python y Django.',
+      path: '/about',
+      type: 'profile'
+    });
+
     // Load static immediately for instant rendering
     this.dataService.getStaticExperiences().subscribe(data => {
       this.experience.set(data.sort((a, b) => a.displayOrder - b.displayOrder));

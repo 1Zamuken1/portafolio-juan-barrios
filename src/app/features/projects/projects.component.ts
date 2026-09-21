@@ -1,12 +1,11 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, inject, signal, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, inject, signal, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { CommonModule, UpperCasePipe } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../core/services/data.service';
 import { Project } from '../../shared/models/project.model';
 import { BlueprintViewerComponent } from '../../shared/components/blueprint-viewer/blueprint-viewer.component';
-import { environment } from '../../../environments/environment';
-import { catchError, timeout } from 'rxjs/operators';
+import { SeoService } from '../../core/services/seo.service';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -23,6 +22,8 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
   private dataService = inject(DataService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private seo = inject(SeoService);
+  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   project = signal<Project | null>(null);
   loading = signal(true);
@@ -42,6 +43,11 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
       } else {
         this.loading.set(false);
         this.project.set(null);
+        this.seo.update({
+          title: 'Proyectos',
+          description: 'Casos de estudio de Juan Esteban Barrios: arquitectura, stack y decisiones técnicas de cada proyecto.',
+          path: '/projects'
+        });
       }
     });
   }
@@ -70,6 +76,11 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
         const found = data.find(p => p.id === id && p.status !== 'Draft');
         this.project.set(found || null);
         this.loading.set(false);
+        if (found) this.applySeo(found);
+
+        // Las animaciones y el scroll son cosa del navegador; en el
+        // prerender no hay layout que animar.
+        if (!this.isBrowser) return;
 
         // Prevent GSAP from overriding the fragment during initial load
         this.isProgrammaticScroll = true;
@@ -88,6 +99,39 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
       error: (err) => {
         console.error('Error loading project:', err);
         this.loading.set(false);
+      }
+    });
+  }
+
+  /**
+   * Cada caso de estudio publica su propio titulo, descripcion, imagen y
+   * ficha estructurada. Antes los cuatro compartian los del index.html.
+   */
+  private applySeo(project: Project): void {
+    const tecnologias = project.techStack?.map(t => t.name) ?? project.technologies ?? [];
+
+    this.seo.update({
+      title: `${project.name} — Caso de estudio`,
+      description: project.shortDescription || project.fullDescription || '',
+      path: `/projects/${project.id}`,
+      image: project.imageUrl ?? undefined,
+      type: 'article'
+    });
+
+    this.seo.setStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareSourceCode',
+      name: project.name,
+      description: project.shortDescription || project.fullDescription || '',
+      url: this.seo.absolute(`/projects/${project.id}`),
+      image: project.imageUrl ? this.seo.absolute(project.imageUrl) : undefined,
+      codeRepository: project.links?.github || project.githubUrl || undefined,
+      programmingLanguage: tecnologias,
+      dateCreated: project.year ? String(project.year) : undefined,
+      author: {
+        '@type': 'Person',
+        name: 'Juan Esteban Barrios Portela',
+        url: this.seo.absolute('/')
       }
     });
   }
@@ -119,6 +163,7 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private initAnimations(): void {
+    if (!this.isBrowser) return;
     const scroller = this.projectScroller?.nativeElement;
     if (!scroller) return;
 

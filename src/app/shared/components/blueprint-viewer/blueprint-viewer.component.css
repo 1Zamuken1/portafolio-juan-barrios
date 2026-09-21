@@ -1,3 +1,13 @@
+/* ═══════════════════════════════════════════════════════════════
+   Visor de arquitectura con estetica de plano tecnico.
+
+   Tema oscuro  -> blueprint: tinta blanca sobre papel cian.
+   Tema claro   -> whiteprint: tinta cian sobre papel claro.
+
+   Los valores viven aqui y en utils/blueprint-constants.ts; el SVG toma de
+   las constantes lo que necesita calcular, y de estas variables lo demas.
+   ═══════════════════════════════════════════════════════════════ */
+
 :host {
   display: flex;
   flex-direction: column;
@@ -9,23 +19,49 @@
   overflow: hidden;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   Container & Viewport
-   ═══════════════════════════════════════════════════════════════ */
 .blueprint-viewer {
+  --bp-paper: #0e6a7d;
+  --bp-paper-deep: #0a5464;
+  --bp-ink: #ffffff;
+  --bp-ink-soft: rgba(255, 255, 255, 0.95);
+  --bp-ink-faint: rgba(255, 255, 255, 0.85);
+  --bp-grid-minor: rgba(255, 255, 255, 0.13);
+  --bp-grid-major: rgba(255, 255, 255, 0.28);
+  --bp-connector: rgba(255, 255, 255, 0.85);
+  --bp-mark: #ffe082;
+  --bp-panel: rgba(7, 62, 74, 0.95);
+
   width: 100%;
   flex: 1;
   min-height: 0;
   position: relative;
   display: flex;
   flex-direction: column;
-  background-color: #1a1f36;
+  background-color: var(--bp-paper);
+  background-image: radial-gradient(
+    ellipse at 50% 40%,
+    var(--bp-paper) 0%,
+    var(--bp-paper-deep) 100%
+  );
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  user-select: none;
-  border-radius: 8px;
-  overflow: hidden;
 }
 
+.blueprint-viewer[data-theme='light'] {
+  --bp-paper: #eef5f7;
+  --bp-paper-deep: #dde9ed;
+  --bp-ink: #08414e;
+  --bp-ink-soft: rgba(8, 65, 78, 0.92);
+  --bp-ink-faint: rgba(8, 65, 78, 0.72);
+  --bp-grid-minor: rgba(13, 95, 112, 0.12);
+  --bp-grid-major: rgba(13, 95, 112, 0.30);
+  --bp-connector: rgba(8, 65, 78, 0.8);
+  --bp-mark: #b8860b;
+  --bp-panel: rgba(255, 255, 255, 0.92);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Viewport y lienzo
+   ═══════════════════════════════════════════════════════════════ */
 .blueprint-viewport {
   width: 100%;
   flex: 1;
@@ -49,27 +85,67 @@
   transform-origin: 0 0;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   SVG Canvas
-   ═══════════════════════════════════════════════════════════════ */
 .blueprint-svg-canvas {
   display: block;
   width: 100%;
   height: 100%;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   Rejilla: menor cada 40u, mayor cada 200u
+   ═══════════════════════════════════════════════════════════════ */
 .grid-bg {
   opacity: 1;
 }
 
 .grid-line {
-  stroke: rgba(255, 255, 255, 0.06);
-  stroke-width: 0.5;
   fill: none;
 }
 
+.grid-line--minor {
+  stroke: var(--bp-grid-minor);
+  stroke-width: 1;
+}
+
+.grid-line--major {
+  stroke: var(--bp-grid-major);
+  stroke-width: 1.4;
+}
+
 /* ═══════════════════════════════════════════════════════════════
-   SVG Nodes
+   Marco de lamina con coordenadas
+   ═══════════════════════════════════════════════════════════════ */
+.layer-sheet {
+  pointer-events: none;
+}
+
+.sheet-border {
+  fill: none;
+  stroke: var(--bp-ink);
+  stroke-width: 2;
+  opacity: 0.85;
+}
+
+.sheet-border--inner {
+  stroke-width: 1;
+  opacity: 0.4;
+}
+
+.sheet-coord {
+  fill: var(--bp-ink-soft);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+}
+
+.sheet-tick {
+  stroke: var(--bp-ink);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Nodos
    ═══════════════════════════════════════════════════════════════ */
 .layer-nodes {
   pointer-events: all;
@@ -80,25 +156,43 @@
   transition: opacity 0.3s ease;
 }
 
+.svg-node:focus {
+  outline: none;
+}
+
+.svg-node:focus-visible .node-bg {
+  stroke-width: 3.5;
+  stroke-dasharray: 5 3;
+}
+
 .node-bg {
-  transition: stroke-width 0.25s ease, stroke 0.25s ease;
+  transition: stroke-width 0.25s ease, fill 0.25s ease;
 }
 
-.svg-node:hover .node-bg {
-  stroke-width: 3;
+.node-accent {
+  transition: opacity 0.25s ease;
 }
 
+.node-tag {
+  fill: var(--bp-ink);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+}
+
+/* Atenuado, no transparente: por debajo de ~0.4 la tarjeta se vuelve cristal
+   y deja ver lo que haya detras, que es justo lo que se quiere evitar. */
 .node--dimmed {
-  opacity: 0.2;
+  opacity: 0.45;
   transition: opacity 0.3s ease;
 }
 
 .node--highlighted .node-bg {
-  stroke-width: 3;
+  stroke-width: 2.6;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   foreignObject HTML Content (inside SVG nodes)
+   Contenido HTML dentro de los nodos (foreignObject)
    ═══════════════════════════════════════════════════════════════ */
 .node-html-content {
   width: 100%;
@@ -130,12 +224,16 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: 13px;
 }
 
+/* Tinta plena: a 11px la opacidad reducida no alcanza el 4.5:1 de AA.
+   La jerarquia la marcan el tamano y el peso, no la transparencia. */
 .node-desc {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--bp-ink);
   margin: 0;
   line-height: 1.4;
   display: -webkit-box;
@@ -144,12 +242,8 @@
   overflow: hidden;
 }
 
-[data-theme="light"] .node-desc {
-  color: rgba(0, 0, 0, 0.55);
-}
-
 /* ═══════════════════════════════════════════════════════════════
-   Connectors (Edges / SVG Paths)
+   Conectores
    ═══════════════════════════════════════════════════════════════ */
 .layer-edges {
   pointer-events: none;
@@ -157,18 +251,18 @@
 
 .connector-line {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.55);
+  stroke: var(--bp-connector);
   transition: stroke 0.3s ease, opacity 0.3s ease;
 }
 
 .connector--highlighted {
-  stroke: #FFD700;
-  stroke-width: 2.5 !important;
+  stroke: var(--bp-mark);
+  stroke-width: 2.2 !important;
   stroke-dasharray: none !important;
 }
 
 .connector--dimmed {
-  opacity: 0.12;
+  opacity: 0.18;
 }
 
 .arrow-head {
@@ -176,48 +270,88 @@
 }
 
 .arrow-head--default {
-  fill: rgba(255, 255, 255, 0.5);
+  fill: var(--bp-connector);
 }
 
 .arrow-head--hover {
-  fill: #FFD700;
+  fill: var(--bp-mark);
 }
 
 .connector-label {
-  fill: rgba(255, 255, 255, 0.8);
+  fill: var(--bp-ink-soft);
   font-size: 11px;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  letter-spacing: 0.04em;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   HUD & Controls (Overlay)
+   Cajetin (bloque de titulo) y controles
    ═══════════════════════════════════════════════════════════════ */
-.blueprint-hud {
+.blueprint-titleblock {
   position: absolute;
-  bottom: 12px;
-  left: 12px;
-  display: flex;
-  gap: 8px;
+  right: 14px;
+  bottom: 14px;
+  min-width: 268px;
+  background: var(--bp-panel);
+  border: 1.5px solid var(--bp-ink);
+  color: var(--bp-ink);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
   pointer-events: none;
   z-index: 10;
+  backdrop-filter: blur(3px);
 }
 
-.hud-item {
-  background: rgba(10, 15, 30, 0.75);
-  color: rgba(255, 255, 255, 0.7);
-  padding: 3px 8px;
-  border-radius: 4px;
+.tb-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--bp-ink);
+}
+
+.tb-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.tb-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+  border-right: 1px solid var(--bp-ink);
+}
+
+.tb-cell:last-child {
+  border-right: none;
+}
+
+.tb-label {
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bp-ink-faint);
+}
+
+.tb-value {
   font-size: 11px;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(4px);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  color: var(--bp-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tb-title .tb-value {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .blueprint-controls {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 14px;
+  right: 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -225,35 +359,38 @@
 }
 
 .bp-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
-  background: rgba(10, 15, 30, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
+  width: 34px;
+  height: 34px;
+  background: var(--bp-panel);
+  border: 1.5px solid var(--bp-ink);
+  color: var(--bp-ink);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .bp-btn:hover {
-  background: rgba(30, 50, 90, 0.95);
-  color: #fff;
+  background: var(--bp-ink);
+  color: var(--bp-paper);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .bp-btn:active {
   transform: translateY(0);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   Debug Ports
-   ═══════════════════════════════════════════════════════════════ */
-.bp-port {
-  pointer-events: none;
+/* En pantallas estrechas el cajetin estorba mas de lo que aporta. */
+@media (max-width: 640px) {
+  .blueprint-titleblock {
+    min-width: 0;
+    left: 14px;
+    right: 14px;
+  }
+
+  .tb-title {
+    display: none;
+  }
 }

@@ -50,6 +50,17 @@ export class BlueprintPositioningService {
     return ports;
   }
   
+  /**
+   * Punto de anclaje sobre el borde `side` del nodo. `index`/`total` reparten
+   * varias conexiones a lo largo del mismo lado en vez de apilarlas.
+   */
+  portPosition(node: ComputedNodeLayout, side: string, index: number, total: number): { x: number; y: number } {
+    return this.calculatePortPosition(
+      node.x, node.y, node.width, node.height,
+      side, index, total, BLUEPRINT_SPACING.portMargin
+    );
+  }
+
   private calculatePortPosition(x: number, y: number, w: number, h: number, side: string, index: number, total: number, margin: number): { x: number; y: number } {
     const step = (side === 'top' || side === 'bottom')
       ? (w - margin * 2) / Math.max(total - 1, 1)

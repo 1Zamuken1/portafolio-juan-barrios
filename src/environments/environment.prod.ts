@@ -2,9 +2,5 @@ export const environment = {
   production: true,
   apiUrl: 'https://portafolio-juan-barrios.onrender.com/api',
   useStaticData: true,
-  emailjs: {
-    publicKey: '',
-    serviceId: '',
-    templateId: ''
-  }
+  siteUrl: 'https://portafolio-juan-barrios.vercel.app'
 };

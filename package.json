@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "e2e": "playwright test"
   },
   "private": true,
   "packageManager": "pnpm@9.12.0",
@@ -17,8 +18,9 @@
     "@angular/core": "^22.0.0",
     "@angular/forms": "^22.0.0",
     "@angular/platform-browser": "^22.0.0",
+    "@angular/platform-server": "^22",
     "@angular/router": "^22.0.0",
-    "@emailjs/browser": "^4.4.1",
+    "@angular/ssr": "^22",
     "@primeng/themes": "^21.0.4",
     "@primeuix/themes": "^2.0.3",
     "devicon": "^2.17.0",

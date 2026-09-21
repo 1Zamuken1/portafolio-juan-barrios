@@ -149,8 +149,7 @@
         "height": 900,
         "gridSize": 40,
         "showGrid": true
-      },
-      "initialZoom": 0.85
+      }
     },
     "architectureNodes": [
       {
@@ -304,11 +303,7 @@
         "to": "auth",
         "routeType": "orthogonal"
       },
-      {
-        "from": "services",
-        "to": "business",
-        "routeType": "orthogonal"
-      },
+      { "from": "services", "to": "business", "bendPoints": [{ "x": 505, "y": 176 }, { "x": 505, "y": 208 }, { "x": 418, "y": 208 }, { "x": 418, "y": 368 }, { "x": 585, "y": 368 }, { "x": 585, "y": 400 }] },
       {
         "from": "auth",
         "to": "persistence",
@@ -526,8 +521,7 @@
         "height": 600,
         "gridSize": 40,
         "showGrid": true
-      },
-      "initialZoom": 0.9
+      }
     },
     "architectureNodes": [
       {
@@ -832,8 +826,7 @@
         "height": 700,
         "gridSize": 40,
         "showGrid": true
-      },
-      "initialZoom": 0.9
+      }
     },
     "architectureNodes": [
       {
@@ -1140,8 +1133,7 @@
         "height": 600,
         "gridSize": 40,
         "showGrid": true
-      },
-      "initialZoom": 0.9
+      }
     },
     "architectureNodes": [
       {

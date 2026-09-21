@@ -1,5 +1,5 @@
 <div class="blueprint-viewer" [attr.data-theme]="currentTheme()">
-  
+
   <!-- Viewport (pan + zoom container) -->
   <div
     class="blueprint-viewport"
@@ -15,19 +15,41 @@
     (touchcancel)="onTouchEnd($event)"
   >
     <div class="blueprint-stage" #canvas [style.transform]="getTransformStyle()">
-      
-      <!-- Unico Canvas SVG para todo (Background + Conectores + Nodos) -->
+
+      <!-- Unico Canvas SVG para todo (lamina + conectores + nodos) -->
       <svg
         class="blueprint-svg-canvas"
         width="100%"
         height="100%"
+        [attr.viewBox]="getViewBox()"
+        preserveAspectRatio="xMidYMid meet"
         overflow="visible"
+        role="group"
+        [attr.aria-label]="getDiagramLabel()"
       >
+        <title>{{ getDiagramLabel() }}</title>
+        <desc>{{ getDiagramDescription() }}</desc>
         <defs>
-          <pattern id="blueprint-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path class="grid-line" [attr.d]="getGridPath()" />
+          <!-- Rejilla menor y mayor, como el papel milimetrado de un plano -->
+          <pattern
+            id="blueprint-grid-minor"
+            [attr.width]="getGridMinorSize()"
+            [attr.height]="getGridMinorSize()"
+            patternUnits="userSpaceOnUse"
+          >
+            <path class="grid-line grid-line--minor" [attr.d]="getGridPath()" />
           </pattern>
-          
+
+          <pattern
+            id="blueprint-grid-major"
+            [attr.width]="getGridMajorSize()"
+            [attr.height]="getGridMajorSize()"
+            patternUnits="userSpaceOnUse"
+          >
+            <rect [attr.width]="getGridMajorSize()" [attr.height]="getGridMajorSize()" fill="url(#blueprint-grid-minor)" />
+            <path class="grid-line grid-line--major" [attr.d]="getGridMajorPath()" />
+          </pattern>
+
           <!-- Marcadores dinámicos según estado de interacción -->
           <marker id="arrowhead-default" markerWidth="8" markerHeight="8" refX="7" refY="2.5" orient="auto">
             <path class="arrow-head arrow-head--default" d="M0,0 L4,2.5 L0,5 Z" />
@@ -35,7 +57,7 @@
           <marker id="arrowhead-hover" markerWidth="8" markerHeight="8" refX="7" refY="2.5" orient="auto">
             <path class="arrow-head arrow-head--hover" d="M0,0 L4,2.5 L0,5 Z" />
           </marker>
-          
+
           <!-- Filtro para el brillo (glow) activo — sutil, sin blur agresivo -->
           <filter id="glow-active" x="-10%" y="-10%" width="120%" height="120%">
             <feGaussianBlur stdDeviation="2" result="blur" />
@@ -46,24 +68,66 @@
           </filter>
         </defs>
 
-        <!-- 1. Grid Background -->
+        <!-- 1. Papel y rejilla -->
         @if (layout()?.canvas?.showGrid !== false) {
-          <rect class="grid-bg" x="-200%" y="-200%" width="500%" height="500%" fill="url(#blueprint-grid)" />
+          <rect class="grid-bg" x="-200%" y="-200%" width="500%" height="500%" fill="url(#blueprint-grid-major)" />
         }
 
-        <!-- 2. Aristas (Conectores SVG) — renderizados ANTES = quedan DEBAJO -->
+        <!-- 2. Marco de lamina con coordenadas -->
+        @if (sheetFrame(); as sheet) {
+          <g class="layer-sheet" aria-hidden="true">
+            <rect
+              class="sheet-border"
+              [attr.x]="sheet.x"
+              [attr.y]="sheet.y"
+              [attr.width]="sheet.width"
+              [attr.height]="sheet.height"
+            />
+            <rect
+              class="sheet-border sheet-border--inner"
+              [attr.x]="sheet.x + 8"
+              [attr.y]="sheet.y + 8"
+              [attr.width]="sheet.width - 16"
+              [attr.height]="sheet.height - 16"
+            />
+
+            <!-- Numeracion horizontal -->
+            @for (col of sheet.cols; track col.label) {
+              <text class="sheet-coord" [attr.x]="col.center" [attr.y]="sheet.y - 14" text-anchor="middle">{{ col.label }}</text>
+              <text class="sheet-coord" [attr.x]="col.center" [attr.y]="sheet.y + sheet.height + 26" text-anchor="middle">{{ col.label }}</text>
+              @if (!$last) {
+                <line class="sheet-tick" [attr.x1]="col.tick" [attr.y1]="sheet.y" [attr.x2]="col.tick" [attr.y2]="sheet.y + 8" />
+                <line class="sheet-tick" [attr.x1]="col.tick" [attr.y1]="sheet.y + sheet.height - 8" [attr.x2]="col.tick" [attr.y2]="sheet.y + sheet.height" />
+              }
+            }
+
+            <!-- Letras verticales -->
+            @for (row of sheet.rows; track row.label) {
+              <text class="sheet-coord" [attr.x]="sheet.x - 20" [attr.y]="row.center" text-anchor="middle" dominant-baseline="middle">{{ row.label }}</text>
+              <text class="sheet-coord" [attr.x]="sheet.x + sheet.width + 20" [attr.y]="row.center" text-anchor="middle" dominant-baseline="middle">{{ row.label }}</text>
+              @if (!$last) {
+                <line class="sheet-tick" [attr.x1]="sheet.x" [attr.y1]="row.tick" [attr.x2]="sheet.x + 8" [attr.y2]="row.tick" />
+                <line class="sheet-tick" [attr.x1]="sheet.x + sheet.width - 8" [attr.y1]="row.tick" [attr.x2]="sheet.x + sheet.width" [attr.y2]="row.tick" />
+              }
+            }
+          </g>
+        }
+
+        <!-- 3. Aristas (Conectores SVG) — renderizados ANTES = quedan DEBAJO -->
         <g class="layer-edges">
           @for (conn of computedConnectors(); track conn.id) {
             <path
               class="connector-line"
               [class.connector--highlighted]="isConnectorHighlighted(conn)"
               [class.connector--dimmed]="isConnectorDimmed(conn)"
+              [attr.data-from]="conn.from"
+              [attr.data-to]="conn.to"
               [attr.d]="conn.path"
               [attr.stroke-width]="conn.strokeWidth"
               [attr.stroke-dasharray]="conn.strokeDasharray"
               [attr.marker-end]="'url(#arrowhead-' + getConnectorMarker(conn) + ')'"
             />
-            
+
             @if (conn.label) {
               <text
                 class="connector-label"
@@ -78,7 +142,7 @@
           }
         </g>
 
-        <!-- 3. Nodos SVG — renderizados DESPUES = quedan ENCIMA -->
+        <!-- 4. Nodos SVG — renderizados DESPUES = quedan ENCIMA -->
         <g class="layer-nodes">
           @for (node of layoutNodes(); track node.id) {
             <g
@@ -86,32 +150,55 @@
               [class.node--highlighted]="isNodeHighlighted(node)"
               [class.node--dimmed]="isNodeDimmed(node)"
               [attr.transform]="'translate(' + node.x + ',' + node.y + ')'"
+              tabindex="0"
+              role="button"
+              [attr.aria-label]="getNodeLabel(node)"
+              [attr.aria-pressed]="highlightedNodeId() === node.id"
               (click)="onNodeClick(node)"
+              (keydown.enter)="onNodeClick(node); $event.preventDefault()"
+              (keydown.space)="onNodeClick(node); $event.preventDefault()"
+              (focus)="onNodeHover(node, true)"
+              (blur)="onNodeHover(node, false)"
               (mouseenter)="onNodeHover(node, true)"
               (mouseleave)="onNodeHover(node, false)"
             >
-              <!-- Fondo del nodo (Rect) -->
+              <!-- Contorno de la tarjeta -->
               <rect
                 class="node-bg"
                 [attr.width]="node.width"
                 [attr.height]="node.height"
-                rx="6"
-                ry="6"
+                rx="2"
+                ry="2"
                 [attr.fill]="getNodeFill(node)"
                 [attr.stroke]="getNodeStroke(node)"
                 [attr.stroke-width]="getNodeStrokeWidth(node)"
               />
 
-              <foreignObject [attr.x]="12" [attr.y]="12" [attr.width]="node.width - 24" [attr.height]="node.height - 24">
+              <!-- Banda de grupo: unico punto de color del plano -->
+              <rect
+                class="node-accent"
+                x="0"
+                y="10"
+                width="3"
+                [attr.height]="node.height - 20"
+                [attr.fill]="getNodeAccent(node)"
+              />
+
+              <!-- Sigla del grupo, en la esquina como en una lamina tecnica -->
+              @if (getGroupTag(node)) {
+                <text class="node-tag" [attr.x]="node.width - 10" y="17" text-anchor="end">{{ getGroupTag(node) }}</text>
+              }
+
+              <foreignObject [attr.x]="14" [attr.y]="12" [attr.width]="node.width - 34" [attr.height]="node.height - 24">
                 <div class="node-html-content" xmlns="http://www.w3.org/1999/xhtml">
                   <div class="node-header">
-                    <i [class]="getIconChar(node.icon)" class="node-icon" [style.color]="getNodeStroke(node)"></i>
+                    <i [class]="getIconChar(node.icon)" class="node-icon" [style.color]="getNodeAccent(node)"></i>
                     <span class="node-title" [style.color]="getNodeTextColor(node)">{{ node.label }}</span>
                   </div>
                   <p class="node-desc">{{ truncateText(node.description, 60) }}</p>
                 </div>
               </foreignObject>
-              
+
               <!-- (Opcional Debug) Mostrar Puertos -->
               @if (showPorts()) {
                 @for (port of node.ports.top; track $index) { <circle [attr.cx]="port.x - node.x" [attr.cy]="port.y - node.y" r="3" fill="red"/> }
@@ -122,21 +209,39 @@
             </g>
           }
         </g>
-        
+
       </svg>
     </div> <!-- /.blueprint-stage -->
   </div> <!-- /.blueprint-viewport -->
 
-  <!-- HUD Técnico y Controles (Fuera del Canvas, fijos en UI) -->
-  <div class="blueprint-hud">
-    <span class="hud-item">SVG Blueprint {{ version() }}</span>
-    <span class="hud-item">Zoom {{ zoom() | number:'1.0-2' }}x</span>
-    <span class="hud-item">Nodes {{ layoutNodes().length }}</span>
-    <span class="hud-item">Connections {{ computedConnectors().length }}</span>
+  <!-- Cajetin: bloque de titulo del plano, fijo en la esquina -->
+  <div class="blueprint-titleblock">
+    <div class="tb-title">
+      <span class="tb-label">Diagrama</span>
+      <span class="tb-value">Arquitectura del sistema</span>
+    </div>
+    <div class="tb-grid">
+      <div class="tb-cell">
+        <span class="tb-label">Escala</span>
+        <span class="tb-value">{{ zoom() | number:'1.2-2' }}:1</span>
+      </div>
+      <div class="tb-cell">
+        <span class="tb-label">Nodos</span>
+        <span class="tb-value">{{ layoutNodes().length }}</span>
+      </div>
+      <div class="tb-cell">
+        <span class="tb-label">Conex.</span>
+        <span class="tb-value">{{ computedConnectors().length }}</span>
+      </div>
+      <div class="tb-cell">
+        <span class="tb-label">Rev.</span>
+        <span class="tb-value">{{ version() }}</span>
+      </div>
+    </div>
   </div>
 
   <div class="blueprint-controls">
-    <button class="bp-btn" (click)="resetZoom()" title="Reset zoom">
+    <button class="bp-btn" (click)="resetZoom()" title="Reencuadrar">
       <i class="pi pi-refresh"></i>
     </button>
   </div>

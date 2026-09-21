@@ -208,3 +208,11 @@
     padding: 1.5rem;
   }
 }
+
+/* ---- Encabezados markdown ----
+   Las almohadillas son decoracion: viven en CSS y no en el texto, para que
+   los buscadores indexen "Diagrama de Arquitectura" y no "## Diagrama de
+   Arquitectura". */
+.md-h1::before { content: '# '; opacity: 0.55; }
+.md-h2::before { content: '## '; opacity: 0.55; }
+.md-h3::before { content: '### '; opacity: 0.55; }

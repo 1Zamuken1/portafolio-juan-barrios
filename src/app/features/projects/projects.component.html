@@ -60,22 +60,22 @@
         <!-- README Section -->
         <div id="readme" class="project-section">
           @if (project()!.readmeMarkdown) {
-            <h2 class="md-h2">## Descripción</h2>
+            <h2 class="md-h2">Descripción</h2>
             <p class="md-p">{{ project()!.readmeMarkdown!.objective }}</p>
             
-            <h2 class="md-h2">## Arquitectura</h2>
+            <h2 class="md-h2">Arquitectura</h2>
             <p class="md-p">{{ project()!.readmeMarkdown!.architecture }}</p>
             
-            <h2 class="md-h2">## Funcionalidades principales</h2>
+            <h2 class="md-h2">Funcionalidades principales</h2>
             <p class="md-p">{{ project()!.readmeMarkdown!.mainFeatures }}</p>
             
-            <h2 class="md-h2">## Tecnologías</h2>
+            <h2 class="md-h2">Tecnologías</h2>
             <p class="md-p">{{ project()!.readmeMarkdown!.technologies }}</p>
             
-            <h2 class="md-h2">## Aprendizajes</h2>
+            <h2 class="md-h2">Aprendizajes</h2>
             <p class="md-p">{{ project()!.readmeMarkdown!.learnings }}</p>
           } @else {
-            <h2 class="md-h2">## Descripción</h2>
+            <h2 class="md-h2">Descripción</h2>
             <p class="md-p">{{ project()!.fullDescription }}</p>
             <ul>
               <li><strong>Role:</strong> {{ project()!.role }}</li>
@@ -87,10 +87,10 @@
 
         <!-- STACK Section -->
         <div id="stack" class="project-section">
-          <h2 class="md-h2">## Tecnologías Utilizadas</h2>
+          <h2 class="md-h2">Tecnologías Utilizadas</h2>
           @if (project()!.structuredStack) {
             @for (key of getKeys(project()!.structuredStack!); track key) {
-              <h3 class="md-h3">### {{ key }}</h3>
+              <h3 class="md-h3">{{ key }}</h3>
               <div class="tech-badges">
                 @for (item of project()!.structuredStack![key]; track item) {
                   <span class="tech-badge" [style.background]="getTechColor(item)" [style.borderColor]="getTechColor(item)">
@@ -120,10 +120,10 @@
 
         <!-- FEATURES Section -->
         <div id="features" class="project-section">
-          <h2 class="md-h2">## Características Clave</h2>
+          <h2 class="md-h2">Características Clave</h2>
           @if (project()!.structuredFeatures) {
             @for (key of getKeys(project()!.structuredFeatures!); track key) {
-              <h3 class="md-h3">### {{ key }}</h3>
+              <h3 class="md-h3">{{ key }}</h3>
               <ul>
                 @for (item of project()!.structuredFeatures![key]; track item) {
                   <li>{{ item }}</li>
@@ -142,7 +142,7 @@
         <!-- METRICS Section -->
         @if (project()!.rawMetrics || project()!.highlights?.length || project()!.metrics) {
           <div id="metrics" class="project-section">
-            <h2 class="md-h2">## Resultados y Métricas</h2>
+            <h2 class="md-h2">Resultados y Métricas</h2>
             @if (project()!.rawMetrics) {
               <ul>
                 @for (key of getKeys(project()!.rawMetrics!); track key) {
@@ -151,7 +151,7 @@
               </ul>
             } @else {
               @if (project()!.highlights?.length) {
-                <h3 class="md-h3">### Puntos Destacados</h3>
+                <h3 class="md-h3">Puntos Destacados</h3>
                 <ul>
                   @for (highlight of project()!.highlights; track highlight) {
                     <li>{{ highlight }}</li>
@@ -159,7 +159,7 @@
                 </ul>
               }
               @if (project()!.metrics) {
-                <h3 class="md-h3">### Métricas Clave</h3>
+                <h3 class="md-h3">Métricas Clave</h3>
                 <ul>
                   @for (key of getMetricKeys(); track key) {
                     <li><strong>{{ formatMetricLabel(key) }}:</strong> {{ project()!.metrics[key] }}</li>
@@ -173,7 +173,7 @@
         <!-- ARCHITECTURE Section -->
         @if (project()!.architectureNodes) {
           <div id="architecture" class="project-section">
-            <h2 class="md-h2">## Diagrama de Arquitectura</h2>
+            <h2 class="md-h2">Diagrama de Arquitectura</h2>
             <div class="blueprint-wrapper" style="margin-top: 16px; border: 1px solid rgba(168,85,247,0.2); border-radius: 8px; overflow: hidden; height: 500px; background: #1E1E3F;">
               <app-blueprint-viewer
                 [nodes]="project()!.architectureNodes ?? []"
@@ -188,9 +188,9 @@
         <!-- CHALLENGES Section -->
         @if (project()!.challenges) {
           <div id="challenges" class="project-section">
-            <h2 class="md-h2">## Desafíos Técnicos</h2>
+            <h2 class="md-h2">Desafíos Técnicos</h2>
             @for (challenge of project()!.challenges; track challenge.title) {
-              <h3 class="md-h3">### {{ challenge.title }}</h3>
+              <h3 class="md-h3">{{ challenge.title }}</h3>
               <p class="md-p">{{ challenge.description }}</p>
             }
           </div>

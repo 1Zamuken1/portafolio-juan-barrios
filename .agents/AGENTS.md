@@ -42,9 +42,26 @@ Este repositorio contiene el portafolio personal de Juan Barrios, un Backend Dev
 - **Estado de los Datos**: 
   - *Producción (Vercel)*: El frontend consume datos estáticos desde `src/assets/data/*.json` para evitar cold starts de Render. `environment.prod.ts` tiene `useStaticData: true`. Los componentes públicos (Projects, About) leen del JSON local; solo el panel admin llama al backend de Render.
   - *Fase Dinámica (Admin)*: El panel `/admin` hace requests reales a la API REST del backend en Render para CRUD completo.
-- **Componente About (Skills Ring 3D)**: El componente `AboutComponent` renderiza un anillo 3D de planetas rotando con las tecnologías. Cada planeta es una `<div>` posicionada con `transform: rotateY(angle) translateZ(radius)`. Usa `requestAnimationFrame` (`startLoop()`) para rotación continua, drag handlers (`_onPointerDown/Move/Up`) para interacción manual, y `hoveredSkill()` signal para mostrar la tarjeta de descripción al hacer hover. Los skills vienen aplanados de `getStaticSkillsFlat()` como `AdminSkill[]`.
-- **Iconos del Ring**: Usa la librería `devicon` (v2.17.0) para los iconos de tecnología. Los iconos son **monochrome** (sin clase `colored`) para garantizar visibilidad en ambos temas: `color: #ffffff` en modo oscuro, `color: #1a1a2e` en modo claro. Esto se define en `.planet-icon` dentro de `about.component.css`. El color del planeta (glow/borde) lo da `--brand-color` del skill.
+- **Layout principal (VSCode)**: La UI pública emula un editor tipo VSCode. `VscodeLayoutComponent` (`src/app/layout/vscode-layout/`) es el shell: activity bar, explorer de archivos y **pestañas de editor sintetizadas desde la ruta**. `getTabDetails(path, fragment)` traduce ruta + fragment a un "archivo" (`/` → `README.md`, `/about#experience` → `timeline.json`, `/projects/:id#architecture` → `architecture.drawio`). `syncExplorerFolders()` abre la carpeta del proyecto navegado y colapsa las hermanas. Las rutas públicas son solo tres: `''` (welcome), `projects/:id` y `about`.
+- **Componente About**: Es un documento markdown estático (`about.component.html`) con perfil, stack agrupado por categoría y proyectos destacados. Lee de `getStaticExperiences()`, `getStaticProjects()` y `getStaticSkillsFlat()`.
+- **Ring 3D de skills — INACTIVO**: `LegacyRingComponent` (`src/app/features/about/legacy-ring/`) y su hijo `KnowledgePillarsComponent` contienen el anillo 3D de planetas rotando con las tecnologías: `requestAnimationFrame` en `startLoop()` con momentum y fricción, drag handlers, `hoveredSkill()` signal para la tarjeta al hacer hover, e iconos devicon **monochrome** (sin clase `colored`) para que se vean en ambos temas.
+
+  > **Estado: no se renderiza.** Ningún template incluye `<app-legacy-ring>` desde que `about` pasó a ser un documento markdown. El código se conserva deliberadamente, intacto y compilando, para poder reintegrarlo. **No borrar sin acuerdo previo.** Para reactivarlo basta con añadir `<app-legacy-ring>` al template de `about` e importar el componente.
 - **skills.json**: Es un **array** de `SkillCategory[]` (no objeto con claves), con 18 skills en 4 categorías. Cada skill tiene: `id`, `name`, `icon` (clase devicon sin `colored`), `brandColor`, `brandColorLight`, `description`.
+- **BlueprintViewer**: `src/app/shared/components/blueprint-viewer/` renderiza los diagramas de arquitectura SVG de cada caso de estudio a partir de `architectureNodes`, `architectureEdges` y `architectureLayout` de `projects.json`. Es el componente más complejo del frontend y está descompuesto en cuatro servicios:
+  - `blueprint-layout.service` — valida y normaliza dimensiones de cada nodo.
+  - `blueprint-positioning.service` — calcula los puertos por lado y autodetecta cuál usar según la posición relativa de los nodos.
+  - `blueprint-path-calculator` — traza las rutas (ortogonal, curva o recta) con offsets para aristas paralelas.
+  - `blueprint-color.service` + `utils/blueprint-constants.ts` — paleta por `group` con variantes light/dark.
+
+  Soporta zoom, pan, pinch en móvil, `autoFit()` y resaltado de vecinos con atenuación del resto. El tema lo toma de `ThemeService`, no de `prefers-color-scheme`. La clase CSS de cada nodo es `.svg-node` y la de cada conector `.connector-line` (relevante para los tests e2e).
+
+  **Estética de plano técnico.** La sección se llama "blueprint" y se ve como tal: papel cian con rejilla menor (40u) y mayor (200u), marco de lámina con coordenadas numéricas y alfabéticas, trazo monocromo y cajetín con los datos del diagrama. En tema claro se invierte a *whiteprint*: papel claro con tinta cian. Toda la paleta vive en `utils/blueprint-constants.ts` y en las variables `--bp-*` de `blueprint-viewer.component.css`; ambos archivos deben moverse juntos.
+
+  El único color es el `accent` por grupo, en la banda lateral de 3px y en el icono de cada tarjeta. La sigla del grupo aparece en la esquina superior derecha del nodo. Los grupos válidos están en `BLUEPRINT_COLOR_PALETTE.accents`; uno no declarado cae en `default` (tinta blanca).
+
+  **Anclaje y trazado de conectores.** Los extremos se anclan siempre al borde del nodo, nunca al centro: `computedConnectors` resuelve primero el lado de cada arista, cuenta cuántas comparten ese lado y reparte los anclajes con `BlueprintPositioningService.portPosition()`. El trazado recibe los nodos intermedios como obstáculos y elige la primera ruta candidata sin cruces. Si hace falta forzar un recorrido concreto, `bendPoints` en la arista del JSON tiene prioridad sobre el cálculo automático.
+- **Tema**: `ThemeService` (`core/services/theme.service.ts`) es la **única fuente de verdad**. Su constructor aplica el atributo `data-theme` en `<html>` y lo persiste en `localStorage` bajo la clave `jeb-theme`. `AppComponent` solo lo inyecta para instanciarlo. Ningún componente debe fijar `data-theme` por su cuenta ni leer `prefers-color-scheme`. Nota: hoy no hay ningún control de UI que llame a `toggleTheme()` — se fue con el navbar —, así que en la práctica la app queda en el tema persistido (dark por defecto).
 - **Despliegue**: Vercel (desde raíz del repo). URL producción: `https://portafolio-juan-barrios.vercel.app` (alias de `https://portafolio-juan-barrios-8en5oeoug-1zamuken1.vercel.app`).
 
 ## 3. Backend (Spring Boot 3 - Arquitectura Hexagonal)
@@ -167,6 +184,8 @@ Si no se tiene token CLI, se puede usar el MCP de Vercel directamente desde open
 - Los scripts de ejecución sí se pueden correr con `npm run <script>` o `pnpm run <script>` indistintamente.
 - Para el backend (Maven/Gradle), usar los wrappers incluidos (`./mvnw`, `./gradlew`).
 
+> **Los "Session Log" que siguen son registro histórico**, no descripción del estado actual. Describen decisiones tomadas en su momento y algunas ya no aplican (el formulario de contacto y el ring 3D en `about`, por ejemplo). Para el estado verificado del proyecto, ver la sección 13 al final.
+
 ## 10. Session Log — 2026-07-25: Static Skills Ring + Devicon Icons
 
 ### Objetivo
@@ -233,7 +252,7 @@ Integrar el panel admin (`/admin`) con el backend en Render para CRUD real de pr
 - `GET /api/projects` → 200 (retorna array de proyectos)
 - `GET /api/skills` → 200 (retorna 18 skills)
 - `GET /api/experiences` → 200 (retorna 1 experience)
-- `POST /api/auth/login` → 200 con JWT token (`admin`/`password123`)
+- `POST /api/auth/login` → 200 con JWT token (`admin`/`<ADMIN_PASSWORD>`)
 - JDBC URL funciona sin prefijo `jdbc:` — `DATABASE_URL` de Render es parseada correctamente por el driver PostgreSQL
 - El profile `render` usa `application-render.properties` que hereda datasource de `application.properties` (SQLite en dev, PostgreSQL en prod vía `DATABASE_URL`)
 
@@ -257,7 +276,7 @@ Integrar el panel admin (`/admin`) con el backend en Render para CRUD real de pr
 | `backend/render.yaml` | (sin cambios — DATABASE_URL funciona) |
 
 ### Verificación con Playwright
-- Login `admin`/`password123` → redirige a `/admin/dashboard/projects`
+- Login `admin`/`<ADMIN_PASSWORD>` → redirige a `/admin/dashboard/projects`
 - Tabla de proyectos muestra 4 entries
 - CRUD UI lista para operar (New, Edit, Delete buttons presentes)
 
@@ -301,9 +320,9 @@ Para que el formulario funcione en producción, subir `public/config.json` al se
 ```json
 {
   "emailjs": {
-    "publicKey": "WVHsNt_gi_mvdR5G8",
-    "serviceId": "service_nbv1s2f",
-    "templateId": "template_r2ludor"
+    "publicKey": "<EMAILJS_PUBLIC_KEY>",
+    "serviceId": "<EMAILJS_SERVICE_ID>",
+    "templateId": "<EMAILJS_TEMPLATE_ID>"
   }
 }
 ```
@@ -331,3 +350,91 @@ npx ng build --configuration development
 # Deploy frontend
 $env:VERCEL_TOKEN="..."; npx vercel --prod --yes
 ```
+
+---
+
+## 13. Estado actual verificado (2026-09-21)
+
+Esta sección describe el estado real del repositorio, verificado con build y tests. Tiene precedencia sobre los session logs anteriores.
+
+### Configuración del backend — PENDIENTE en rama aparte
+
+> **El backend de esta rama sigue con las credenciales hardcodeadas.** La corrección existe pero vive en la rama **`fix/backend-secrets`**, sin fusionar, porque requiere un JDK para verificarse y definir variables en Render antes de desplegarse. `develop` contiene únicamente cambios de frontend y es desplegable a Vercel tal cual.
+
+Lo que hace esa rama: `application.properties` pasa a leer las credenciales del entorno **sin valores por defecto**, de modo que la aplicación no arranca si faltan.
+
+| Variable | Uso | Notas |
+|---|---|---|
+| `JWT_SECRET` | Firma de los tokens | BASE64 de 256 bits o más: `openssl rand -base64 32` |
+| `ADMIN_USERNAME` | Usuario del panel admin | |
+| `ADMIN_PASSWORD` | Contraseña del panel admin | |
+| `JWT_EXPIRATION` | Vigencia del token en ms | Opcional, por defecto `86400000` |
+
+Para fusionarla hacen falta tres cosas, en este orden:
+
+1. Un JDK instalado y `./mvnw test` en verde desde `backend/`.
+2. Las tres variables definidas en el dashboard de Render (`render.yaml` las declara con `sync: false`). **Si se despliega sin ellas, el backend no arranca.**
+3. Rotar las credenciales anteriores: siguen en el historial de git y deben darse por comprometidas. Quitarlas del HEAD no basta.
+
+En local, copiar `backend/src/main/resources/application-local.properties.example` o exportar las variables antes de `./mvnw spring-boot:run`. Los tests traen sus propios valores dummy en `backend/src/test/resources/application.properties`, así que `./mvnw test` no necesita entorno.
+
+> Las credenciales que estuvieron commiteadas (contraseña admin y claves de EmailJS) se redactaron de este documento, pero **permanecen en el historial de git**.
+
+### SEO
+
+`SeoService` (`core/services/seo.service.ts`) es el unico sitio donde se tocan los metadatos. Cada componente de ruta llama a `update()` en su `ngOnInit` con titulo, descripcion, path y, si aplica, imagen; el servicio deriva el canonical, Open Graph y Twitter Card a partir de `environment.siteUrl`. `setStructuredData()` inserta el bloque JSON-LD, reemplazando el anterior.
+
+| Ruta | Titulo | JSON-LD |
+|---|---|---|
+| `/` | el completo, sin sufijo | `Person` |
+| `/about` | `Sobre mí \| Juan Esteban Barrios` | — |
+| `/projects/:id` | `<Proyecto> — Caso de estudio \| …` | `SoftwareSourceCode` |
+
+`public/robots.txt` y `public/sitemap.xml` se sirven como estaticos. **El sitemap se genera a mano**: al agregar o quitar un proyecto hay que actualizarlo.
+
+Los encabezados no llevan las almohadillas en el texto; son un `::before` en CSS. Si se escribe `<h2 class="md-h2">## Algo</h2>` se rompe la indexacion.
+
+### Prerender (SSG)
+
+El sitio publico se compila a **HTML estatico**: `pnpm run build` genera un `index.html` por ruta con los metadatos y el contenido ya escritos, incluido el diagrama SVG. Asi los rastreadores que no ejecutan JavaScript (LinkedIn, WhatsApp, Slack) ven la ficha correcta de cada pagina.
+
+| Archivo | Proposito |
+|---|---|
+| `src/main.server.ts` | Arranque de servidor. **Debe recibir el `BootstrapContext`**; sin el, la extraccion de rutas falla con NG0401 |
+| `src/app/app.config.server.ts` | `provideServerRendering(withRoutes(serverRoutes))` sobre `appConfig` |
+| `src/app/app.routes.server.ts` | Que se prerenderiza. `/projects/:id` deriva sus parametros de `projects.json` |
+| `angular.json` | `server`, `outputMode: "static"` y `prerender: true` |
+| `vercel.json` | Reescritura a `/index.html` para lo que no esta prerenderizado, como `/admin` |
+
+Reglas al tocar codigo que se prerenderiza:
+
+- **Nada de `window`, `localStorage` ni `document` global sin `isPlatformBrowser`.** Se corrigieron `AuthService`, `VscodeLayoutComponent` y `ProjectsComponent` por esto. `DOCUMENT` inyectado si funciona en servidor.
+- **Los datos publicos se importan, no se piden por HTTP.** `DataService.getStatic*()` importa los JSON directamente: en el prerender no hay servidor que sirva `/assets/data/*.json`. Ademas ahorra tres peticiones en el navegador.
+- `/admin` se queda en `RenderMode.Client`: depende de sesion y del backend.
+- La hidratacion esta activa (`provideClientHydration(withEventReplay())`), asi que el HTML prerenderizado se reaprovecha en vez de repintarse.
+
+### Tests e2e
+
+```bash
+pnpm run e2e
+```
+
+`playwright.config.ts` levanta `ng serve` en el puerto 4212 automáticamente (`reuseExistingServer: true`). Hay tres suites: `e2e/blueprint.spec.ts` (encuadre, solapamientos, carriles y cruces del visor), `e2e/seo.spec.ts` (metadatos por ruta, sobre la app viva) y `e2e/prerender.spec.ts` (el HTML generado por el build, que es lo que ven los rastreadores; se omite si no hay build). Los casos se derivan de `src/assets/data/projects.json`: cualquier proyecto que no sea `Draft` y tenga `architectureNodes` genera un test que comprueba que se renderiza un `.svg-node` por nodo del JSON. No hay ids hardcodeados.
+
+La primera vez hace falta descargar el navegador: `npx playwright install chromium`.
+
+### Componentes sin referencias
+
+Se eliminaron `contact`, `navbar`, `footer`, `home`, `hero`, `project-card` y `project-modal`, huérfanos desde el rediseño del layout. Con `contact` se fueron `ConfigService`, la dependencia `@emailjs/browser` y el bloque `emailjs` de los environments — **el formulario de contacto ya no existe**; el contacto son enlaces directos en `about`. `public/config.json` quedó inerte (sigue en `.gitignore`).
+
+`legacy-ring` y `knowledge-pillars` **se conservan** pese a estar huérfanos: ver la nota en la sección 2.
+
+### Iconos
+
+`devicon` y FontAwesome se cargan por **CDN desde `src/index.html`**, no desde `styles` en `angular.json` (lo que dice el session log de la sección 10 ya no aplica). El paquete npm `devicon` sigue instalado pero no se referencia desde el build.
+
+### Deuda técnica conocida
+
+- **`ProjectsComponent`, coreografía scroll ↔ URL**: `isProgrammaticScroll` e `ignoreFragmentUpdate` coordinan con timeouts de 1s el scroll disparado por el fragment y el fragment disparado por ScrollTrigger. Funciona, pero es frágil y depende de temporizadores. Candidato a refactor.
+- **Sin toggle de tema en la UI**: `ThemeService.toggleTheme()` no tiene quien lo llame desde que se borró el navbar.
+- **`environment.useStaticData` no se consulta**: los componentes públicos llaman a `getStatic*()` incondicionalmente, así que en desarrollo tampoco se ve el backend. El flag solo lo usa `legacy-ring`, que está inactivo.
