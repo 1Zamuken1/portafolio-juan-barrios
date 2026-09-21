@@ -53,6 +53,58 @@ test.describe('Blueprint viewer renders on case-study pages', () => {
       });
       expect(fuera).toBe(0);
 
+      // Ninguna ruta puede atravesar una tarjeta, ni nacer/morir dentro de una.
+      // Regresion historica: las aristas con puerto "auto" se anclaban al
+      // centro del nodo, y el trazado no esquivaba los nodos intermedios.
+      const solapes = await page.evaluate(() => {
+        const puntos = (d: string) => {
+          const out: Array<{ x: number; y: number }> = [];
+          const re = /([ML])\s*(-?[\d.]+)\s+(-?[\d.]+)/g;
+          let m: RegExpExecArray | null;
+          while ((m = re.exec(d))) out.push({ x: +m[2], y: +m[3] });
+          return out;
+        };
+        const cajas = [...document.querySelectorAll('.svg-node')].map((g) => {
+          const m = /translate\((-?[\d.]+),(-?[\d.]+)\)/.exec(g.getAttribute('transform') || '')!;
+          const r = g.querySelector('rect')!;
+          return { x: +m[1], y: +m[2], w: +r.getAttribute('width')!, h: +r.getAttribute('height')! };
+        });
+        const dentro = (p: { x: number; y: number }, r: any) =>
+          p.x > r.x + 2 && p.x < r.x + r.w - 2 && p.y > r.y + 2 && p.y < r.y + r.h - 2;
+        const corta = (a: any, b: any, r: any) => {
+          const L = r.x + 2, R = r.x + r.w - 2, T = r.y + 2, B = r.y + r.h - 2;
+          if (Math.abs(a.y - b.y) < 0.01) {
+            if (a.y <= T || a.y >= B) return false;
+            return Math.max(Math.min(a.x, b.x), L) < Math.min(Math.max(a.x, b.x), R);
+          }
+          if (Math.abs(a.x - b.x) < 0.01) {
+            if (a.x <= L || a.x >= R) return false;
+            return Math.max(Math.min(a.y, b.y), T) < Math.min(Math.max(a.y, b.y), B);
+          }
+          return false;
+        };
+
+        let cruces = 0;
+        let extremosDentro = 0;
+        for (const el of document.querySelectorAll('.connector-line')) {
+          const P = puntos(el.getAttribute('d') || '');
+          if (!P.length) continue;
+          const ini = P[0], fin = P[P.length - 1];
+          for (const r of cajas) {
+            if (dentro(ini, r)) extremosDentro++;
+            if (dentro(fin, r)) extremosDentro++;
+            // El nodo de origen/destino no cuenta como obstaculo.
+            if (dentro(ini, r) || dentro(fin, r)) continue;
+            for (let k = 0; k < P.length - 1; k++) {
+              if (corta(P[k], P[k + 1], r)) { cruces++; break; }
+            }
+          }
+        }
+        return { cruces, extremosDentro };
+      });
+      expect(solapes.extremosDentro).toBe(0);
+      expect(solapes.cruces).toBe(0);
+
       // Ningun conector puede quedar con un path degenerado.
       const paths = await page.locator('.connector-line').evaluateAll((els) =>
         els.map((e) => e.getAttribute('d') || '')

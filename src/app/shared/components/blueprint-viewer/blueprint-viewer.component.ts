@@ -79,47 +79,82 @@ export class BlueprintViewerComponent implements OnDestroy {
     const edges = this.edges() ?? [];
     const nodes = this.layoutNodes();
     const nodeMap = new Map(nodes.map(n => [n.id, n]));
-    
-    let channelIndex = 0;
-    const usedPorts = new Map<string, number>();
 
-    const getPort = (nodeId: string, side: string, node: ExtendedBlueprintNode) => {
-      const key = `${nodeId}-${side}`;
-      const count = usedPorts.get(key) || 0;
-      usedPorts.set(key, count + 1);
-      return (node.ports as any)[side]?.[count] || { x: node.centerX, y: node.centerY };
-    };
+    // 1. Resolver el lado de salida y de entrada de cada arista.
+    const resolved = edges
+      .map(edge => {
+        const fromNode = nodeMap.get(edge.from);
+        const toNode = nodeMap.get(edge.to);
+        if (!fromNode || !toNode) return null;
 
-    return edges.map(edge => {
-      const fromNode = nodeMap.get(edge.from);
-      const toNode = nodeMap.get(edge.to);
-      if (!fromNode || !toNode) return null;
-      
-      const fromSide = edge.fromPort && edge.fromPort !== 'auto' 
-          ? edge.fromPort 
+        const fromSide = edge.fromPort && edge.fromPort !== 'auto'
+          ? edge.fromPort
           : this.positioningService.autoDetectPort(fromNode, toNode, true);
-          
-      const toSide = edge.toPort && edge.toPort !== 'auto' 
-          ? edge.toPort 
+
+        const toSide = edge.toPort && edge.toPort !== 'auto'
+          ? edge.toPort
           : this.positioningService.autoDetectPort(fromNode, toNode, false);
 
-      const fromPort = getPort(edge.from, fromSide, fromNode);
-      const toPort = getPort(edge.to, toSide, toNode);
-      
-      // Calculate offset based on how many edges share these two nodes
+        return { edge, fromNode, toNode, fromSide, toSide };
+      })
+      .filter(r => r !== null) as Array<{
+        edge: BlueprintEdge;
+        fromNode: ExtendedBlueprintNode;
+        toNode: ExtendedBlueprintNode;
+        fromSide: string;
+        toSide: string;
+      }>;
+
+    // 2. Contar cuantas conexiones comparte cada lado, para repartirlas.
+    const sideTotals = new Map<string, number>();
+    const bump = (key: string) => sideTotals.set(key, (sideTotals.get(key) ?? 0) + 1);
+    for (const r of resolved) {
+      bump(`${r.edge.from}-${r.fromSide}`);
+      bump(`${r.edge.to}-${r.toSide}`);
+    }
+
+    // 3. Trazar cada ruta anclando los extremos al BORDE del nodo.
+    const sideUsed = new Map<string, number>();
+    const takeIndex = (key: string) => {
+      const i = sideUsed.get(key) ?? 0;
+      sideUsed.set(key, i + 1);
+      return i;
+    };
+    const segmentUsed = new Map<string, number>();
+
+    return resolved.map(({ edge, fromNode, toNode, fromSide, toSide }) => {
+      const fromKey = `${edge.from}-${fromSide}`;
+      const toKey = `${edge.to}-${toSide}`;
+
+      const fromPort = this.positioningService.portPosition(
+        fromNode, fromSide, takeIndex(fromKey), sideTotals.get(fromKey) ?? 1
+      );
+      const toPort = this.positioningService.portPosition(
+        toNode, toSide, takeIndex(toKey), sideTotals.get(toKey) ?? 1
+      );
+
+      // Separacion entre aristas paralelas que unen el mismo par de nodos.
       const segmentKey = [edge.from, edge.to].sort().join('-');
-      const segmentCount = usedPorts.get(segmentKey) || 0;
-      usedPorts.set(segmentKey, segmentCount + 1);
-      
+      const segmentCount = segmentUsed.get(segmentKey) ?? 0;
+      segmentUsed.set(segmentKey, segmentCount + 1);
       const offset = segmentCount * 12;
 
-      const path = this.pathCalculator.calculatePath(
-        fromPort, toPort,
-        fromSide, toSide,
-        edge.routeType ?? 'orthogonal',
-        offset
-      );
-      
+      // Todos los nodos salvo los dos extremos son obstaculos a esquivar.
+      const obstacles = nodes
+        .filter(n => n.id !== edge.from && n.id !== edge.to)
+        .map(n => ({ x: n.x, y: n.y, width: n.width, height: n.height }));
+
+      // Los bendPoints del JSON, si existen, mandan sobre el calculo automatico.
+      const path = edge.bendPoints?.length
+        ? this.pathCalculator.buildPathFromPoints(edge.bendPoints)
+        : this.pathCalculator.calculatePath(
+            fromPort, toPort,
+            fromSide, toSide,
+            edge.routeType ?? 'orthogonal',
+            offset,
+            obstacles
+          );
+
       return {
         id: `${edge.from}→${edge.to}`,
         from: edge.from,
@@ -131,9 +166,9 @@ export class BlueprintViewerComponent implements OnDestroy {
         strokeWidth: edge.strokeWidth ?? 2,
         strokeDasharray: edge.strokeDasharray ?? '6 4',
       };
-    }).filter(c => c !== null) as ComputedConnector[];
+    }) as ComputedConnector[];
   });
-  
+
   /** Tema activo de la aplicacion. Sigue a ThemeService, no al sistema operativo. */
   readonly currentTheme = this.themeService.theme;
 

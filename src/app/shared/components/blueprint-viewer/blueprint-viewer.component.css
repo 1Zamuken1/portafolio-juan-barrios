@@ -88,8 +88,10 @@
   stroke-width: 3;
 }
 
+/* Atenuado, no transparente: por debajo de ~0.4 la tarjeta se vuelve cristal
+   y deja ver lo que haya detras, que es justo lo que se quiere evitar. */
 .node--dimmed {
-  opacity: 0.2;
+  opacity: 0.45;
   transition: opacity 0.3s ease;
 }
 
