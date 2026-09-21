@@ -12,6 +12,15 @@ services:
         fromDatabase:
           name: portafolio-db
           property: connectionString
+      # Secretos: se definen manualmente en el dashboard de Render.
+      # JWT_SECRET debe ser BASE64 de 256 bits o mas:
+      #   openssl rand -base64 32
+      - key: JWT_SECRET
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
     healthCheckPath: /api/projects
 
   - type: postgres
