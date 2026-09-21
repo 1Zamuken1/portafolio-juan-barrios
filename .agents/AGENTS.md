@@ -170,7 +170,11 @@ Si no se tiene token CLI, se puede usar el MCP de Vercel directamente desde open
 6. Verificar `https://portafolio-juan-barrios.onrender.com/api/projects` → debe retornar 200
 
 ## 7. Git Workflow y Commits
-- **Ramas:** Todo el desarrollo activo se hace sobre la rama `develop`.
+- **Ramas:** Todo el desarrollo activo se hace sobre la rama `develop`. Las correcciones aisladas van en su propia rama (`fix/...`, `feat/...`) partiendo de `develop`.
+- **`master` solo se actualiza por pull request.** Nunca se hace push directo, ni merge local seguido de push, ni fast-forward desde `develop`. El PR es el único camino.
+  - Un agente **no abre ni fusiona el PR por su cuenta**: prepara la rama, la empuja y entrega el enlace de comparación para que el PR lo cree y lo revise una persona.
+  - Si se recibe una instrucción ambigua del tipo "haz el merge a master", hay que confirmar que se refiere a abrir un PR antes de tocar `master`.
+  - **Vercel despliega producción automáticamente en cada push a `master`** (y previsualizaciones en `develop`). Un push indebido a `master` no es solo un desliz de proceso: publica el sitio. Revertirlo vuelve a desplegar, esta vez la versión antigua.
 - **Commits:**
   - Deben ser atómicos (un solo propósito lógico por commit).
   - En español.
