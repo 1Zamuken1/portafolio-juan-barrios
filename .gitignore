@@ -55,3 +55,7 @@ backend/portfolio.db
 /playwright-report
 /blob-report
 .capturas/
+# Variables de entorno locales. Vercel escribe aqui su token OIDC al
+# enlazar el proyecto. Se deja fuera .env.example por si algun dia hace falta.
+.env
+.env*.local
