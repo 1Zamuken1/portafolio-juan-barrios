@@ -207,6 +207,11 @@
       </div>
     </aside>
 
+    <!-- Velo: en movil el explorer flota sobre el editor y se cierra al tocar fuera -->
+    @if (isMobile() && isExplorerOpen()) {
+      <div class="sidebar-scrim" (click)="toggleExplorer()" aria-hidden="true"></div>
+    }
+
     <!-- ===== Main Editor Area ===== -->
     <main class="editor-area">
 

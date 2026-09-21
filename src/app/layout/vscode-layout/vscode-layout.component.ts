@@ -27,6 +27,10 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
   private routerSub?: Subscription;
   private fragmentSub?: Subscription;
 
+  /** Ancho a partir del cual el explorer deja de ser panel flotante. */
+  private static readonly MOBILE_BREAKPOINT = 768;
+
+  isMobile = signal(false);
   isExplorerOpen = signal(true);
   activeMenu = signal('home'); // To keep track of activity bar
   showProfilePanel = signal(false);
@@ -96,6 +100,11 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // En movil el explorer es un panel flotante y arranca cerrado, para no
+    // comerse el area del editor.
+    this.syncViewport();
+    window.addEventListener('resize', this.onResize, { passive: true });
+
     // Load static projects immediately
     this.dataService.getStaticProjects().subscribe(data => {
       this.projects.set(data.filter(p => p.status !== 'Draft'));
@@ -118,6 +127,18 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.routerSub?.unsubscribe();
     this.fragmentSub?.unsubscribe();
+    window.removeEventListener('resize', this.onResize);
+  }
+
+  private onResize = () => this.syncViewport();
+
+  private syncViewport() {
+    const mobile = window.innerWidth <= VscodeLayoutComponent.MOBILE_BREAKPOINT;
+    const cambio = mobile !== this.isMobile();
+    this.isMobile.set(mobile);
+    // Solo se fuerza el estado del panel al cruzar el umbral, para no pisar
+    // lo que el usuario haya decidido dentro del mismo tamano.
+    if (cambio) this.isExplorerOpen.set(!mobile);
   }
 
   private syncRouteState(url: string) {
@@ -147,6 +168,9 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
     });
 
     this.activeTabId.set(tabDetails.id);
+
+    // En movil el panel tapa el editor: al abrir un archivo se cierra solo.
+    if (this.isMobile()) this.isExplorerOpen.set(false);
 
     // Sync sidebar folder expansion with the navigated route
     this.syncExplorerFolders(path);
