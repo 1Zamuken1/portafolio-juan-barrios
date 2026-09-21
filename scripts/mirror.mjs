@@ -77,8 +77,14 @@ async function pedir(ruta, opciones = {}) {
 async function token() {
   if (!USUARIO || !CLAVE) {
     throw new Error(
-      'Faltan credenciales. Definelas solo en esta terminal, no en el repositorio:\n' +
-      '  $env:MIRROR_USER="..."; $env:MIRROR_PASSWORD="..."'
+      'Faltan credenciales.\n\n' +
+      'Son las del PANEL DE ADMINISTRACION, las mismas con las que entras a\n' +
+      '/admin/login: ADMIN_USERNAME y ADMIN_PASSWORD, las que definiste en\n' +
+      'Render. NO son las de la base de datos (neondb_owner): este script\n' +
+      'habla con la API REST, no con Postgres.\n\n' +
+      'Definelas solo en esta terminal, nunca en el repositorio:\n' +
+      '  PowerShell:  $env:MIRROR_USER="admin"; $env:MIRROR_PASSWORD="..."\n' +
+      '  Git Bash:    export MIRROR_USER=admin MIRROR_PASSWORD=...'
     );
   }
   const { token } = await pedir('/auth/login', {
