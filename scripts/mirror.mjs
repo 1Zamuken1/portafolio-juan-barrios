@@ -249,6 +249,26 @@ async function pull() {
   }
 
   const previos = leerJson(ficheros.projects);
+
+  // Contar proyectos no basta: un backend desactualizado devuelve el numero
+  // correcto de proyectos pero vacios por dentro, porque descarta en silencio
+  // los campos que su modelo no conoce. Sobrescribir con eso se lleva los
+  // diagramas, el readme y las metricas, y el JSON es la unica copia que hay.
+  const claves = (lista) => new Set(lista.flatMap((p) => Object.keys(p)));
+  const antes = claves(previos);
+  const ahora = claves(proyectos);
+  const perdidos = [...antes].filter((c) => !ahora.has(c));
+
+  if (perdidos.length) {
+    throw new Error(
+      `La API no devuelve ${perdidos.length} campo(s) que el JSON si tiene:\n` +
+      `  ${perdidos.join(', ')}\n\n` +
+      'Aborto: escribir esto borraria ese contenido y no hay otra copia.\n\n' +
+      'Casi siempre significa que el backend desplegado es anterior al modelo\n' +
+      'actual. Render despliega desde master: comprueba que los cambios del\n' +
+      'backend esten ahi y que el despliegue haya terminado antes de sembrar.'
+    );
+  }
   const sinRenumerar = conservarIds(proyectos, previos);
   const nuevos = sinRenumerar.filter((p) => !previos.some((q) => q.slug === p.slug));
   if (nuevos.length) {
