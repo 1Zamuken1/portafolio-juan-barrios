@@ -18,6 +18,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createInterface } from 'node:readline';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DATOS = join(RAIZ, 'src', 'assets', 'data');
@@ -79,19 +80,52 @@ async function pedir(ruta, opciones = {}) {
   return res.status === 204 ? null : res.json();
 }
 
+/**
+ * Pide un dato por teclado sin mostrarlo.
+ *
+ * La clave se pregunta aqui y no se deja al shell a proposito: si se usa
+ * `read` dentro de un bloque pegado de varias lineas, bash lo alimenta con
+ * la linea siguiente del propio pegado en vez de esperar al teclado, y la
+ * credencial acaba vacia o con basura sin que se note.
+ */
+function preguntarOculto(etiqueta) {
+  return new Promise((resolve, reject) => {
+    if (!process.stdin.isTTY) {
+      reject(new Error(
+        'No hay terminal interactiva para pedir la clave. ' +
+        'Define MIRROR_PASSWORD en el entorno antes de ejecutar el script.'
+      ));
+      return;
+    }
+    const rl = createInterface({ input: process.stdin, output: process.stdout, terminal: true });
+    rl._writeToOutput = (texto) => {
+      // Solo pasa la etiqueta; lo tecleado no se escribe en pantalla.
+      if (texto.includes(etiqueta)) rl.output.write(etiqueta);
+    };
+    rl.question(etiqueta, (valor) => {
+      rl.output.write('\n');
+      rl.close();
+      resolve(limpiar(valor));
+    });
+  });
+}
+
+async function credenciales() {
+  const usuario = USUARIO || 'admin';
+  if (CLAVE) return { usuario, clave: CLAVE };
+
+  console.log(
+    '\nLa clave es la del PANEL DE ADMINISTRACION, la misma con la que entras\n' +
+    'a /admin/login. NO es la de la base de datos (neondb_owner): este script\n' +
+    'habla con la API REST, no con Postgres.\n'
+  );
+  const clave = await preguntarOculto(`Clave de "${usuario}": `);
+  if (!clave) throw new Error('No se recibio ninguna clave.');
+  return { usuario, clave };
+}
+
 async function token() {
-  if (!USUARIO || !CLAVE) {
-    throw new Error(
-      'Faltan credenciales.\n\n' +
-      'Son las del PANEL DE ADMINISTRACION, las mismas con las que entras a\n' +
-      '/admin/login: ADMIN_USERNAME y ADMIN_PASSWORD, las que definiste en\n' +
-      'Render. NO son las de la base de datos (neondb_owner): este script\n' +
-      'habla con la API REST, no con Postgres.\n\n' +
-      'Definelas solo en esta terminal, nunca en el repositorio:\n' +
-      '  PowerShell:  $env:MIRROR_USER="admin"; $env:MIRROR_PASSWORD="..."\n' +
-      '  Git Bash:    export MIRROR_USER=admin MIRROR_PASSWORD=...'
-    );
-  }
+  const { usuario: USUARIO, clave: CLAVE } = await credenciales();
   const res = await fetch(`${API}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
