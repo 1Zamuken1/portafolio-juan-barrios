@@ -55,6 +55,12 @@ Este repositorio contiene el portafolio personal de Juan Barrios, un Backend Dev
   - `blueprint-color.service` + `utils/blueprint-constants.ts` — paleta por `group` con variantes light/dark.
 
   Soporta zoom, pan, pinch en móvil, `autoFit()` y resaltado de vecinos con atenuación del resto. El tema lo toma de `ThemeService`, no de `prefers-color-scheme`. La clase CSS de cada nodo es `.svg-node` y la de cada conector `.connector-line` (relevante para los tests e2e).
+
+  **Estética de plano técnico.** La sección se llama "blueprint" y se ve como tal: papel cian con rejilla menor (40u) y mayor (200u), marco de lámina con coordenadas numéricas y alfabéticas, trazo monocromo y cajetín con los datos del diagrama. En tema claro se invierte a *whiteprint*: papel claro con tinta cian. Toda la paleta vive en `utils/blueprint-constants.ts` y en las variables `--bp-*` de `blueprint-viewer.component.css`; ambos archivos deben moverse juntos.
+
+  El único color es el `accent` por grupo, en la banda lateral de 3px y en el icono de cada tarjeta. La sigla del grupo aparece en la esquina superior derecha del nodo. Los grupos válidos están en `BLUEPRINT_COLOR_PALETTE.accents`; uno no declarado cae en `default` (tinta blanca).
+
+  **Anclaje y trazado de conectores.** Los extremos se anclan siempre al borde del nodo, nunca al centro: `computedConnectors` resuelve primero el lado de cada arista, cuenta cuántas comparten ese lado y reparte los anclajes con `BlueprintPositioningService.portPosition()`. El trazado recibe los nodos intermedios como obstáculos y elige la primera ruta candidata sin cruces. Si hace falta forzar un recorrido concreto, `bendPoints` en la arista del JSON tiene prioridad sobre el cálculo automático.
 - **Tema**: `ThemeService` (`core/services/theme.service.ts`) es la **única fuente de verdad**. Su constructor aplica el atributo `data-theme` en `<html>` y lo persiste en `localStorage` bajo la clave `jeb-theme`. `AppComponent` solo lo inyecta para instanciarlo. Ningún componente debe fijar `data-theme` por su cuenta ni leer `prefers-color-scheme`. Nota: hoy no hay ningún control de UI que llame a `toggleTheme()` — se fue con el navbar —, así que en la práctica la app queda en el tema persistido (dark por defecto).
 - **Despliegue**: Vercel (desde raíz del repo). URL producción: `https://portafolio-juan-barrios.vercel.app` (alias de `https://portafolio-juan-barrios-8en5oeoug-1zamuken1.vercel.app`).
 

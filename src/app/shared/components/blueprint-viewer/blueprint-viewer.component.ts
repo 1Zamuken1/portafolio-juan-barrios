@@ -227,6 +227,16 @@ export class BlueprintViewerComponent implements OnDestroy {
   getNodeGlowColor(node: ExtendedBlueprintNode): string {
     return this.colorService.getNodeGlowColor(node, this.currentTheme());
   }
+
+  /** Color del grupo: banda lateral e icono de la tarjeta. */
+  getNodeAccent(node: ExtendedBlueprintNode): string {
+    return this.colorService.getNodeAccent(node, this.currentTheme());
+  }
+
+  /** Siglas del grupo para la esquina de la tarjeta. */
+  getGroupTag(node: ExtendedBlueprintNode): string {
+    return (node.group ?? '').slice(0, 3).toUpperCase();
+  }
   
   getConnectorMarker(conn: ComputedConnector): string {
     return this.isConnectorHighlighted(conn) ? 'hover' : 'default';
@@ -243,9 +253,56 @@ export class BlueprintViewerComponent implements OnDestroy {
   }
   
   getGridPath(): string {
-    const size = this.layout()?.canvas?.gridSize ?? 40;
+    const size = this.layout()?.canvas?.gridSize ?? BLUEPRINT_SPACING.gridSize;
     return `M ${size} 0 L 0 0 0 ${size}`;
   }
+
+  getGridMinorSize(): number {
+    return this.layout()?.canvas?.gridSize ?? BLUEPRINT_SPACING.gridSize;
+  }
+
+  getGridMajorSize(): number {
+    return BLUEPRINT_SPACING.gridMajorSize;
+  }
+
+  getGridMajorPath(): string {
+    const size = this.getGridMajorSize();
+    return `M ${size} 0 L 0 0 0 ${size}`;
+  }
+
+  /**
+   * Marco de lamina con coordenadas, al estilo de un plano: numeros en el eje
+   * horizontal y letras en el vertical, una marca cada celda de rejilla mayor.
+   */
+  readonly sheetFrame = computed(() => {
+    const w = this.layout()?.canvas?.width ?? BLUEPRINT_SPACING.canvasMinWidth;
+    const h = this.layout()?.canvas?.height ?? BLUEPRINT_SPACING.canvasMinHeight;
+    const m = BLUEPRINT_SPACING.sheetMargin;
+    const step = BLUEPRINT_SPACING.gridMajorSize;
+
+    const innerW = w - m * 2;
+    const innerH = h - m * 2;
+
+    const cols: Array<{ label: string; center: number; tick: number }> = [];
+    for (let i = 0; i * step < innerW; i++) {
+      const start = m + i * step;
+      const end = Math.min(start + step, m + innerW);
+      cols.push({ label: String(i + 1), center: (start + end) / 2, tick: end });
+    }
+
+    const rows: Array<{ label: string; center: number; tick: number }> = [];
+    for (let i = 0; i * step < innerH; i++) {
+      const start = m + i * step;
+      const end = Math.min(start + step, m + innerH);
+      rows.push({
+        label: String.fromCharCode(65 + i),
+        center: (start + end) / 2,
+        tick: end
+      });
+    }
+
+    return { x: m, y: m, width: innerW, height: innerH, margin: m, cols, rows };
+  });
 
   getIconChar(icon?: string): string {
     return icon ?? ''; 
