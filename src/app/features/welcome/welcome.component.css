@@ -118,6 +118,7 @@
 .badge {
   display: inline-flex;
   align-items: center;
+  gap: 0.35rem;
   padding: 0.2rem 0.7rem;
   border-radius: 1rem;
   font-size: 0.72rem;
@@ -127,6 +128,17 @@
   border: 1px solid;
   white-space: nowrap;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Los iconos heredan el color de cada badge, sin la clase devicon 'colored',
+   para que la fila mantenga una sola paleta en ambos temas. */
+.badge i {
+  font-size: 0.95em;
+  line-height: 1;
+}
+
+.badge-available .pi {
+  font-size: 0.5em;
 }
 
 .badge:hover {
