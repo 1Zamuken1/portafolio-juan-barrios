@@ -1,40 +1,53 @@
 import { test, expect } from '@playwright/test';
+import projects from '../src/assets/data/projects.json';
+
+/**
+ * Los casos se derivan del propio projects.json para que los ids no vuelvan a
+ * desincronizarse cuando se reordenen o agreguen proyectos.
+ */
+const cases = (projects as Array<{
+  id: number;
+  name: string;
+  status: string;
+  architectureNodes?: unknown[];
+}>)
+  .filter((p) => p.status !== 'Draft' && (p.architectureNodes?.length ?? 0) > 0)
+  .map((p) => ({
+    id: p.id,
+    name: p.name,
+    path: `/projects/${p.id}`,
+    expectedNodes: p.architectureNodes!.length,
+  }));
 
 test.describe('Blueprint viewer renders on case-study pages', () => {
-  const cases = [
-    { slug: 'sgva', path: '/projects/2', title: 'SGVA' },
-    { slug: 'seona', path: '/projects/4', title: 'Seona' },
-  ];
+  test('hay proyectos con arquitectura para validar', () => {
+    expect(cases.length).toBeGreaterThan(0);
+  });
 
   for (const c of cases) {
-    test(`${c.title} blueprint viewer renders`, async ({ page }) => {
+    test(`${c.name} blueprint viewer renders`, async ({ page }) => {
       await page.goto(c.path, { waitUntil: 'networkidle' });
-      await page.waitForTimeout(1200);
 
       const bw = page.locator('.blueprint-viewer');
       await expect(bw).toBeVisible();
 
-      const nodes = page.locator('.bp-node');
-      const count = await nodes.count();
-      expect(count).toBeGreaterThan(0);
+      // Cada nodo del JSON debe tener su contraparte renderizada.
+      const nodes = page.locator('.svg-node');
+      await expect(nodes).toHaveCount(c.expectedNodes);
 
       const svg = page.locator('.blueprint-viewer svg');
-      const svgBox = await svg.boundingBox();
-      expect(svgBox).not.toBeNull();
+      await expect(svg).toBeVisible();
+      expect(await svg.boundingBox()).not.toBeNull();
 
-      const paths = await page.locator('.connector-line').evaluateAll(els =>
-        els.map(e => e.getAttribute('d') || '')
+      // Ningun conector puede quedar con un path degenerado.
+      const paths = await page.locator('.connector-line').evaluateAll((els) =>
+        els.map((e) => e.getAttribute('d') || '')
       );
-      // no degenerate connector paths (three points where last two coincide)
+      expect(paths.length).toBeGreaterThan(0);
       for (const d of paths) {
         const nums = d.match(/-?\d+(\.\d+)?/g)?.map(Number) || [];
-        // no point should be identical to next point in a horizontal pipeline
         expect(nums.length).toBeGreaterThanOrEqual(4);
-      }
-
-      // horizontal pipeline: 8 nodes in a line
-      if (c.slug === 'sgva') {
-        expect(count).toBe(8);
+        expect(nums.every((n) => Number.isFinite(n))).toBe(true);
       }
     });
   }
