@@ -4,7 +4,6 @@ import { DataService } from '../../core/services/data.service';
 import { AdminSkill } from '../../shared/models/skill.model';
 import { Experience } from '../../shared/models/experience.model';
 import { Project } from '../../shared/models/project.model';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-about',

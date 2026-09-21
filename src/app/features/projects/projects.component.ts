@@ -1,12 +1,10 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, inject, signal, ElementRef, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { CommonModule, UpperCasePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../core/services/data.service';
 import { Project } from '../../shared/models/project.model';
 import { BlueprintViewerComponent } from '../../shared/components/blueprint-viewer/blueprint-viewer.component';
-import { environment } from '../../../environments/environment';
-import { catchError, timeout } from 'rxjs/operators';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
