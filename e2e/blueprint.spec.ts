@@ -39,6 +39,20 @@ test.describe('Blueprint viewer renders on case-study pages', () => {
       await expect(svg).toBeVisible();
       expect(await svg.boundingBox()).not.toBeNull();
 
+      // El encuadre inicial debe dejar TODOS los nodos dentro del viewport.
+      // Regresion historica: sin viewBox y con initialZoom fijo se perdia
+      // cerca del 40% del diagrama por la derecha.
+      const fuera = await page.evaluate(() => {
+        const vp = document.querySelector('.blueprint-viewport');
+        if (!vp) return -1;
+        const r = vp.getBoundingClientRect();
+        return [...document.querySelectorAll('.svg-node')].filter((n) => {
+          const b = n.getBoundingClientRect();
+          return b.left < r.left - 1 || b.right > r.right + 1 || b.top < r.top - 1 || b.bottom > r.bottom + 1;
+        }).length;
+      });
+      expect(fuera).toBe(0);
+
       // Ningun conector puede quedar con un path degenerado.
       const paths = await page.locator('.connector-line').evaluateAll((els) =>
         els.map((e) => e.getAttribute('d') || '')

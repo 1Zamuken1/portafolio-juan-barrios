@@ -1,10 +1,11 @@
-import { Component, input, signal, computed, inject, PLATFORM_ID, ElementRef, viewChild, effect } from '@angular/core';
+import { Component, input, signal, computed, inject, PLATFORM_ID, ElementRef, OnDestroy, viewChild, effect } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { BlueprintNode, BlueprintEdge, BlueprintLayout, ComputedNodeLayout } from '../../models/blueprint.model';
 import { BlueprintPositioningService } from './services/blueprint-positioning.service';
 import { BlueprintPathCalculator } from './services/blueprint-path-calculator';
 import { BlueprintColorService } from './services/blueprint-color.service';
 import { BlueprintLayoutService } from './services/blueprint-layout.service';
+import { BLUEPRINT_SPACING } from './utils/blueprint-constants';
 import { ThemeService } from '../../../core/services/theme.service';
 
 export interface ComputedConnector {
@@ -21,6 +22,12 @@ export interface ComputedConnector {
 
 export type ExtendedBlueprintNode = BlueprintNode & ComputedNodeLayout;
 
+/** Margen en unidades del viewBox que autoFit deja alrededor del contenido. */
+const AUTOFIT_PADDING = 60;
+
+/** Tope de zoom del encuadre automatico, para no agrandar en exceso diagramas pequenos. */
+const AUTOFIT_MAX_ZOOM = 2;
+
 @Component({
   selector: 'app-blueprint-viewer',
   standalone: true,
@@ -28,7 +35,7 @@ export type ExtendedBlueprintNode = BlueprintNode & ComputedNodeLayout;
   templateUrl: './blueprint-viewer.component.html',
   styleUrl: './blueprint-viewer.component.css',
 })
-export class BlueprintViewerComponent {
+export class BlueprintViewerComponent implements OnDestroy {
   // Inputs
   readonly nodes = input<BlueprintNode[]>([]);
   readonly edges = input<BlueprintEdge[]>([]);
@@ -141,20 +148,27 @@ export class BlueprintViewerComponent {
   private panStartX = 0;
   private panStartY = 0;
 
+  private resizeObserver?: ResizeObserver;
+
   constructor() {
-    // Apply initial layout settings when they change
+    // Reencuadra cuando cambian los datos del diagrama.
     effect(() => {
-      const lay = this.layout();
-      if (lay) {
-        if (lay.initialZoom !== undefined) {
-          this.zoom.set(lay.initialZoom);
-          this.offsetX.set(lay.initialPanX ?? 0);
-          this.offsetY.set(lay.initialPanY ?? 0);
-        } else {
-          // If no initial zoom, autofit the diagram to the screen
-          setTimeout(() => this.autoFit(), 50);
-        }
-      }
+      this.layoutNodes();
+      this.layout();
+      if (!this.isBrowser) return;
+      // El DOM aun no refleja los nodos nuevos en este tick.
+      setTimeout(() => this.autoFit(), 50);
+    });
+
+    // Reencuadra cuando cambia el tamano del contenedor: rotacion del movil,
+    // colapso del explorer o redimension de la ventana.
+    effect(() => {
+      const viewport = this.canvasEl()?.nativeElement.parentElement;
+      if (!this.isBrowser || !viewport) return;
+
+      this.resizeObserver?.disconnect();
+      this.resizeObserver = new ResizeObserver(() => this.autoFit());
+      this.resizeObserver.observe(viewport);
     });
   }
 
@@ -344,67 +358,77 @@ export class BlueprintViewerComponent {
     return Math.sqrt(dx * dx + dy * dy);
   }
 
+  /**
+   * Encuadra el diagrama completo dentro del viewport.
+   *
+   * El SVG ya encaja el lienzo de diseno en el contenedor mediante
+   * `viewBox` + `preserveAspectRatio="xMidYMid meet"`, aplicando una escala
+   * base y un centrado propios. El zoom y el desplazamiento del stage se
+   * calculan **encima** de esa transformacion, no en pixeles crudos: por eso
+   * hay que reproducir aqui la escala base para situar el contenido.
+   */
   autoFit() {
     const nodes = this.layoutNodes();
-    if (!nodes || nodes.length === 0 || !this.isBrowser || !this.canvasEl()) return;
+    if (!this.isBrowser || !nodes.length) return;
 
+    const viewport = this.canvasEl()?.nativeElement.parentElement;
+    if (!viewport) return;
+
+    const vpW = viewport.clientWidth;
+    const vpH = viewport.clientHeight;
+    if (!vpW || !vpH) return;
+
+    // Caja envolvente del contenido, en unidades del viewBox.
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     for (const node of nodes) {
       const nx = node.x ?? 0;
       const ny = node.y ?? 0;
-      const nw = node.width ?? 250;
-      const nh = node.height ?? 96;
+      const nw = node.width ?? BLUEPRINT_SPACING.nodeWidth;
+      const nh = node.height ?? BLUEPRINT_SPACING.nodeHeight;
       if (nx < minX) minX = nx;
       if (ny < minY) minY = ny;
       if (nx + nw > maxX) maxX = nx + nw;
       if (ny + nh > maxY) maxY = ny + nh;
     }
+    if (!Number.isFinite(minX)) return;
 
-    if (minX === Infinity) return;
-
-    // Add some padding around the bounding box
-    const padding = 60;
-    minX -= padding;
-    minY -= padding;
-    maxX += padding;
-    maxY += padding;
+    minX -= AUTOFIT_PADDING;
+    minY -= AUTOFIT_PADDING;
+    maxX += AUTOFIT_PADDING;
+    maxY += AUTOFIT_PADDING;
 
     const contentW = maxX - minX;
     const contentH = maxY - minY;
+    if (contentW <= 0 || contentH <= 0) return;
 
-    const canvasElement = this.canvasEl()!.nativeElement;
-    const viewport = canvasElement.parentElement;
-    if (!viewport) return;
+    // Escala y centrado que aplica el propio viewBox.
+    const canvasW = this.layout()?.canvas?.width ?? BLUEPRINT_SPACING.canvasMinWidth;
+    const canvasH = this.layout()?.canvas?.height ?? BLUEPRINT_SPACING.canvasMinHeight;
+    const baseScale = Math.min(vpW / canvasW, vpH / canvasH);
+    if (!baseScale) return;
+    const baseX = (vpW - canvasW * baseScale) / 2;
+    const baseY = (vpH - canvasH * baseScale) / 2;
 
-    const vpW = viewport.clientWidth;
-    const vpH = viewport.clientHeight;
-    if (vpW === 0 || vpH === 0) return;
+    // Zoom necesario para que el contenido llene el viewport.
+    const zoom = Math.min(
+      Math.max(
+        Math.min(vpW / (contentW * baseScale), vpH / (contentH * baseScale)),
+        BLUEPRINT_SPACING.minZoom
+      ),
+      AUTOFIT_MAX_ZOOM
+    );
 
-    const scaleX = vpW / contentW;
-    const scaleY = vpH / contentH;
-    
-    // Fit to the smallest scale so it fits entirely, clamp to sensible values
-    let newZoom = Math.min(scaleX, scaleY);
-    newZoom = Math.min(Math.max(newZoom, 0.4), 1.3);
-    
-    // Center it
-    const newOffsetX = (vpW - contentW * newZoom) / 2 - minX * newZoom;
-    const newOffsetY = (vpH - contentH * newZoom) / 2 - minY * newZoom;
-
-    this.zoom.set(newZoom);
-    this.offsetX.set(newOffsetX);
-    this.offsetY.set(newOffsetY);
+    this.zoom.set(zoom);
+    this.offsetX.set((vpW - zoom * baseScale * contentW) / 2 - zoom * (baseX + baseScale * minX));
+    this.offsetY.set((vpH - zoom * baseScale * contentH) / 2 - zoom * (baseY + baseScale * minY));
   }
 
   resetZoom() {
-    const lay = this.layout();
-    if (lay?.initialZoom !== undefined) {
-      this.zoom.set(lay.initialZoom);
-      this.offsetX.set(lay.initialPanX ?? 0);
-      this.offsetY.set(lay.initialPanY ?? 0);
-    } else {
-      this.autoFit();
-    }
+    this.autoFit();
     this.highlightedNodeId.set(null);
+  }
+
+  ngOnDestroy() {
+    this.resizeObserver?.disconnect();
   }
 }

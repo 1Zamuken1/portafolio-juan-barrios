@@ -21,6 +21,8 @@
         class="blueprint-svg-canvas"
         width="100%"
         height="100%"
+        [attr.viewBox]="getViewBox()"
+        preserveAspectRatio="xMidYMid meet"
         overflow="visible"
       >
         <defs>

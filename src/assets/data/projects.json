@@ -149,8 +149,7 @@
         "height": 900,
         "gridSize": 40,
         "showGrid": true
-      },
-      "initialZoom": 0.85
+      }
     },
     "architectureNodes": [
       {
@@ -526,8 +525,7 @@
         "height": 600,
         "gridSize": 40,
         "showGrid": true
-      },
-      "initialZoom": 0.9
+      }
     },
     "architectureNodes": [
       {
@@ -832,8 +830,7 @@
         "height": 700,
         "gridSize": 40,
         "showGrid": true
-      },
-      "initialZoom": 0.9
+      }
     },
     "architectureNodes": [
       {
@@ -1140,8 +1137,7 @@
         "height": 600,
         "gridSize": 40,
         "showGrid": true
-      },
-      "initialZoom": 0.9
+      }
     },
     "architectureNodes": [
       {
