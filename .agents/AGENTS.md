@@ -380,13 +380,29 @@ En local, copiar `backend/src/main/resources/application-local.properties.exampl
 
 > Las credenciales que estuvieron commiteadas (contraseña admin y claves de EmailJS) se redactaron de este documento, pero **permanecen en el historial de git**.
 
+### SEO
+
+`SeoService` (`core/services/seo.service.ts`) es el unico sitio donde se tocan los metadatos. Cada componente de ruta llama a `update()` en su `ngOnInit` con titulo, descripcion, path y, si aplica, imagen; el servicio deriva el canonical, Open Graph y Twitter Card a partir de `environment.siteUrl`. `setStructuredData()` inserta el bloque JSON-LD, reemplazando el anterior.
+
+| Ruta | Titulo | JSON-LD |
+|---|---|---|
+| `/` | el completo, sin sufijo | `Person` |
+| `/about` | `Sobre mí \| Juan Esteban Barrios` | — |
+| `/projects/:id` | `<Proyecto> — Caso de estudio \| …` | `SoftwareSourceCode` |
+
+`public/robots.txt` y `public/sitemap.xml` se sirven como estaticos. **El sitemap se genera a mano**: al agregar o quitar un proyecto hay que actualizarlo.
+
+Los encabezados no llevan las almohadillas en el texto; son un `::before` en CSS. Si se escribe `<h2 class="md-h2">## Algo</h2>` se rompe la indexacion.
+
+> **Limitacion conocida.** No hay SSR ni prerender: los metadatos se escriben en tiempo de ejecucion. Google ejecuta JavaScript y los ve, pero los rastreadores de redes sociales (LinkedIn, WhatsApp, Slack, Facebook) no, y usan siempre los de `index.html`. Para que la vista previa al compartir sea la de cada proyecto hace falta prerenderizar las seis rutas.
+
 ### Tests e2e
 
 ```bash
 pnpm run e2e
 ```
 
-`playwright.config.ts` levanta `ng serve` en el puerto 4212 automáticamente (`reuseExistingServer: true`). Los casos se derivan de `src/assets/data/projects.json`: cualquier proyecto que no sea `Draft` y tenga `architectureNodes` genera un test que comprueba que se renderiza un `.svg-node` por nodo del JSON. No hay ids hardcodeados.
+`playwright.config.ts` levanta `ng serve` en el puerto 4212 automáticamente (`reuseExistingServer: true`). Hay dos suites: `e2e/blueprint.spec.ts` (encuadre, solapamientos y carriles del visor) y `e2e/seo.spec.ts` (metadatos por ruta). Los casos se derivan de `src/assets/data/projects.json`: cualquier proyecto que no sea `Draft` y tenga `architectureNodes` genera un test que comprueba que se renderiza un `.svg-node` por nodo del JSON. No hay ids hardcodeados.
 
 La primera vez hace falta descargar el navegador: `npx playwright install chromium`.
 
