@@ -8,12 +8,17 @@ services:
         value: render
       - key: JAVA_OPTS
         value: -Xms256m -Xmx384m
-      - key: DATABASE_URL
-        fromDatabase:
-          name: portafolio-db
-          property: connectionString
-      # Secretos: se definen manualmente en el dashboard de Render.
-      # JWT_SECRET debe ser BASE64 de 256 bits o mas:
+      # La base de datos es externa (Neon o Supabase). Las gratuitas de Render
+      # se eliminan a los 30 dias: la anterior desaparecio con todo su
+      # contenido y el backend llevaba semanas sin arrancar por eso.
+      # Todas estas se definen a mano en el dashboard.
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      # Secretos: JWT_SECRET debe ser BASE64 de 256 bits o mas:
       #   openssl rand -base64 32
       - key: JWT_SECRET
         sync: false
@@ -22,9 +27,3 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
     healthCheckPath: /api/projects
-
-  - type: postgres
-    name: portafolio-db
-    plan: free
-    databaseName: portafolio
-    ipAllowList: []
