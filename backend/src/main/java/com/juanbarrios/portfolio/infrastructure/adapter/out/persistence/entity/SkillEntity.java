@@ -17,6 +17,11 @@ public class SkillEntity {
     private String name;
 
     private String category;
+
+    /** Color de la categoria, desnormalizado en cada skill. */
+    @Column(name = "category_color")
+    private String categoryColor;
+
     private String icon;
     private String color;
 
@@ -56,4 +61,7 @@ public class SkillEntity {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getCategoryColor() { return categoryColor; }
+    public void setCategoryColor(String categoryColor) { this.categoryColor = categoryColor; }
 }

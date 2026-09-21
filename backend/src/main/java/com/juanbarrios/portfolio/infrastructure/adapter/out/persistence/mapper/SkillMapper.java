@@ -10,7 +10,7 @@ public class SkillMapper {
 
     public static Skill toDomain(SkillEntity entity) {
         if (entity == null) return null;
-        return new Skill(
+        Skill domain = new Skill(
                 entity.getId(),
                 entity.getName(),
                 entity.getCategory(),
@@ -21,6 +21,8 @@ public class SkillMapper {
                 entity.getDescription(),
                 entity.getDisplayOrder()
         );
+        domain.setCategoryColor(entity.getCategoryColor());
+        return domain;
     }
 
     public static SkillEntity toEntity(Skill domain) {
@@ -29,6 +31,7 @@ public class SkillMapper {
         entity.setId(domain.getId());
         entity.setName(domain.getName());
         entity.setCategory(domain.getCategory());
+        entity.setCategoryColor(domain.getCategoryColor());
         entity.setIcon(domain.getIcon());
         entity.setColor(domain.getColor());
         entity.setBrandColorLight(domain.getBrandColorLight());

@@ -9,6 +9,17 @@ public class Skill {
     private Long id;
     private String name;
     private String category;
+
+    /**
+     * Color de la categoria a la que pertenece, no del skill.
+     *
+     * Va desnormalizado en cada skill en vez de en una tabla de categorias:
+     * son cuatro categorias y el panel de administracion las edita planas. El
+     * valor se repite entre los skills de una misma categoria; la exportacion
+     * toma el del primero.
+     */
+    private String categoryColor;
+
     private String icon;
     private String color;
     private String brandColorLight;
@@ -39,6 +50,9 @@ public class Skill {
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+
+    public String getCategoryColor() { return categoryColor; }
+    public void setCategoryColor(String categoryColor) { this.categoryColor = categoryColor; }
 
     public String getIcon() { return icon; }
     public void setIcon(String icon) { this.icon = icon; }
