@@ -1,5 +1,6 @@
 package com.juanbarrios.portfolio.application.usecase;
 
+import com.juanbarrios.portfolio.application.support.PartialMerge;
 import com.juanbarrios.portfolio.domain.model.Experience;
 import com.juanbarrios.portfolio.domain.port.out.ExperienceRepositoryPort;
 import java.util.List;
@@ -29,10 +30,13 @@ public class ExperienceUseCase {
     }
 
     public Experience updateExperience(Long id, Experience experience) {
-        experienceRepositoryPort.findById(id)
+        // Se fusiona sobre lo guardado: un cliente que conozca menos campos
+        // que el modelo no debe borrar el resto sin enterarse.
+        Experience existente = experienceRepositoryPort.findById(id)
                 .orElseThrow(() -> new RuntimeException("Experience not found with id: " + id));
-        experience.setId(id);
-        return experienceRepositoryPort.save(experience);
+        Experience fusionado = PartialMerge.merge(existente, experience);
+        fusionado.setId(id);
+        return experienceRepositoryPort.save(fusionado);
     }
 
     public void deleteExperience(Long id) {

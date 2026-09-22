@@ -1,5 +1,6 @@
 package com.juanbarrios.portfolio.application.usecase;
 
+import com.juanbarrios.portfolio.application.support.PartialMerge;
 import com.juanbarrios.portfolio.domain.model.Project;
 import com.juanbarrios.portfolio.domain.port.out.ProjectRepositoryPort;
 import java.util.List;
@@ -29,10 +30,13 @@ public class ProjectUseCase {
     }
 
     public Project updateProject(Long id, Project project) {
-        projectRepositoryPort.findById(id)
+        // Se fusiona sobre lo guardado: un cliente que conozca menos campos
+        // que el modelo no debe borrar el resto sin enterarse.
+        Project existente = projectRepositoryPort.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found with id: " + id));
-        project.setId(id);
-        return projectRepositoryPort.save(project);
+        Project fusionado = PartialMerge.merge(existente, project);
+        fusionado.setId(id);
+        return projectRepositoryPort.save(fusionado);
     }
 
     public void deleteProject(Long id) {

@@ -1,5 +1,6 @@
 package com.juanbarrios.portfolio.application.usecase;
 
+import com.juanbarrios.portfolio.application.support.PartialMerge;
 import com.juanbarrios.portfolio.domain.model.Skill;
 import com.juanbarrios.portfolio.domain.port.out.SkillRepositoryPort;
 import java.util.List;
@@ -29,10 +30,13 @@ public class SkillUseCase {
     }
 
     public Skill updateSkill(Long id, Skill skill) {
-        skillRepositoryPort.findById(id)
+        // Se fusiona sobre lo guardado: un cliente que conozca menos campos
+        // que el modelo no debe borrar el resto sin enterarse.
+        Skill existente = skillRepositoryPort.findById(id)
                 .orElseThrow(() -> new RuntimeException("Skill not found with id: " + id));
-        skill.setId(id);
-        return skillRepositoryPort.save(skill);
+        Skill fusionado = PartialMerge.merge(existente, skill);
+        fusionado.setId(id);
+        return skillRepositoryPort.save(fusionado);
     }
 
     public void deleteSkill(Long id) {
