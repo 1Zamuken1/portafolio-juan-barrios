@@ -137,6 +137,44 @@ test.describe('tema', () => {
     expect(flojos, `Texto por debajo de 4.5:1 en tema claro:\n  ${flojos.join('\n  ')}`).toEqual([]);
   });
 
+  test('en claro, los acentos se quedan dentro de la banda comoda', () => {
+    // Un minimo sin techo empuja a los extremos. Paso: al llevar los acentos
+    // de Solarized a AA se hundieron en luminosidad sin tocar la saturacion, y
+    // salieron colores pesados que pasaban la metrica y se leian peor. Y el
+    // texto principal quedo a 12:1, que sobre papel crema deslumbra tanto como
+    // 3:1 se desvanece.
+    //
+    // Este test exige las dos cosas: que lleguen a 4,5 y que no pasen de 8.
+    const css = readFileSync(join(RAIZ, 'src', 'app', 'styles', 'theme.css'), 'utf-8');
+    const bloque = /\[data-theme="light"\][^{]*\{([^}]*)\}/.exec(css)![1];
+
+    const lum = (h: string) => {
+      const [r, g, b] = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16))
+        .map((v) => { const n = v / 255; return n <= 0.03928 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4; });
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const contra = (a: string, b: string) => {
+      const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+      return (x + 0.05) / (y + 0.05);
+    };
+    const valor = (n: string) => new RegExp(`${n}\\s*:\\s*(#[0-9A-Fa-f]{6})`).exec(bloque)?.[1];
+
+    const papel = valor('--editor-bg')!;
+    const fuera: string[] = [];
+
+    for (const token of ['--editor-text', '--editor-text-soft', '--editor-text-muted',
+                         '--syntax-mark', '--syntax-heading', '--syntax-bullet',
+                         '--syntax-accent', '--syntax-link', '--md-heading', '--md-link']) {
+      const color = valor(token);
+      if (!color) continue;
+      const r = contra(color, papel);
+      if (r < 4.5) fuera.push(`${token} ${color} = ${r.toFixed(2)} (por debajo de 4.5)`);
+      if (r > 8.5) fuera.push(`${token} ${color} = ${r.toFixed(2)} (por encima de 8.5: deslumbra)`);
+    }
+
+    expect(fuera, `Acentos fuera de la banda 4.5-8.5 sobre ${papel}:\n  ${fuera.join('\n  ')}`).toEqual([]);
+  });
+
   test('en claro, el texto principal se lee sobre el fondo que lo rodea', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => localStorage.setItem('jeb-theme', 'light'));

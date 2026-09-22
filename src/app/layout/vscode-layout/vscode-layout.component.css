@@ -69,12 +69,12 @@
   --vscode-titlebar-bg: #EEE8D5;
   --vscode-statusbar-bg: #EEE8D5;
 
-  --vscode-primary: #8A6600;
+  --vscode-primary: #82641C;
   --vscode-primary-dim: rgba(181, 137, 0, 0.18);
-  --vscode-tertiary: #4F53A0;
+  --vscode-tertiary: #5F54A0;
 
-  --vscode-text-main: #073642;
-  --vscode-text-muted: #4A5E66;
+  --vscode-text-main: #3B4F56;
+  --vscode-text-muted: #4A5F66;
 
   --vscode-border: #E3DCC6;
   --vscode-border-light: rgba(88, 110, 117, 0.2);
@@ -83,9 +83,9 @@
   --vscode-tab-bg-active: #FDF6E3;
   --vscode-tab-bg-inactive: #EEE8D5;
 
-  --tab-ts: #1C6497;
-  --tab-json: #B58900;
-  --tab-md: #1A6B64;
+  --tab-ts: #246AA8;
+  --tab-json: #82641C;
+  --tab-md: #18726F;
 
   --vscode-hover: rgba(7, 54, 66, 0.06);
   --vscode-hover-soft: rgba(7, 54, 66, 0.04);
@@ -97,12 +97,12 @@
   --vscode-overlay: rgba(253, 246, 227, 0.75);
   --vscode-panel-glass: rgba(238, 232, 213, 0.9);
   --vscode-shadow: rgba(7, 54, 66, 0.15);
-  --vscode-tooltip-bg: #073642;
+  --vscode-tooltip-bg: #3B4F56;
   --vscode-tooltip-text: #EEE8D5;
-  --vscode-status-text: #4A5E66;
-  --vscode-branch: #4F53A0;
-  --vscode-ok: #4B5C00;
-  --vscode-ok-dot: #859900;
+  --vscode-status-text: #4A5F66;
+  --vscode-branch: #5F54A0;
+  --vscode-ok: #3D7218;
+  --vscode-ok-dot: #4A8A1E;
 }
 
 /* ---- Top-level layout ---- */

@@ -6,18 +6,18 @@
 /* ---- Light Mode (Azul Claro / Slate) ---- */
 [data-theme="light"] {
   /* ---- Documento del caso de estudio ---- */
-  --md-text: #073642;
-  --md-text-soft: #586E75;
-  --md-text-muted: #4A5E66;
-  --md-heading: #4F53A0;
-  --md-link: #1C6497;
+  --md-text: #3B4F56;
+  --md-text-soft: #4A5F66;
+  --md-text-muted: #546A71;
+  --md-heading: #5F54A0;
+  --md-link: #246AA8;
   --md-code-bg: rgba(7, 54, 66, 0.05);
   --md-code-border: rgba(88, 110, 117, 0.22);
   --md-overlay: rgba(253, 246, 227, 0.35);
-  --md-banner-text: #073642;
+  --md-banner-text: #3B4F56;
   --md-banner-shadow: none;
   --btn-outline-bg: #EEE8D5;
-  --btn-outline-text: #073642;
+  --btn-outline-text: #3B4F56;
   --btn-outline-border: rgba(88, 110, 117, 0.3);
   --btn-outline-hover: #E3DCC6;
 
@@ -32,21 +32,25 @@
      y aqui se volvieron a comprobar sobre la pagina renderizada. */
   --editor-bg: #FDF6E3;
   --editor-surface: #EEE8D5;
-  --editor-text: #073642;
-  --editor-text-soft: #586E75;
-  --editor-text-muted: #4A5E66;
-  --editor-line-number: #93A1A1;
+  --editor-text: #3B4F56;
+  --editor-text-soft: #4A5F66;
+  --editor-text-muted: #546A71;
+  --editor-line-number: #9AA69F;
 
-  --syntax-mark: #1C6497;
-  /* Solarized es un tema de bajo contraste por diseno y su amarillo #B58900
-     da 2,98:1 sobre el papel, por debajo de AA. Como aqui hace de texto en los
-     encabezados, se oscurece hasta 4,89:1. El #B58900 original se conserva
-     donde hace de borde o de fondo, que no tienen ese requisito. */
-  --syntax-heading: #8A6600;
-  --syntax-bullet: #4F53A0;
-  --syntax-fence: #93A1A1;
-  --syntax-accent: #1A6B64;
-  --syntax-link: #4F53A0;
+  --syntax-mark: #246AA8;
+  /* METODO: desaturar, no oscurecer.
+     Solarized es de bajo contraste por diseno y sus acentos rondan 3:1 sobre
+     el papel. Un primer intento los llevo a AA hundiendo la luminosidad sin
+     tocar la saturacion, y el resultado eran colores pesados y embarrados que
+     peleaban entre si: pasaban la metrica y se leian peor. Estos salen de
+     buscar, para cada tono, el color que cae dentro de la BANDA 4,5-6,0 con la
+     saturacion mas alta posible. La banda importa en los dos extremos: 9:1
+     sobre papel crema deslumbra tanto como 3:1 se desvanece. */
+  --syntax-heading: #82641C;
+  --syntax-bullet: #5F54A0;
+  --syntax-fence: #8C9A94;
+  --syntax-accent: #18726F;
+  --syntax-link: #5F54A0;
 
   --card-bg: rgba(181, 137, 0, 0.06);
   --card-border: rgba(88, 110, 117, 0.22);
@@ -58,7 +62,7 @@
   /* El color de marca deja de ser el del texto: Java sobre blanco da 2,13:1.
      Se queda en el borde y el fondo, que lo identifican igual, y el texto
      pasa a --editor-text. */
-  --badge-text: var(--editor-text);
+  --badge-text: #3B4F56;
   --badge-tint: 14%;
   --badge-edge: 55%;
   --badge-hover-shadow: rgba(7, 54, 66, 0.18);

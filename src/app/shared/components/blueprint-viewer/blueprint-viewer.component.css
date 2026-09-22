@@ -27,6 +27,9 @@
   --bp-ink-faint: rgba(255, 255, 255, 0.85);
   --bp-grid-minor: rgba(255, 255, 255, 0.13);
   --bp-grid-major: rgba(255, 255, 255, 0.28);
+  --bp-dim-node: 0.45;
+  --bp-dim-connector: 0.18;
+  --bp-rule: rgba(255, 255, 255, 0.35);
   --bp-connector: rgba(255, 255, 255, 0.85);
   --bp-mark: #ffe082;
   --bp-panel: rgba(7, 62, 74, 0.95);
@@ -53,15 +56,25 @@
    propia hoja y no pegado encima. */
 .blueprint-viewer[data-theme='light'] {
   --bp-paper: #FDF6E3;
-  --bp-paper-deep: #EEE8D5;
-  --bp-ink: #073642;
-  --bp-ink-soft: rgba(7, 54, 66, 0.92);
-  --bp-ink-faint: rgba(7, 54, 66, 0.7);
-  --bp-grid-minor: rgba(181, 137, 0, 0.16);
-  --bp-grid-major: rgba(181, 137, 0, 0.34);
-  --bp-connector: rgba(7, 54, 66, 0.78);
-  --bp-mark: #B58900;
-  --bp-panel: rgba(253, 246, 227, 0.94);
+  --bp-paper-deep: #F3EDDC;
+  --bp-ink: #3B4F56;
+  --bp-ink-soft: rgba(59, 79, 86, 0.9);
+  --bp-ink-faint: rgba(59, 79, 86, 0.68);
+
+  /* La rejilla baja mucho y deja de ser ambar. En ambar competia con el
+     contenido: el ojo la leia como informacion en vez de como papel. */
+  --bp-grid-minor: rgba(96, 110, 104, 0.06);
+  --bp-grid-major: rgba(96, 110, 104, 0.14);
+  --bp-rule: rgba(96, 110, 104, 0.45);
+
+  --bp-connector: rgba(59, 79, 86, 0.82);
+  --bp-mark: #82641C;
+  --bp-panel: rgba(253, 246, 227, 0.96);
+
+  /* Sobre papel hay que atenuar mucho menos: lo que en oscuro es un nodo en
+     segundo plano, aqui desaparece. */
+  --bp-dim-node: 0.75;
+  --bp-dim-connector: 0.45;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -124,27 +137,29 @@
   pointer-events: none;
 }
 
+/* El marco y las coordenadas usan --bp-rule y no --bp-ink: son la regla del
+   plano, no contenido. Con la tinta del texto pesaban igual que los nodos y el
+   ojo tenia que descartarlos uno a uno antes de leer el diagrama. */
 .sheet-border {
   fill: none;
-  stroke: var(--bp-ink);
+  stroke: var(--bp-rule);
   stroke-width: 2;
-  opacity: 0.85;
 }
 
 .sheet-border--inner {
   stroke-width: 1;
-  opacity: 0.4;
+  opacity: 0.5;
 }
 
 .sheet-coord {
-  fill: var(--bp-ink-soft);
+  fill: var(--bp-rule);
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-size: 15px;
   letter-spacing: 0.08em;
 }
 
 .sheet-tick {
-  stroke: var(--bp-ink);
+  stroke: var(--bp-rule);
   stroke-width: 1;
   opacity: 0.5;
 }
@@ -188,7 +203,7 @@
 /* Atenuado, no transparente: por debajo de ~0.4 la tarjeta se vuelve cristal
    y deja ver lo que haya detras, que es justo lo que se quiere evitar. */
 .node--dimmed {
-  opacity: 0.45;
+  opacity: var(--bp-dim-node);
   transition: opacity 0.3s ease;
 }
 
@@ -267,7 +282,7 @@
 }
 
 .connector--dimmed {
-  opacity: 0.18;
+  opacity: var(--bp-dim-connector);
 }
 
 .arrow-head {
