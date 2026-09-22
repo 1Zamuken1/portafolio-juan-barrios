@@ -5,6 +5,18 @@
 
 /* ---- Light Mode (Azul Claro / Slate) ---- */
 [data-theme="light"] {
+  /* ---- Banner del caso de estudio ----
+     La captura del proyecto es TEXTURA, no ilustracion. En oscuro el velo la
+     aplasta y funciona; en claro, una captura de una interfaz clara detras de
+     texto claro es ilegible por mucho que se ajuste el degradado. Aqui la
+     imagen baja al 13% y el banner se apoya en una superficie solida un tono
+     mas profunda que el papel, que es lo que da la separacion visual que
+     faltaba. Y la tarjeta de datos pasa a ser opaca: al 5% de tinte, la
+     captura se veia a traves de los propios datos. */
+  --banner-bg: #F3EDDC;
+  --banner-img-opacity: 0.13;
+  --panel-solid: #FFFDF7;
+
   /* ---- Documento del caso de estudio ---- */
   --md-text: #3B4F56;
   --md-text-soft: #4A5F66;
@@ -144,6 +156,11 @@
 
 /* ---- Dark Mode (Default) ---- */
 [data-theme="dark"] {
+  /* ---- Banner del caso de estudio ---- */
+  --banner-bg: #1E1E3F;
+  --banner-img-opacity: 1;
+  --panel-solid: rgba(15, 23, 42, 0.4);
+
   /* ---- Documento del caso de estudio ---- */
   --md-text: #CDD9E5;
   --md-text-soft: #ADBAC7;

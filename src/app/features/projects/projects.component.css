@@ -51,6 +51,7 @@
   padding: 3rem;
   border-bottom: 1px solid var(--md-code-border);
   overflow: hidden; /* Prevent background image from bleeding */
+  background: var(--banner-bg);
 }
 
 .banner-img {
@@ -59,20 +60,19 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  opacity: var(--banner-img-opacity);
   z-index: 1;
 }
 
 .banner-overlay {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  /* El velo se concentra abajo, donde va el texto, y se retira arriba para
-     que la imagen del proyecto se vea. Con una parada al 40% y mucha opacidad
-     --que es como estaba-- en tema claro la portada desaparecia del todo. */
+  /* El degradado solo asienta el texto sobre el borde inferior. En claro la
+     imagen ya viene al 13%, asi que no hace falta taparla mas. */
   background: linear-gradient(to top,
-    var(--vscode-bg) 0%,
-    color-mix(in srgb, var(--vscode-bg) 92%, transparent) 22%,
-    var(--md-overlay) 55%,
-    color-mix(in srgb, var(--vscode-bg) 8%, transparent) 100%);
+    var(--banner-bg) 0%,
+    color-mix(in srgb, var(--banner-bg) 80%, transparent) 30%,
+    transparent 70%);
   z-index: 2;
   backdrop-filter: blur(2px);
 }
@@ -122,7 +122,7 @@
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 0.75rem;
   margin-bottom: 1.5rem;
-  background: var(--md-code-bg);
+  background: var(--panel-solid);
   backdrop-filter: blur(8px);
   border: 1px solid var(--md-code-border);
   border-radius: 8px;
