@@ -59,9 +59,7 @@
             "server": "src/main.server.ts",
             "outputMode": "static",
             "prerender": true,
-            "polyfills": [
-              "zone.js"
-            ],
+            "polyfills": [],
             "tsConfig": "tsconfig.app.json",
             "assets": [
               {

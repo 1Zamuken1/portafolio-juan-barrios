@@ -1,8 +1,17 @@
 name: CI
 
 on:
+  # Cualquier rama de trabajo, en vez de una lista de prefijos.
+  # La lista anterior era [develop, feat/**, fix/**, chore/**] y se quedaba
+  # corta en silencio: una rama perf/** no disparaba nada y el push parecia
+  # verde por no haber fallado nadie. Los prefijos convencionales son mas de
+  # cuatro --perf, refactor, docs, test, style-- y anadirlos de uno en uno
+  # solo retrasa la proxima vez que falte alguno.
+  #
+  # master se excluye porque ahi solo se llega por pull request, y ese caso
+  # ya lo cubre el disparador de abajo.
   push:
-    branches: [develop, 'feat/**', 'fix/**', 'chore/**']
+    branches-ignore: [master]
   pull_request:
     branches: [master, develop]
 
