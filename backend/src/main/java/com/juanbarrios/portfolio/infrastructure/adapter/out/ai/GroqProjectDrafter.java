@@ -273,16 +273,6 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
     }
 
     /**
-     * Saca el mensaje del error de Groq y, si es de los conocidos, dice que
-     * hacer.
-     *
-     * Los modelos de Groq se retiran cada pocos meses y el sintoma es un 404
-     * seco. Paso con llama-3.3-70b-versatile, retirado el 16 de agosto de 2026
-     * para los planes gratuito y developer, que era el que venia por defecto
-     * aqui. Sin esta pista el 404 no dice nada y se busca en el sitio
-     * equivocado: la clave, la URL, el despliegue.
-     */
-    /**
      * Distingue "este modelo ya no existe" de cualquier otro 404.
      *
      * Groq lo marca con {@code code: model_not_found}. Se mira tambien el texto
@@ -296,14 +286,23 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
                 || (texto.contains("model") && texto.contains("does not exist"));
     }
 
+    /**
+     * Saca el mensaje del error de Groq y, si el estado es de los conocidos,
+     * dice que hacer.
+     *
+     * Sin esto un fallo salia como el nombre de la excepcion a secas y
+     * cualquier causa se veia igual: el mismo error que el 403 vacio de
+     * /error que este proyecto ya habia pagado una vez.
+     */
     static String pista(int estado, String cuerpo) {
         String mensaje = mensajeDeGroq(cuerpo);
 
         if (estado == 404) {
-            return mensaje + "\n\nUn 404 de Groq casi siempre es un modelo que ya no existe. "
-                    + "Los retiran cada pocos meses; la lista vigente esta en "
-                    + "https://console.groq.com/docs/deprecations. Se cambia con la variable "
-                    + "GROQ_MODEL, sin tocar codigo.";
+            // Un modelo retirado no llega hasta aqui: esModeloRetirado() lo
+            // desvia antes para probar el siguiente de la lista. Un 404 que
+            // llegue a este punto es otra cosa, casi siempre la URL base.
+            return mensaje + "\n\nLa ruta no existe. Revisa GROQ_BASE_URL: "
+                    + "deberia ser https://api.groq.com/openai/v1.";
         }
         if (estado == 401) {
             return mensaje + "\n\nRevisa GROQ_API_KEY en el dashboard de Render.";
