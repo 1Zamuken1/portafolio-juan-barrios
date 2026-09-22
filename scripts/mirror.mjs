@@ -2,8 +2,9 @@
 /**
  * Espejo entre el backend y los JSON que consume el sitio publico.
  *
- *   node scripts/mirror.mjs push   JSON -> API   (siembra la base)
- *   node scripts/mirror.mjs pull   API -> JSON   (refresca el espejo)
+ *   node scripts/mirror.mjs push     JSON -> API   (siembra la base)
+ *   node scripts/mirror.mjs pull     API -> JSON   (refresca el espejo)
+ *   node scripts/mirror.mjs publish  pull + commit + push a la rama actual
  *
  * El sitio publico nunca habla con el backend: lee estos JSON, que se
  * compilan dentro del bundle. Por eso el portafolio siguio en pie cuando la
@@ -19,6 +20,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createInterface } from 'node:readline';
+import { execFileSync } from 'node:child_process';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DATOS = join(RAIZ, 'src', 'assets', 'data');
@@ -112,6 +114,21 @@ function preguntarOculto(etiqueta) {
       rl.output.write('\n');
       rl.close();
       resolve(limpiar(valor));
+    });
+  });
+}
+
+/** Pregunta mostrando lo que se teclea, para confirmaciones. */
+function preguntar(etiqueta) {
+  return new Promise((resolve, reject) => {
+    if (!process.stdin.isTTY) {
+      reject(new Error('No hay terminal interactiva para confirmar la publicacion.'));
+      return;
+    }
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    rl.question(etiqueta, (valor) => {
+      rl.close();
+      resolve(valor);
     });
   });
 }
@@ -309,17 +326,74 @@ async function pull() {
   console.log('\nRevisa el diff con git antes de commitear.');
 }
 
+// ── publicar ─────────────────────────────────────────────────────────────────
+
+const git = (...args) => execFileSync('git', args, { cwd: RAIZ, encoding: 'utf-8' }).trim();
+
+/**
+ * Vuelca y deja el cambio commiteado y empujado, listo para abrir el PR.
+ *
+ * El PR se mantiene manual a proposito: es el diff revisable lo que permite
+ * ver que se publica, y es lo que salvo el contenido las dos veces que el
+ * panel de administracion lo borro. Automatizar hasta el merge quitaria
+ * justamente la red.
+ */
+async function publish() {
+  await pull();
+
+  git('add', 'src/assets/data');
+  const pendiente = git('diff', '--cached', '--name-only');
+  if (!pendiente) {
+    console.log('\nNada que publicar: el espejo ya coincide con la base.');
+    return;
+  }
+
+  console.log('\nCambios a publicar:');
+  console.log(git('diff', '--cached', '--stat'));
+  console.log('\n' + git('diff', '--cached'));
+
+  // Se pregunta antes de commitear: el volcado recoge fielmente lo que hay en
+  // la base, pero lo que hay puede estar mal. Ocurrio de verdad: el formulario
+  // del panel partio unas viñetas por sus comas y el volcado lo publico tal
+  // cual. Ver el diff antes de aceptar es justamente la red de este flujo.
+  let respuesta;
+  try {
+    respuesta = await preguntar('\n¿Publicar estos cambios? [s/N]: ');
+  } catch (e) {
+    // Sin terminal no se puede confirmar: se deshace la preparacion para no
+    // dejar el repositorio a medias.
+    git('reset', 'src/assets/data');
+    throw e;
+  }
+
+  if (!/^s(i)?$/i.test(respuesta.trim())) {
+    git('reset', 'src/assets/data');
+    console.log('Cancelado. Los ficheros conservan los cambios sin commitear; ' +
+                'usa "git checkout -- src/assets/data" para descartarlos.');
+    return;
+  }
+
+  git('commit', '-m', 'chore(data): actualizar el espejo desde el backend');
+  const rama = git('rev-parse', '--abbrev-ref', 'HEAD');
+  git('push', 'origin', rama);
+
+  console.log(`\nCommiteado y empujado a ${rama}.`);
+  console.log('Falta abrir el pull request hacia master para que Vercel despliegue:');
+  console.log(`  https://github.com/1Zamuken1/portafolio-juan-barrios/compare/master...${rama}?expand=1`);
+}
+
 // ── entrada ──────────────────────────────────────────────────────────────────
 
+const modos = { push, pull, publish };
 const modo = process.argv[2];
-if (modo !== 'push' && modo !== 'pull') {
-  console.error('Uso: node scripts/mirror.mjs <push|pull>');
+if (!modos[modo]) {
+  console.error('Uso: node scripts/mirror.mjs <push|pull|publish>');
   process.exit(1);
 }
 
 console.log(`Espejo ${modo} contra ${API}`);
 try {
-  await (modo === 'push' ? push() : pull());
+  await modos[modo]();
 } catch (e) {
   console.error(`\nError: ${e.message}`);
   process.exit(1);
