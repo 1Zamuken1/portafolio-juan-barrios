@@ -10,7 +10,7 @@
   </div>
 
   <!-- Scrollable document content -->
-  <div class="doc-body markdown-body">
+  <div class="doc-body markdown-body" #cuerpo>
 
     <!-- 1. Presentación -->
     <h1>Hola, soy Juan Barrios</h1>
@@ -40,14 +40,41 @@
     </div>
 
     <!-- 2. Sobre mí -->
-    <h2>Sobre mí</h2>
+    <h2 id="sobre-mi">Sobre mí</h2>
     <p>Soy Tecnólogo en Análisis y Desarrollo de Software orientado al desarrollo backend y a la construcción de aplicaciones web.</p>
     <p>Mi principal interés está en Java y Spring Boot, especialmente en el desarrollo de APIs REST, lógica de negocio, autenticación, persistencia de datos y diseño de aplicaciones mantenibles.</p>
     <p>También he trabajado con Python y Django, Angular y diferentes sistemas de bases de datos, lo que me permite comprender una aplicación desde el backend hasta su integración con el frontend.</p>
     <p>En mis proyectos procuro aplicar buenas prácticas de desarrollo, arquitectura organizada, control de versiones y una separación clara de responsabilidades. Me interesa especialmente entender cómo funciona una solución completa y encontrar formas de hacerla más mantenible y fácil de evolucionar.</p>
 
-    <!-- 3. Tecnologías y herramientas -->
-    <h2>Tecnologías y herramientas</h2>
+    <!-- 3. Experiencia -->
+    <h2 id="experience">Experiencia</h2>
+
+    @for (exp of experience(); track exp.id) {
+      <div class="timeline-entry">
+        <h3>{{ exp.role }} · {{ exp.company }}</h3>
+        <p class="timeline-period">{{ exp.period }}</p>
+        <p>{{ exp.description }}</p>
+
+        @if (exp.achievements?.length) {
+          <ul>
+            @for (logro of exp.achievements; track logro) {
+              <li>{{ logro }}</li>
+            }
+          </ul>
+        }
+
+        @if (exp.technologies?.length) {
+          <p class="timeline-tech">
+            @for (tec of exp.technologies; track tec) {
+              <span class="tech-tag">{{ tec }}</span>
+            }
+          </p>
+        }
+      </div>
+    }
+
+    <!-- 4. Tecnologías y herramientas -->
+    <h2 id="stack">Tecnologías y herramientas</h2>
     
     @for (cat of categories(); track cat) {
       <h3>{{ cat }}</h3>
@@ -65,8 +92,8 @@
       </div>
     }
 
-    <!-- 4. Proyectos destacados -->
-    <h2>Proyectos destacados</h2>
+    <!-- 5. Proyectos destacados -->
+    <h2 id="proyectos">Proyectos destacados</h2>
     
     <div class="projects-list">
       @for (project of projects(); track project.id) {
@@ -98,16 +125,16 @@
       }
     </div>
 
-    <!-- 5. Actualmente -->
-    <h2>Actualmente</h2>
+    <!-- 6. Actualmente -->
+    <h2 id="actualmente">Actualmente</h2>
     <ul>
       <li>Buscando una oportunidad de etapa productiva en desarrollo de software.</li>
       <li>Enfocado principalmente en Java y Spring Boot.</li>
       <li>Continuando mi formación en desarrollo backend, arquitectura y buenas prácticas de software.</li>
     </ul>
 
-    <!-- 6. Contacto -->
-    <h2>Contacto</h2>
+    <!-- 7. Contacto -->
+    <h2 id="contacto">Contacto</h2>
     <p>Estoy disponible para oportunidades de etapa productiva y proyectos relacionados con desarrollo de software.</p>
     <ul>
       <li><a href="mailto:juanbarrios072@gmail.com">juanbarrios072@gmail.com</a></li>

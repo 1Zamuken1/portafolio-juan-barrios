@@ -227,7 +227,7 @@
           <i class="pi pi-bars"></i>
         </button>
 
-        <div class="tabs-scroll-container">
+        <div class="tabs-scroll-container" #tiraDePestanas (wheel)="desplazarPestanas($event)">
           @for (tab of openTabs(); track tab.id) {
             <div class="tab" 
                  [class.active]="activeTabId() === tab.id"

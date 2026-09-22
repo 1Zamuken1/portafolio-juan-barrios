@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, effect, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterOutlet, RouterLink, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { ThemeService } from '../../core/services/theme.service';
@@ -26,6 +26,46 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
+  @ViewChild('tiraDePestanas') tiraDePestanas?: ElementRef<HTMLElement>;
+
+  constructor() {
+    // La pestana activa siempre visible. Al navegar desde el explorador, la
+    // pestana nueva puede quedar fuera del borde derecho y parecer que no
+    // paso nada.
+    effect(() => {
+      const activa = this.activeTabId();
+      if (!this.isBrowser || !activa) return;
+      queueMicrotask(() => {
+        this.tiraDePestanas?.nativeElement
+          .querySelector('.tab.active')
+          ?.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' });
+      });
+    });
+  }
+
+  /**
+   * La rueda del raton desplaza la tira en horizontal, como en VSCode.
+   *
+   * Un raton normal solo genera deltaY, asi que sobre una tira horizontal no
+   * haria nada: habria que arrastrar la barra, que ademas esta oculta. Se
+   * convierte el desplazamiento vertical en horizontal y se consume el evento
+   * solo si de verdad queda recorrido, para no secuestrar el scroll de la
+   * pagina cuando la tira ya esta al final.
+   */
+  desplazarPestanas(evento: WheelEvent): void {
+    const tira = this.tiraDePestanas?.nativeElement;
+    if (!tira || tira.scrollWidth <= tira.clientWidth) return;
+
+    const cantidad = Math.abs(evento.deltaY) > Math.abs(evento.deltaX)
+      ? evento.deltaY
+      : evento.deltaX;
+    if (!cantidad) return;
+
+    const antes = tira.scrollLeft;
+    tira.scrollLeft += cantidad;
+    if (tira.scrollLeft !== antes) evento.preventDefault();
+  }
 
   /**
    * El interruptor de tema vive aqui porque la barra de actividad es lo unico
