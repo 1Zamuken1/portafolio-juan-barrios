@@ -65,7 +65,14 @@
 .banner-overlay {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(to top, var(--vscode-bg) 0%, var(--md-overlay) 40%, color-mix(in srgb, var(--vscode-bg) 55%, transparent) 100%);
+  /* El velo se concentra abajo, donde va el texto, y se retira arriba para
+     que la imagen del proyecto se vea. Con una parada al 40% y mucha opacidad
+     --que es como estaba-- en tema claro la portada desaparecia del todo. */
+  background: linear-gradient(to top,
+    var(--vscode-bg) 0%,
+    color-mix(in srgb, var(--vscode-bg) 92%, transparent) 22%,
+    var(--md-overlay) 55%,
+    color-mix(in srgb, var(--vscode-bg) 8%, transparent) 100%);
   z-index: 2;
   backdrop-filter: blur(2px);
 }
