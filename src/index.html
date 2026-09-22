@@ -41,8 +41,13 @@
        unas decenas de iconos de los 1201 que trae.
 
        Tambien se acabo el devicon@latest sin fijar: cualquier cambio que
-       publicaran entraba en el sitio sin tocar nada aqui. -->
-  <link rel="preload" href="fonts/devicon-subset.woff2" as="font" type="font/woff2" crossorigin>
+       publicaran entraba en el sitio sin tocar nada aqui.
+
+       NO se precarga la fuente. Se probo y costaba 60 ms de First Contentful
+       Paint: un preload es de prioridad alta y compite con el CSS y el JS
+       criticos. Como son 13,6 kB y el CSS de aqui al lado ya la referencia,
+       llega igual de rapido sin robarle sitio al primer pintado. Medido con
+       `pnpm run medir`, bloqueando esa peticion para comparar. -->
   <link rel="stylesheet" href="fonts/iconos.css">
 </head>
 <body>

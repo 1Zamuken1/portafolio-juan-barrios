@@ -12,7 +12,8 @@
     "mirror:pull": "node scripts/mirror.mjs pull",
     "mirror:publish": "node scripts/mirror.mjs publish",
     "draft": "node scripts/draft.mjs",
-    "iconos": "node scripts/subset-iconos.mjs"
+    "iconos": "node scripts/subset-iconos.mjs",
+    "medir": "node scripts/medir.mjs"
   },
   "private": true,
   "packageManager": "pnpm@9.12.0",
