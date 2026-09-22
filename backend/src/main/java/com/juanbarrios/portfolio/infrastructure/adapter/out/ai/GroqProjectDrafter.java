@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.time.Duration;
 import java.util.Map;
@@ -24,10 +25,20 @@ import java.util.Map;
  *
  * <p><b>Sobre el formato de respuesta.</b> Groq expone una API compatible con
  * la de OpenAI y admite {@code response_format: json_object}, que garantiza
- * JSON sintacticamente valido. Lo que NO garantiza es que tenga los campos que
- * pedimos ni que esten rellenos: el modo de esquema estricto solo esta
- * disponible en unos pocos modelos y no en el que usamos por defecto. Por eso
- * el caso de uso valida lo que sale de aqui.
+ * JSON sintacticamente valido pero no que traiga los campos que pedimos ni que
+ * esten rellenos. Por eso el caso de uso valida lo que sale de aqui.
+ *
+ * <p>El modo de esquema estricto, que si lo garantizaria, solo esta en algunos
+ * modelos --entre ellos los gpt-oss que ahora usamos por defecto--. No se usa
+ * porque {@code GROQ_MODEL} es configurable: atar el adaptador a una capacidad
+ * que el modelo configurado puede no tener cambiaria un fallo claro por uno
+ * raro. La validacion del caso de uso vale para cualquier modelo.
+ *
+ * <p><b>Sobre el modelo por defecto.</b> Se cambia sin tocar codigo, con
+ * {@code GROQ_MODEL}, porque Groq retira modelos cada pocos meses y el sintoma
+ * es un 404. Ya paso: el primer defecto de esta clase fue
+ * {@code llama-3.3-70b-versatile}, retirado el 16 de agosto de 2026 para los
+ * planes gratuito y developer.
  *
  * <p><b>Sobre la clave.</b> Si no esta definida, este adaptador falla al
  * llamarlo, no al arrancar. Es deliberado y distinto de lo que hace
@@ -54,15 +65,15 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
 
     public GroqProjectDrafter(
             @Value("${groq.api-key:}") String apiKey,
-            @Value("${groq.model:llama-3.3-70b-versatile}") String modelo,
+            @Value("${groq.model:openai/gpt-oss-120b}") String modelo,
             @Value("${groq.base-url:https://api.groq.com/openai/v1}") String baseUrl) {
 
         this.apiKey = apiKey == null ? "" : apiKey.trim();
         this.modelo = modelo;
 
-        // Un modelo de 70B redactando ~2000 caracteres tarda bastante mas que
-        // una peticion normal, pero tampoco puede quedarse colgado para siempre
-        // ocupando un hilo del servidor.
+        // Redactar ~2000 caracteres tarda bastante mas que una peticion
+        // normal, pero tampoco puede quedarse colgado para siempre ocupando un
+        // hilo del servidor.
         SimpleClientHttpRequestFactory fabrica = new SimpleClientHttpRequestFactory();
         fabrica.setConnectTimeout(Duration.ofSeconds(10));
         fabrica.setReadTimeout(Duration.ofSeconds(90));
@@ -105,10 +116,19 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
                     .body(peticion)
                     .retrieve()
                     .body(String.class);
+        } catch (RestClientResponseException e) {
+            // El cuerpo del error SI se incluye. Antes se ocultaba por si
+            // llevara dentro la cabecera de autorizacion, y eso fue un error:
+            // Groq responde un objeto JSON de error que no repite nada de la
+            // peticion, y sin el un 404 sale como "NotFound" a secas.
+            // Indistinguible de una URL mal puesta, de una ruta que no existe
+            // o de un modelo retirado, que es justo lo que paso. Es el mismo
+            // fallo que el 403 vacio de /error: esconder el motivo hace que
+            // cualquier causa se vea igual.
+            throw new DrafterNoDisponibleException(
+                    "Groq respondio " + e.getStatusCode().value() + ": "
+                            + pista(e.getStatusCode().value(), e.getResponseBodyAsString()), e);
         } catch (Exception e) {
-            // Se envuelve sin incluir el mensaje original tal cual: las
-            // respuestas de error de una API pueden llevar dentro la cabecera
-            // de autorizacion de la peticion que fallo.
             throw new DrafterNoDisponibleException(
                     "No se pudo contactar con Groq: " + e.getClass().getSimpleName(), e);
         }
@@ -138,6 +158,48 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
             throw new DrafterNoDisponibleException(
                     "El modelo no devolvio un borrador con la forma esperada.", e);
         }
+    }
+
+    /**
+     * Saca el mensaje del error de Groq y, si es de los conocidos, dice que
+     * hacer.
+     *
+     * Los modelos de Groq se retiran cada pocos meses y el sintoma es un 404
+     * seco. Paso con llama-3.3-70b-versatile, retirado el 16 de agosto de 2026
+     * para los planes gratuito y developer, que era el que venia por defecto
+     * aqui. Sin esta pista el 404 no dice nada y se busca en el sitio
+     * equivocado: la clave, la URL, el despliegue.
+     */
+    static String pista(int estado, String cuerpo) {
+        String mensaje = mensajeDeGroq(cuerpo);
+
+        if (estado == 404) {
+            return mensaje + "\n\nUn 404 de Groq casi siempre es un modelo que ya no existe. "
+                    + "Los retiran cada pocos meses; la lista vigente esta en "
+                    + "https://console.groq.com/docs/deprecations. Se cambia con la variable "
+                    + "GROQ_MODEL, sin tocar codigo.";
+        }
+        if (estado == 401) {
+            return mensaje + "\n\nRevisa GROQ_API_KEY en el dashboard de Render.";
+        }
+        if (estado == 429) {
+            return mensaje + "\n\nSe agoto la cuota o el limite por minuto. Reintenta mas tarde.";
+        }
+        return mensaje;
+    }
+
+    /** El campo error.message de la respuesta, o el cuerpo crudo si no lo trae. */
+    private static String mensajeDeGroq(String cuerpo) {
+        if (cuerpo == null || cuerpo.isBlank()) return "(sin cuerpo en la respuesta)";
+        try {
+            JsonNode mensaje = new ObjectMapper().readTree(cuerpo).path("error").path("message");
+            if (!mensaje.isMissingNode() && !mensaje.asText().isBlank()) {
+                return mensaje.asText();
+            }
+        } catch (Exception ignorado) {
+            // No era JSON. Se devuelve el cuerpo tal cual, recortado.
+        }
+        return cuerpo.length() > 500 ? cuerpo.substring(0, 500) + "..." : cuerpo;
     }
 
     /**
