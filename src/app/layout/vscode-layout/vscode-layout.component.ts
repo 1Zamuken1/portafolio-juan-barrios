@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterOutlet, RouterLink, NavigationEnd, ActivatedRoute } from '@angular/router';
+import { ThemeService } from '../../core/services/theme.service';
 import { DataService } from '../../core/services/data.service';
 import { Project } from '../../shared/models/project.model';
 import { filter, Subscription } from 'rxjs';
@@ -25,6 +26,14 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
+  /**
+   * El interruptor de tema vive aqui porque la barra de actividad es lo unico
+   * presente en todas las rutas publicas. ThemeService ya existia y ya
+   * persistia la eleccion; lo que faltaba era quien lo llamara: toggleTheme()
+   * no tenia un solo uso en todo el proyecto desde que se quito el navbar.
+   */
+  protected tema = inject(ThemeService);
   private routerSub?: Subscription;
   private fragmentSub?: Subscription;
 

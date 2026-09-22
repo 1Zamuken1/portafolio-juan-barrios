@@ -24,7 +24,7 @@
   padding: 0 1rem 0 0.5rem;
   gap: 0;
   min-width: 3rem;
-  color: rgba(100, 120, 160, 0.35);
+  color: var(--editor-line-number);
   font-size: 0.82rem;
   line-height: 1.6rem;
   user-select: none;
@@ -61,36 +61,36 @@
 .md-h1 {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #FFFFFF;
+  color: var(--editor-text);
   letter-spacing: -0.01em;
 }
 
 /* Las almohadillas son decoracion: viven en CSS y no en el texto, para que
    los buscadores y los lectores de pantalla lean el encabezado limpio. */
-.md-h1::before { content: '# '; color: #569cd6; }
-.md-h2::before { content: '## '; color: #569cd6; }
-.md-h3::before { content: '### '; color: #569cd6; }
+.md-h1::before { content: '# '; color: var(--syntax-mark); }
+.md-h2::before { content: '## '; color: var(--syntax-mark); }
+.md-h3::before { content: '### '; color: var(--syntax-mark); }
 
 .md-h2 {
   font-size: 1.15rem;
   font-weight: 600;
-  color: #FAD000;
+  color: var(--syntax-heading);
 }
 
 /* ---- Text ---- */
 .md-text {
-  color: #A599E9;
+  color: var(--editor-text-soft);
   font-size: 0.88rem;
 }
 
 .md-bold {
-  color: #FFFFFF;
+  color: var(--editor-text);
   font-weight: 600;
 }
 
 /* ---- List items ---- */
 .md-list-item {
-  color: #A599E9;
+  color: var(--editor-text-soft);
   font-size: 0.88rem;
   padding-left: 1.25rem;
   position: relative;
@@ -100,12 +100,12 @@
   content: '▸';
   position: absolute;
   left: 0;
-  color: #A855F7;
+  color: var(--syntax-bullet);
 }
 
 /* ---- Code fence ---- */
 .md-code-fence {
-  color: rgba(86, 156, 214, 0.5);
+  color: var(--syntax-fence);
   font-size: 0.78rem;
 }
 
@@ -147,15 +147,32 @@
 
 .badge:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px var(--badge-hover-shadow);
 }
 
-.badge-java    { background: rgba(248,152,32,0.12); border-color: rgba(248,152,32,0.4); color: #f89820; }
-.badge-spring  { background: rgba(109,179,63,0.12);  border-color: rgba(109,179,63,0.4);  color: #6db33f; }
-.badge-python  { background: rgba(70,130,180,0.12);  border-color: rgba(70,130,180,0.4);  color: #4682b4; }
-.badge-angular { background: rgba(221,0,49,0.12);    border-color: rgba(221,0,49,0.4);    color: #dd0031; }
-.badge-docker  { background: rgba(36,150,237,0.12);  border-color: rgba(36,150,237,0.4);  color: #2496ed; }
-.badge-available { background: rgba(74,222,128,0.12); border-color: rgba(74,222,128,0.4); color: #4ade80; }
+/* El color de marca no cambia con el tema: el naranja de Java es de Java.
+   Lo que cambia es su papel. En oscuro tiene contraste de sobra y hace de
+   texto; en claro da 2,13:1 sobre blanco, asi que se queda en el borde y el
+   fondo --que identifican igual de bien-- y el texto pasa a --editor-text.
+   Lo resuelve --badge-text, que cada tema define a su manera. */
+.badge-java      { --marca: #f89820; }
+.badge-spring    { --marca: #6db33f; }
+.badge-python    { --marca: #4682b4; }
+.badge-angular   { --marca: #dd0031; }
+.badge-docker    { --marca: #2496ed; }
+.badge-available { --marca: #4ade80; }
+
+.badge[class*="badge-"] {
+  background: color-mix(in srgb, var(--marca) var(--badge-tint), transparent);
+  border-color: color-mix(in srgb, var(--marca) var(--badge-edge), transparent);
+  color: var(--badge-text);
+}
+
+/* El icono conserva siempre el color de la marca, tambien en claro: es el
+   que hace reconocible el badge de un vistazo. */
+.badge[class*="badge-"] i {
+  color: var(--marca);
+}
 
 /* ================================================
    TECH STACK GRID
@@ -168,16 +185,16 @@
 }
 
 .stack-category {
-  background: rgba(30, 30, 63, 0.6);
-  border: 1px solid rgba(168, 85, 247, 0.15);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: 0.5rem;
   padding: 0.75rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .stack-category:hover {
-  border-color: rgba(168, 85, 247, 0.35);
-  box-shadow: 0 0 16px rgba(168, 85, 247, 0.08);
+  border-color: var(--card-border-hover);
+  box-shadow: 0 0 16px var(--card-glow);
 }
 
 .stack-category-header {
@@ -188,7 +205,7 @@
   font-family: 'Inter', sans-serif;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #FAD000;
+  color: var(--syntax-heading);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -209,19 +226,19 @@
   align-items: center;
   gap: 0.35rem;
   padding: 0.25rem 0.6rem;
-  background: rgba(165, 153, 233, 0.08);
-  border: 1px solid rgba(165, 153, 233, 0.15);
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
   border-radius: 0.35rem;
   font-size: 0.75rem;
   font-family: 'JetBrains Mono', monospace;
-  color: #c5c0e8;
+  color: var(--editor-text-muted);
   transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
 }
 
 .stack-chip:hover {
   transform: translateY(-1px);
-  background: rgba(165, 153, 233, 0.15);
-  border-color: rgba(165, 153, 233, 0.3);
+  background: var(--chip-bg);
+  border-color: var(--card-border-hover);
 }
 
 .stack-chip i {
@@ -231,12 +248,12 @@
 /* Icons that are .colored get their natural brand color */
 /* Non-colored icons (Django, SQLite, CI/CD) get a soft white */
 .stack-chip i:not(.colored) {
-  color: rgba(200, 200, 220, 0.7);
+  color: var(--editor-text-muted);
 }
 
 /* Brightness boost for colored devicons in the dark theme */
 .stack-chip i.colored {
-  filter: brightness(1.2);
+  filter: brightness(var(--icono-brillo));
 }
 
 @media (max-width: 600px) {
@@ -260,28 +277,28 @@
   align-items: center;
   gap: 0.35rem;
   font-size: 0.82rem;
-  color: #9EFFFF;
+  color: var(--syntax-accent);
   text-decoration: none;
   padding: 0.3rem 0.7rem;
-  border: 1px solid rgba(158, 255, 255, 0.25);
+  border: 1px solid color-mix(in srgb, var(--syntax-accent) 35%, transparent);
   border-radius: 0.4rem;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 
 .md-link:hover {
-  color: #FFFFFF;
-  border-color: rgba(158, 255, 255, 0.5);
-  background: rgba(158, 255, 255, 0.1);
+  color: var(--editor-text);
+  border-color: color-mix(in srgb, var(--syntax-accent) 65%, transparent);
+  background: color-mix(in srgb, var(--syntax-accent) 12%, transparent);
 }
 
 .md-link-primary {
-  color: #FAD000;
-  border-color: rgba(250, 208, 0, 0.3);
-  background: rgba(250, 208, 0, 0.08);
+  color: var(--syntax-heading);
+  border-color: color-mix(in srgb, var(--syntax-heading) 40%, transparent);
+  background: color-mix(in srgb, var(--syntax-heading) 10%, transparent);
 }
 
 .md-link-primary:hover {
-  color: #FFFFFF;
-  border-color: rgba(250, 208, 0, 0.6);
-  background: rgba(250, 208, 0, 0.15);
+  color: var(--editor-text);
+  border-color: color-mix(in srgb, var(--syntax-heading) 70%, transparent);
+  background: color-mix(in srgb, var(--syntax-heading) 18%, transparent);
 }
