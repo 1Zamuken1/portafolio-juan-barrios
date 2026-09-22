@@ -2,6 +2,8 @@
 
 Esta es la wiki interna y conjunto de reglas del proyecto. **Para cualquier agente de IA que lea esto:** Analiza esta arquitectura antes de proponer cambios o crear nuevo código.
 
+> **Dos documentos, dos propósitos.** Este describe **cómo funciona** el proyecto: arquitectura, convenciones y reglas. [`ESTADO.md`](./ESTADO.md) describe **dónde está**: qué hay desplegado, qué falta, qué incidentes ocurrieron y qué propuestas quedaron acordadas sin construir. Si vas a retomar el trabajo, empieza por ahí.
+
 ## 0. Agent Skills Installed
 Skills en `.agents/skills/` que este agente debe cargar según la tarea:
 
@@ -444,24 +446,6 @@ El backend modela los 28 campos, no solo los 11 de antes. Los que tienen forma d
 `MirrorRoundTripTest` recorre el circuito completo sin HTTP con el `projects.json` real: lo deserializa, lo guarda, lo relee y lo vuelve a serializar, comparando campo a campo. Como Jackson falla ante campos desconocidos, que el test pase demuestra ademas que el dominio cubre todo lo que hay en el fichero. **Es lo que impide que una sincronizacion borre en silencio los diagramas**, y hoy ese JSON es la unica copia completa que queda del contenido.
 
 > **La base de datos es externa.** Las gratuitas de Render se eliminan a los 30 dias. Se usa Neon con las tres variables `SPRING_DATASOURCE_*` definidas en el dashboard, y **conexion directa, no el pooler**: Hibernate ejecuta DDL al arrancar con `ddl-auto=update`, y el pooler en modo transaccion lo rompe.
-
-### Ideas pendientes
-
-**Publicar desde el panel con un boton.** Hoy llevar un cambio del panel al sitio publico son tres pasos manuales:
-
-```bash
-node scripts/mirror.mjs pull
-git add src/assets/data/ && git commit
-# push a develop -> PR a master -> Vercel despliega
-```
-
-La idea es reducirlo a una accion desde `/admin`. Lo que habria que resolver antes de implementarlo:
-
-- **Quien ejecuta el volcado.** El navegador no puede escribir en el repositorio. Haria falta un paso en CI (un workflow con `workflow_dispatch` que corra el `pull` y abra el PR) o una funcion serverless con un token de GitHub.
-- **Donde vive el token.** Un token con permiso de escritura sobre el repositorio no puede acabar en el bundle del frontend. Tiene que quedarse en el servidor o en los secretos de Actions.
-- **Que no se salte la revision.** El valor del flujo actual es que cada publicacion pasa por un diff revisable, y eso es lo que permitio recuperar el contenido las dos veces que el panel lo borro. El boton deberia **abrir un PR**, no fusionar a master.
-
-Es decir: el boton dispara el workflow, el workflow hace el volcado y abre el PR, y la persona lo revisa y lo fusiona. Se automatiza lo tedioso sin perder la red de seguridad.
 
 ### Tests e2e
 
