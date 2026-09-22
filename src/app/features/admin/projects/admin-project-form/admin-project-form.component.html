@@ -4,6 +4,31 @@
   <h2 class="font-code-lg">{{ isEditMode ? 'Edit Project' : 'New Project' }}</h2>
 </div>
 
+<!-- Redactar un borrador a partir de un readme.
+     Va fuera del <form> a proposito: el readme de origen no es un campo del
+     proyecto, es material de entrada y no se guarda en ningun sitio. -->
+<div class="panel-borrador" *ngIf="!loading()">
+  <button pButton type="button" class="p-button-text panel-borrador__toggle"
+          [label]="panelBorradorAbierto() ? 'Ocultar el redactor' : 'Redactar desde un readme'"
+          [icon]="panelBorradorAbierto() ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+          (click)="panelBorradorAbierto.set(!panelBorradorAbierto())"></button>
+
+  <div class="panel-borrador__cuerpo" *ngIf="panelBorradorAbierto()">
+    <p class="panel-borrador__ayuda">
+      Pega el readme del repositorio y se redactaran las descripciones, las cinco
+      secciones del readme y los desafios. <strong>No se guarda nada</strong>: el
+      texto se queda en el formulario para que lo revises. El diagrama, el stack
+      y las metricas no se tocan.
+    </p>
+
+    <textarea pTextarea id="readmeFuente" [formControl]="readmeFuente" rows="10"
+              placeholder="# Mi proyecto&#10;&#10;Pega aqui el readme completo..."></textarea>
+
+    <button pButton type="button" label="Redactar borrador" icon="pi pi-sparkles"
+            [loading]="redactando()" (click)="redactarBorrador()"></button>
+  </div>
+</div>
+
 <form [formGroup]="form" (ngSubmit)="onSubmit()" class="project-form" *ngIf="!loading()">
 
   <!-- Row 1: Name & Year -->
@@ -142,12 +167,36 @@
     </div>
   </div>
 
+  <!-- Desafios. Cada uno son dos campos y no una linea con separador: ya se
+       aprendio con las comas que meter un delimitador dentro del contenido
+       acaba partiendo lo que no debia. -->
+  <h3 class="form-section">Desafios</h3>
+
+  <div formArrayName="challenges">
+    <div class="challenge" *ngFor="let c of challenges.controls; let i = index" [formGroupName]="i">
+      <div class="form-group challenge__titulo">
+        <label [for]="'challengeTitle' + i">Titulo</label>
+        <input pInputText [id]="'challengeTitle' + i" formControlName="title"
+               placeholder="Implementacion de autenticacion hibrida" />
+      </div>
+      <div class="form-group challenge__descripcion">
+        <label [for]="'challengeDesc' + i">Descripcion</label>
+        <textarea pTextarea [id]="'challengeDesc' + i" formControlName="description" rows="2"
+                  placeholder="En que consistia la dificultad y como se resolvio"></textarea>
+      </div>
+      <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-danger challenge__quitar"
+              (click)="quitarChallenge(i)" [attr.aria-label]="'Quitar el desafio ' + (i + 1)"></button>
+    </div>
+  </div>
+
+  <button pButton type="button" label="Anadir desafio" icon="pi pi-plus"
+          class="p-button-text" (click)="agregarChallenge()"></button>
+
   <p class="form-nota">
-    El diagrama de arquitectura, el stack estructurado, las metricas y los
-    desafios no se editan aqui: se escriben en
-    <code>src/assets/data/projects.json</code> y se suben con
-    <code>pnpm run mirror:push</code>. Guardar desde este formulario no los
-    altera.
+    El diagrama de arquitectura, el stack estructurado y las metricas no se
+    editan aqui: se escriben en <code>src/assets/data/projects.json</code> y se
+    suben con <code>pnpm run mirror:push</code>. Guardar desde este formulario
+    no los altera.
   </p>
 
   <!-- Actions -->
