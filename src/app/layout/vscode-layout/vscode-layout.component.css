@@ -478,9 +478,19 @@ button.icon-item {
 .tabs-scroll-container {
   display: flex;
   flex: 1;
+  /* Sin esto el overflow-x no llega a activarse nunca. Un elemento flex tiene
+     min-width:auto por defecto, asi que no encoge por debajo del ancho de su
+     contenido: con varias pestanas abiertas la tira desbordaba la barra en
+     vez de desplazarse, y se metia por debajo de la ruta de la derecha. */
+  min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
+
+  /* La ultima pestana visible se desvanece en el borde en vez de quedar
+     cortada a cuchillo. Asi el recorte se lee como "hay mas a la derecha" y no
+     como un fallo de maquetacion. */
+  mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent 100%);
 }
 
 .tabs-scroll-container::-webkit-scrollbar {
@@ -566,6 +576,21 @@ button.icon-item {
   height: 100%;
   flex-shrink: 0;
   white-space: nowrap;
+  /* Faltaba, y por eso una etiqueta larga --architecture.drawio-- desbordaba
+     los 200px y empujaba la X fuera del fondo de la pestana. */
+  overflow: hidden;
+}
+
+/* El icono y el cierre no encogen; lo que se recorta es el nombre. */
+.tab > i,
+.tab .tab-close {
+  flex-shrink: 0;
+}
+
+.tab > span:not(.tab-close) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tab.active {
@@ -594,6 +619,10 @@ button.icon-item {
   align-items: center;
   gap: 0.3rem;
   margin-left: auto;
+  /* Conserva su sitio: encogerla dejaria la ruta cortada a la mitad, y es
+     mas util recortar la tira de pestanas, que ademas ya se desplaza. */
+  flex-shrink: 0;
+  padding-left: 0.75rem;
   padding-right: 1rem;
   font-size: 0.72rem;
   color: var(--vscode-text-muted);
