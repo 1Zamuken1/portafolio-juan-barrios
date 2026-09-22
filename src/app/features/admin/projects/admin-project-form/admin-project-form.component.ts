@@ -11,6 +11,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../../../core/services/data.service';
 import { Project } from '../../../../shared/models/project.model';
+import { limpiarVacios } from '../../../../shared/utils/limpiar-vacios';
 
 /** Lista -> texto, una entrada por linea. */
 const aLineas = (lista?: string[]): string => (lista ?? []).join('\n');
@@ -286,23 +287,13 @@ export class AdminProjectFormComponent implements OnInit {
 
     // Los campos que este formulario no maneja (diagramas, techStack,
     // structuredStack, rawMetrics) no se envian. El backend hace una
-    // actualizacion parcial: lo que no llega se conserva.
-    //
-    // Las listas vacias tambien se quitan, y no solo las cadenas: mandar []
-    // borraria lo que hubiera al otro lado. Es la misma limitacion que ya
-    // tiene la fusion parcial --no se puede vaciar un campo desde aqui, hay
-    // que editarlo en el JSON y subirlo con el espejo-- y se prefiere asi
-    // despues de haber perdido el contenido dos veces desde este formulario.
-    Object.keys(projectData).forEach((k) => {
-      const v = (projectData as any)[k];
-      if (v === '' || v === null || (Array.isArray(v) && v.length === 0)) {
-        delete (projectData as any)[k];
-      }
-    });
+    // actualizacion parcial: lo que no llega se conserva, asi que lo vacio no
+    // debe viajar. Ver limpiarVacios() para el porque de cada regla.
+    const limpio = (limpiarVacios(projectData) ?? {}) as Project;
 
     const operation = this.isEditMode
-      ? this.dataService.updateProject(this.projectId!, projectData)
-      : this.dataService.createProject(projectData);
+      ? this.dataService.updateProject(this.projectId!, limpio)
+      : this.dataService.createProject(limpio);
 
     operation.subscribe({
       next: () => {
