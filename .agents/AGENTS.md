@@ -2,6 +2,8 @@
 
 Esta es la wiki interna y conjunto de reglas del proyecto. **Para cualquier agente de IA que lea esto:** Analiza esta arquitectura antes de proponer cambios o crear nuevo código.
 
+> **Dos documentos, dos propósitos.** Este describe **cómo funciona** el proyecto: arquitectura, convenciones y reglas. [`ESTADO.md`](./ESTADO.md) describe **dónde está**: qué hay desplegado, qué falta, qué incidentes ocurrieron y qué propuestas quedaron acordadas sin construir. Si vas a retomar el trabajo, empieza por ahí.
+
 ## 0. Agent Skills Installed
 Skills en `.agents/skills/` que este agente debe cargar según la tarea:
 

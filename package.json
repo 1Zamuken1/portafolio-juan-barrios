@@ -9,7 +9,8 @@
     "test": "ng test",
     "e2e": "playwright test",
     "mirror:push": "node scripts/mirror.mjs push",
-    "mirror:pull": "node scripts/mirror.mjs pull"
+    "mirror:pull": "node scripts/mirror.mjs pull",
+    "mirror:publish": "node scripts/mirror.mjs publish"
   },
   "private": true,
   "packageManager": "pnpm@9.12.0",
