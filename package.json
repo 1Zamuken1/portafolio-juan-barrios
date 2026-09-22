@@ -13,7 +13,8 @@
     "mirror:publish": "node scripts/mirror.mjs publish",
     "draft": "node scripts/draft.mjs",
     "iconos": "node scripts/subset-iconos.mjs",
-    "medir": "node scripts/medir.mjs"
+    "medir": "node scripts/medir.mjs",
+    "sitemap": "node scripts/sitemap.mjs"
   },
   "private": true,
   "packageManager": "pnpm@9.12.0",

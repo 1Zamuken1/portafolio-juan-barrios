@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, inject, signal, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { CoordinadorScroll } from './coordinador-scroll';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../core/services/data.service';
@@ -32,8 +33,16 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private ctx?: gsap.Context;
   private fragmentSub?: Subscription;
-  private isProgrammaticScroll = false;
-  private scrollTimeout: any;
+
+  /**
+   * Coordina el scroll con la URL. Sustituye a dos banderas que se limpiaban
+   * por temporizador; ver coordinador-scroll.ts.
+   */
+  private coordinador = new CoordinadorScroll();
+
+  /** Cierra el desplazamiento en curso cuando el navegador dice que acabo. */
+  private cerrarDesplazamiento?: () => void;
+  private respaldoDesplazamiento: any;
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -60,10 +69,8 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnDestroy(): void {
     this.ctx?.revert();
     this.fragmentSub?.unsubscribe();
-    clearTimeout(this.scrollTimeout);
+    this.terminarDesplazamiento();
   }
-
-  private ignoreFragmentUpdate = false;
 
   private loadProject(id: number): void {
     this.loading.set(true);
@@ -82,18 +89,18 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
         // prerender no hay layout que animar.
         if (!this.isBrowser) return;
 
-        // Prevent GSAP from overriding the fragment during initial load
-        this.isProgrammaticScroll = true;
-        clearTimeout(this.scrollTimeout);
+        // Al montar, GSAP dispara los onEnter de todas las secciones que ya
+        // estan en pantalla. Sin esto escribirian el fragmento antes de que el
+        // usuario haya hecho nada.
+        this.coordinador.reiniciar();
+        const terminarMontaje = this.coordinador.iniciarDesplazamiento();
 
-        // Init animations after DOM update
         setTimeout(() => {
           this.initAnimations();
           this.setupFragmentListener();
-          
-          this.scrollTimeout = setTimeout(() => {
-            this.isProgrammaticScroll = false;
-          }, 1000);
+          // Los onEnter iniciales se disparan durante el refresco de
+          // ScrollTrigger; con un turno de reloj han pasado todos.
+          setTimeout(terminarMontaje, 0);
         }, 50);
       },
       error: (err) => {
@@ -142,23 +149,13 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     this.fragmentSub = this.route.fragment.subscribe(frag => {
-      if (!frag || this.ignoreFragmentUpdate) return;
-      
+      if (!frag || !this.coordinador.debeAtenderFragmento()) return;
+
       const el = document.getElementById(frag);
-      if (el && this.projectScroller?.nativeElement) {
-        this.isProgrammaticScroll = true;
-        clearTimeout(this.scrollTimeout);
+      const scroller = this.projectScroller?.nativeElement;
+      if (!el || !scroller) return;
 
-        const scroller = this.projectScroller.nativeElement;
-        scroller.scrollTo({
-          top: el.offsetTop,
-          behavior: 'smooth'
-        });
-
-        this.scrollTimeout = setTimeout(() => {
-          this.isProgrammaticScroll = false;
-        }, 1000);
-      }
+      this.desplazarHasta(scroller, el.offsetTop);
     });
   }
 
@@ -367,17 +364,60 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private updateFragment(fragment: string): void {
-    if (!fragment || this.isProgrammaticScroll) return;
+    if (!fragment || !this.coordinador.puedeEscribirUrl()) return;
+
     const projectId = this.route.snapshot.paramMap.get('id');
-    if (projectId) {
-      this.ignoreFragmentUpdate = true;
-      this.router.navigate(['/projects', projectId], {
+    if (!projectId) return;
+
+    const terminar = this.coordinador.iniciarEscrituraDeUrl();
+    this.router
+      .navigate(['/projects', projectId], {
         fragment,
         replaceUrl: true,
         onSameUrlNavigation: 'ignore'
-      });
-      // Reset after Angular finishes routing
-      setTimeout(() => this.ignoreFragmentUpdate = false, 50);
-    }
+      })
+      // Se cierra cuando el router termina de verdad, no a los 50 ms
+      // estimados. `finally` para que un fallo de navegacion no deje la
+      // escritura abierta y bloquee los saltos de seccion para siempre.
+      .catch(() => undefined)
+      .finally(terminar);
+  }
+
+  /**
+   * Desplaza el contenedor y no lo da por terminado hasta que el navegador
+   * avisa con `scrollend`.
+   *
+   * Antes se estimaba en 1000 ms. Si el scroll tardaba mas, la coordinacion se
+   * soltaba a media animacion y GSAP reescribia la URL con la seccion por la
+   * que iba pasando; si tardaba menos, el scroll del usuario no actualizaba la
+   * URL durante el resto del segundo.
+   *
+   * El temporizador sigue ahi pero como red, no como mecanismo: `scrollend` no
+   * llega si el contenedor ya estaba en la posicion pedida, y sin esa red la
+   * coordinacion se quedaria abierta para siempre.
+   */
+  private desplazarHasta(scroller: HTMLElement, top: number): void {
+    this.terminarDesplazamiento();
+
+    const cerrar = this.coordinador.iniciarDesplazamiento();
+    this.cerrarDesplazamiento = cerrar;
+
+    const alTerminar = () => {
+      scroller.removeEventListener('scrollend', alTerminar);
+      clearTimeout(this.respaldoDesplazamiento);
+      cerrar();
+    };
+
+    scroller.addEventListener('scrollend', alTerminar, { once: true });
+    this.respaldoDesplazamiento = setTimeout(alTerminar, 2000);
+
+    scroller.scrollTo({ top, behavior: 'smooth' });
+  }
+
+  /** Cierra el desplazamiento en curso, si lo hay. */
+  private terminarDesplazamiento(): void {
+    clearTimeout(this.respaldoDesplazamiento);
+    this.cerrarDesplazamiento?.();
+    this.cerrarDesplazamiento = undefined;
   }
 }
