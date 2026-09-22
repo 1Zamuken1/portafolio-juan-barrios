@@ -13,25 +13,25 @@
      mas profunda que el papel, que es lo que da la separacion visual que
      faltaba. Y la tarjeta de datos pasa a ser opaca: al 5% de tinte, la
      captura se veia a traves de los propios datos. */
-  --banner-bg: #F3EDDC;
+  --banner-bg: #EFEADF;
   --banner-img-opacity: 0.13;
-  --panel-solid: #FFFDF7;
+  --panel-solid: #FEFEFD;
 
   /* ---- Documento del caso de estudio ---- */
-  --md-text: #3B4F56;
-  --md-text-soft: #4A5F66;
-  --md-text-muted: #546A71;
-  --md-heading: #5F54A0;
-  --md-link: #246AA8;
-  --md-code-bg: rgba(7, 54, 66, 0.05);
-  --md-code-border: rgba(88, 110, 117, 0.22);
-  --md-overlay: rgba(253, 246, 227, 0.35);
-  --md-banner-text: #3B4F56;
+  --md-text: #3F535A;
+  --md-text-soft: #4E646C;
+  --md-text-muted: #5A6F77;
+  --md-heading: #5B50A5;
+  --md-link: #2570B1;
+  --md-code-bg: rgba(63, 83, 90, 0.045);
+  --md-code-border: rgba(78, 100, 108, 0.2);
+  --md-overlay: rgba(251, 250, 247, 0.35);
+  --md-banner-text: #3F535A;
   --md-banner-shadow: none;
-  --btn-outline-bg: #EEE8D5;
-  --btn-outline-text: #3B4F56;
-  --btn-outline-border: rgba(88, 110, 117, 0.3);
-  --btn-outline-hover: #E3DCC6;
+  --btn-outline-bg: #F5F3EC;
+  --btn-outline-text: #3F535A;
+  --btn-outline-border: rgba(78, 100, 108, 0.28);
+  --btn-outline-hover: #EDEAE0;
 
   /* ---- Editor (layout tipo VSCode) ----
      El tema oscuro es Shades of Purple, pero su variante clara resultaba
@@ -42,14 +42,14 @@
      el ambar (#B58900) hereda el papel del amarillo #fad000 del tema oscuro.
      Sus contrastes estan disenados con relaciones medidas, no elegidos a ojo,
      y aqui se volvieron a comprobar sobre la pagina renderizada. */
-  --editor-bg: #FDF6E3;
-  --editor-surface: #EEE8D5;
-  --editor-text: #3B4F56;
-  --editor-text-soft: #4A5F66;
-  --editor-text-muted: #546A71;
-  --editor-line-number: #9AA69F;
+  --editor-bg: #FBFAF7;
+  --editor-surface: #F5F3EC;
+  --editor-text: #3F535A;
+  --editor-text-soft: #4E646C;
+  --editor-text-muted: #5A6F77;
+  --editor-line-number: #A0A79F;
 
-  --syntax-mark: #246AA8;
+  --syntax-mark: #2570B1;
   /* METODO: desaturar, no oscurecer.
      Solarized es de bajo contraste por diseno y sus acentos rondan 3:1 sobre
      el papel. Un primer intento los llevo a AA hundiendo la luminosidad sin
@@ -58,26 +58,26 @@
      buscar, para cada tono, el color que cae dentro de la BANDA 4,5-6,0 con la
      saturacion mas alta posible. La banda importa en los dos extremos: 9:1
      sobre papel crema deslumbra tanto como 3:1 se desvanece. */
-  --syntax-heading: #82641C;
-  --syntax-bullet: #5F54A0;
-  --syntax-fence: #8C9A94;
-  --syntax-accent: #18726F;
-  --syntax-link: #5F54A0;
+  --syntax-heading: #87671D;
+  --syntax-bullet: #5B50A5;
+  --syntax-fence: #94A099;
+  --syntax-accent: #1A7A77;
+  --syntax-link: #5B50A5;
 
-  --card-bg: rgba(181, 137, 0, 0.06);
-  --card-border: rgba(88, 110, 117, 0.22);
-  --card-border-hover: rgba(181, 137, 0, 0.55);
-  --card-glow: rgba(181, 137, 0, 0.15);
-  --chip-bg: rgba(108, 113, 196, 0.08);
-  --chip-border: rgba(108, 113, 196, 0.25);
+  --card-bg: rgba(135, 103, 29, 0.05);
+  --card-border: rgba(78, 100, 108, 0.2);
+  --card-border-hover: rgba(135, 103, 29, 0.5);
+  --card-glow: rgba(135, 103, 29, 0.14);
+  --chip-bg: rgba(91, 80, 165, 0.07);
+  --chip-border: rgba(91, 80, 165, 0.22);
 
   /* El color de marca deja de ser el del texto: Java sobre blanco da 2,13:1.
      Se queda en el borde y el fondo, que lo identifican igual, y el texto
      pasa a --editor-text. */
-  --badge-text: #3B4F56;
+  --badge-text: #3F535A;
   --badge-tint: 14%;
   --badge-edge: 55%;
-  --badge-hover-shadow: rgba(7, 54, 66, 0.18);
+  --badge-hover-shadow: rgba(63, 83, 90, 0.16);
   /* Los devicon de color se apagan un punto: en claro deslumbran. */
   --icono-brillo: 0.92;
 
@@ -152,6 +152,9 @@
   --stat-badge-hover-bg: #0F172A;
   --stat-badge-hover-text: #FFFFFF;
   --tooltip-bg: rgba(255, 255, 255, 0.98);
+  --btn-primary-bg: #2F6B33;
+  --btn-primary-text: #FFFFFF;
+  --btn-primary-hover: #3A7C3E;
 }
 
 /* ---- Dark Mode (Default) ---- */
@@ -276,6 +279,9 @@
   --stat-badge-hover-bg: #1F1F1F;
   --stat-badge-hover-text: #FFFFFF;
   --tooltip-bg: #0A0A0A;
+  --btn-primary-bg: #238636;
+  --btn-primary-text: #FFFFFF;
+  --btn-primary-hover: #2EA043;
 }
 
 /* ---- Component Utility Classes ---- */

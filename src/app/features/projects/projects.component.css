@@ -172,13 +172,17 @@
   cursor: pointer;
 }
 
+/* El texto va en --btn-primary-text y no en el color de texto del tema: el
+   boton tiene fondo propio, asi que su texto se decide contra ESE fondo y no
+   contra el papel. Usaba --md-banner-text, que en claro es gris oscuro, y
+   quedaba gris oscuro sobre verde oscuro. */
 .btn-primary {
-  background: #238636;
-  color: var(--md-banner-text);
-  border: 1px solid rgba(240, 246, 252, 0.1);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border: 1px solid transparent;
 }
 .btn-primary:hover {
-  background: #2ea043;
+  background: var(--btn-primary-hover);
 }
 
 .btn-outline {

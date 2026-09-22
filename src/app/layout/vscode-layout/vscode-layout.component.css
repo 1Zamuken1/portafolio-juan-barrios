@@ -63,46 +63,46 @@
    esta fuera del componente y no lo lleva, asi que la regla no llegaba a
    coincidir nunca y el tema claro se quedaba sin efecto sin dar ningun error. */
 :host-context([data-theme="light"]) .theme-shades-of-purple {
-  --vscode-bg: #FDF6E3;
-  --vscode-sidebar-bg: #F5EDD8;
-  --vscode-activity-bg: #EEE8D5;
-  --vscode-titlebar-bg: #EEE8D5;
-  --vscode-statusbar-bg: #EEE8D5;
+  --vscode-bg: #FBFAF7;
+  --vscode-sidebar-bg: #F7F5EF;
+  --vscode-activity-bg: #F3F0E7;
+  --vscode-titlebar-bg: #F3F0E7;
+  --vscode-statusbar-bg: #F3F0E7;
 
-  --vscode-primary: #82641C;
-  --vscode-primary-dim: rgba(181, 137, 0, 0.18);
-  --vscode-tertiary: #5F54A0;
+  --vscode-primary: #87671D;
+  --vscode-primary-dim: rgba(135, 103, 29, 0.16);
+  --vscode-tertiary: #5B50A5;
 
-  --vscode-text-main: #3B4F56;
-  --vscode-text-muted: #4A5F66;
+  --vscode-text-main: #3F535A;
+  --vscode-text-muted: #4E646C;
 
-  --vscode-border: #E3DCC6;
-  --vscode-border-light: rgba(88, 110, 117, 0.2);
+  --vscode-border: #E9E5DA;
+  --vscode-border-light: rgba(78, 100, 108, 0.18);
 
-  --vscode-glass-bg: rgba(253, 246, 227, 0.88);
-  --vscode-tab-bg-active: #FDF6E3;
-  --vscode-tab-bg-inactive: #EEE8D5;
+  --vscode-glass-bg: rgba(251, 250, 247, 0.9);
+  --vscode-tab-bg-active: #FBFAF7;
+  --vscode-tab-bg-inactive: #F3F0E7;
 
-  --tab-ts: #246AA8;
-  --tab-json: #82641C;
-  --tab-md: #18726F;
+  --tab-ts: #2570B1;
+  --tab-json: #87671D;
+  --tab-md: #1A7A77;
 
-  --vscode-hover: rgba(7, 54, 66, 0.06);
-  --vscode-hover-soft: rgba(7, 54, 66, 0.04);
-  --vscode-hover-strong: rgba(7, 54, 66, 0.1);
-  --vscode-selected: rgba(181, 137, 0, 0.18);
-  --vscode-accent-line: rgba(181, 137, 0, 0.5);
-  --vscode-scrollbar: rgba(88, 110, 117, 0.3);
-  --vscode-scrollbar-hover: rgba(88, 110, 117, 0.45);
-  --vscode-overlay: rgba(253, 246, 227, 0.75);
-  --vscode-panel-glass: rgba(238, 232, 213, 0.9);
-  --vscode-shadow: rgba(7, 54, 66, 0.15);
-  --vscode-tooltip-bg: #3B4F56;
-  --vscode-tooltip-text: #EEE8D5;
-  --vscode-status-text: #4A5F66;
-  --vscode-branch: #5F54A0;
-  --vscode-ok: #3D7218;
-  --vscode-ok-dot: #4A8A1E;
+  --vscode-hover: rgba(63, 83, 90, 0.05);
+  --vscode-hover-soft: rgba(63, 83, 90, 0.035);
+  --vscode-hover-strong: rgba(63, 83, 90, 0.09);
+  --vscode-selected: rgba(135, 103, 29, 0.16);
+  --vscode-accent-line: rgba(135, 103, 29, 0.45);
+  --vscode-scrollbar: rgba(78, 100, 108, 0.26);
+  --vscode-scrollbar-hover: rgba(78, 100, 108, 0.4);
+  --vscode-overlay: rgba(251, 250, 247, 0.75);
+  --vscode-panel-glass: rgba(245, 243, 236, 0.92);
+  --vscode-shadow: rgba(63, 83, 90, 0.13);
+  --vscode-tooltip-bg: #3F535A;
+  --vscode-tooltip-text: #F5F3EC;
+  --vscode-status-text: #4E646C;
+  --vscode-branch: #5B50A5;
+  --vscode-ok: #396916;
+  --vscode-ok-dot: #4F8F20;
 }
 
 /* ---- Top-level layout ---- */
