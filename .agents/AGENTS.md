@@ -91,7 +91,11 @@ Cuatro decisiones que conviene no deshacer sin entenderlas:
 
 Hace falta validar porque el modo objeto JSON garantiza JSON bien formado, no que venga completo. El modo de esquema estricto sí lo garantizaría y los `gpt-oss` lo soportan, pero no se usa: `GROQ_MODEL` es configurable y atar el adaptador a una capacidad que el modelo configurado puede no tener cambiaría un fallo claro por uno raro.
 
-**Groq retira modelos cada pocos meses y el síntoma es un 404 seco.** Ya pasó: el primer defecto fue `llama-3.3-70b-versatile`, retirado el 16 de agosto de 2026 para los planes gratuito y developer. Por eso el modelo se cambia con `GROQ_MODEL` sin tocar código, y por eso el adaptador incluye el cuerpo del error de Groq en el mensaje. Ocultarlo —que es lo que hacía al principio— dejaba el 404 indistinguible de una URL mal puesta, y se buscó la causa en la clave y en el despliegue antes que en el modelo. Mismo fallo que el 403 vacío de `/error`. La lista vigente está en https://console.groq.com/docs/deprecations.
+**Groq retira modelos cada pocos meses y el síntoma es un 404 seco.** Ya pasó: el primer defecto fue `llama-3.3-70b-versatile`, retirado el 16 de agosto de 2026 para los planes gratuito y developer. Nadie sigue las notas de versión de Groq, así que esto se descubre cuando se rompe. Tres medidas, en orden de cuánto ahorran:
+
+1. **`GROQ_MODEL` admite una lista separada por comas**, en orden de preferencia. Si el primero está retirado se pasa al siguiente y el botón sigue funcionando; queda un `WARN` en los logs diciendo cuál cayó.
+2. **Si caen todos, el error trae la lista viva.** El adaptador consulta `GET /models` y la incluye en el mensaje, así que no hay que buscar el nombre correcto en ninguna parte.
+3. **El cuerpo del error de Groq siempre viaja en el mensaje.** Ocultarlo —que es lo que hacía al principio— dejaba el 404 indistinguible de una URL mal puesta, y se buscó la causa en la clave y en el despliegue antes que en el modelo. Mismo fallo que el 403 vacío de `/error`. La lista vigente está en https://console.groq.com/docs/deprecations.
 
 Dos fallos distintos, porque la acción de quien usa el panel es distinta: **422** si el borrador no sirve (revisar y reintentar) y **503** si el proveedor no responde (no hay nada que revisar). Si ambos salieran igual el mensaje mentiría, que es justo lo que pasaba cuando todo salía como 403 vacío.
 

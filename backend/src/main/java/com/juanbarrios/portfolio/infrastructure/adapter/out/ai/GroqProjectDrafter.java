@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.juanbarrios.portfolio.domain.model.ProjectDraft;
 import com.juanbarrios.portfolio.domain.port.out.DrafterNoDisponibleException;
 import com.juanbarrios.portfolio.domain.port.out.ProjectDrafterPort;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -14,6 +16,9 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -49,9 +54,37 @@ import java.util.Map;
 @Component
 public class GroqProjectDrafter implements ProjectDrafterPort {
 
+    private static final Logger log = LoggerFactory.getLogger(GroqProjectDrafter.class);
+
     private final String apiKey;
-    private final String modelo;
+    private final List<String> modelos;
     private final RestClient http;
+
+    /** Groq retiro el modelo que se le pidio. Interna: no sale del adaptador. */
+    private static class ModeloRetirado extends RuntimeException {
+        final transient String modelo;
+
+        ModeloRetirado(String modelo) {
+            super(modelo);
+            this.modelo = modelo;
+        }
+    }
+
+    /**
+     * Parte la lista de modelos separada por comas y quita los huecos.
+     *
+     * Se admite una lista y no un solo nombre porque Groq retira modelos cada
+     * pocos meses sin avisar a quien los usa. Con uno solo, el dia que caiga el
+     * boton deja de funcionar hasta que alguien se entere; con una lista, se
+     * pasa al siguiente y sigue en pie.
+     */
+    static List<String> separarModelos(String configurado) {
+        if (configurado == null) return List.of();
+        return Arrays.stream(configurado.split(","))
+                .map(String::trim)
+                .filter(m -> !m.isEmpty())
+                .toList();
+    }
 
     /**
      * Mapper propio del adaptador, no el compartido de Spring: aqui se parsea
@@ -65,11 +98,11 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
 
     public GroqProjectDrafter(
             @Value("${groq.api-key:}") String apiKey,
-            @Value("${groq.model:openai/gpt-oss-120b}") String modelo,
+            @Value("${groq.model:openai/gpt-oss-120b,openai/gpt-oss-20b,qwen/qwen3.6-27b}") String modelos,
             @Value("${groq.base-url:https://api.groq.com/openai/v1}") String baseUrl) {
 
         this.apiKey = apiKey == null ? "" : apiKey.trim();
-        this.modelo = modelo;
+        this.modelos = separarModelos(modelos);
 
         // Redactar ~2000 caracteres tarda bastante mas que una peticion
         // normal, pero tampoco puede quedarse colgado para siempre ocupando un
@@ -90,13 +123,83 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
             throw new DrafterNoDisponibleException(
                     "No hay clave de Groq configurada. Define GROQ_API_KEY en el entorno.");
         }
+        if (modelos.isEmpty()) {
+            throw new DrafterNoDisponibleException(
+                    "No hay ningun modelo configurado. Define GROQ_MODEL en el entorno.");
+        }
 
-        String contenido = pedirRespuesta(nombre, readme);
-        return parsear(contenido);
+        List<String> retirados = new ArrayList<>();
+
+        for (String modelo : modelos) {
+            try {
+                ProjectDraft borrador = parsear(pedirRespuesta(modelo, nombre, readme));
+                if (!retirados.isEmpty()) {
+                    // Que quede constancia: el borrador salio, pero de un
+                    // modelo distinto al preferido y eso cambia el resultado.
+                    log.warn("Groq retiro {}. Se redacto con {}. Actualiza GROQ_MODEL.",
+                            String.join(", ", retirados), modelo);
+                }
+                return borrador;
+            } catch (ModeloRetirado e) {
+                retirados.add(e.modelo);
+                // Se prueba el siguiente. Cualquier otro fallo --401, 429, un
+                // corte de red-- sube tal cual: reintentarlo con otro modelo
+                // no arreglaria nada y solo gastaria cuota.
+            }
+        }
+
+        throw new DrafterNoDisponibleException(sinModelosVivos(retirados));
+    }
+
+    /**
+     * Mensaje para cuando Groq ha retirado todos los modelos configurados.
+     *
+     * Le pregunta a Groq cuales tiene ahora y los pone en el mensaje. Es una
+     * llamada de mas, pero solo ocurre cuando ya no hay nada que hacer, y sin
+     * ella averiguar el nombre correcto significa buscar en la documentacion
+     * un cambio del que nadie avisa. Con ella, el propio error trae la lista.
+     */
+    private String sinModelosVivos(List<String> retirados) {
+        String vivos;
+        try {
+            vivos = String.join("\n  - ", modelosDisponibles());
+        } catch (Exception e) {
+            vivos = null;
+        }
+
+        String mensaje = "Groq ya no tiene ninguno de los modelos configurados: "
+                + String.join(", ", retirados) + ".";
+
+        if (vivos == null || vivos.isBlank()) {
+            return mensaje + "\n\nNo se pudo consultar la lista actual. Mirala en "
+                    + "https://console.groq.com/docs/deprecations y actualiza GROQ_MODEL.";
+        }
+        return mensaje + "\n\nModelos disponibles ahora mismo con esta clave:\n  - " + vivos
+                + "\n\nPon uno de estos en GROQ_MODEL. Admite varios separados por comas, "
+                + "y se usan en orden: asi el dia que retiren el primero se pasa al "
+                + "siguiente en vez de dejar de funcionar.";
+    }
+
+    /** Los modelos de texto que Groq acepta ahora mismo con esta clave. */
+    private List<String> modelosDisponibles() throws Exception {
+        String cuerpo = http.get()
+                .uri("/models")
+                .header("Authorization", "Bearer " + apiKey)
+                .retrieve()
+                .body(String.class);
+
+        List<String> ids = new ArrayList<>();
+        for (JsonNode modelo : json.readTree(cuerpo).path("data")) {
+            String id = modelo.path("id").asText("");
+            // Whisper transcribe y no redacta: ofrecerlo aqui solo despistaria.
+            if (!id.isBlank() && !id.startsWith("whisper")) ids.add(id);
+        }
+        ids.sort(String::compareTo);
+        return ids;
     }
 
     /** Hace la llamada y devuelve el texto que genero el modelo. */
-    private String pedirRespuesta(String nombre, String readme) {
+    private String pedirRespuesta(String modelo, String nombre, String readme) {
         Map<String, Object> peticion = Map.of(
                 "model", modelo,
                 // Cero temperatura: esto no es escritura creativa, es extraer
@@ -117,6 +220,15 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
                     .retrieve()
                     .body(String.class);
         } catch (RestClientResponseException e) {
+            String respuesta = e.getResponseBodyAsString();
+
+            // Un modelo retirado no es un fallo del que haya que rendirse:
+            // hay mas en la lista. Se marca para que draft() pruebe el
+            // siguiente.
+            if (esModeloRetirado(e.getStatusCode().value(), respuesta)) {
+                throw new ModeloRetirado(modelo);
+            }
+
             // El cuerpo del error SI se incluye. Antes se ocultaba por si
             // llevara dentro la cabecera de autorizacion, y eso fue un error:
             // Groq responde un objeto JSON de error que no repite nada de la
@@ -127,7 +239,7 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
             // cualquier causa se vea igual.
             throw new DrafterNoDisponibleException(
                     "Groq respondio " + e.getStatusCode().value() + ": "
-                            + pista(e.getStatusCode().value(), e.getResponseBodyAsString()), e);
+                            + pista(e.getStatusCode().value(), respuesta), e);
         } catch (Exception e) {
             throw new DrafterNoDisponibleException(
                     "No se pudo contactar con Groq: " + e.getClass().getSimpleName(), e);
@@ -170,6 +282,20 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
      * aqui. Sin esta pista el 404 no dice nada y se busca en el sitio
      * equivocado: la clave, la URL, el despliegue.
      */
+    /**
+     * Distingue "este modelo ya no existe" de cualquier otro 404.
+     *
+     * Groq lo marca con {@code code: model_not_found}. Se mira tambien el texto
+     * porque el codigo no siempre viene y, sin esa red, un modelo retirado
+     * pararia la cadena de reserva justo cuando mas falta hace.
+     */
+    static boolean esModeloRetirado(int estado, String cuerpo) {
+        if (estado != 404 || cuerpo == null) return false;
+        String texto = cuerpo.toLowerCase();
+        return texto.contains("model_not_found")
+                || (texto.contains("model") && texto.contains("does not exist"));
+    }
+
     static String pista(int estado, String cuerpo) {
         String mensaje = mensajeDeGroq(cuerpo);
 
