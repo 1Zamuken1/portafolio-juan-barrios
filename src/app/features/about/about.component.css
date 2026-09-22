@@ -15,7 +15,7 @@
   flex-direction: column;
   height: 100%;
   background: var(--vscode-bg, #2D2B55);
-  color: #dae2fd;
+  color: var(--editor-text);
   font-family: 'Inter', sans-serif;
   overflow: hidden;
 }
@@ -25,7 +25,7 @@
   display: flex;
   gap: 0;
   background: var(--vscode-sidebar-bg, #1E1E3F);
-  border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+  border-bottom: 1px solid var(--card-border);
   flex-shrink: 0;
 }
 
@@ -36,22 +36,22 @@
   padding: 0.5rem 1.25rem;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.75rem;
-  color: #7a7a9a;
-  border-right: 1px solid rgba(168, 85, 247, 0.1);
+  color: var(--editor-text-muted);
+  border-right: 1px solid var(--card-border);
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
   border-top: 2px solid transparent;
 }
 
 .doc-tab:hover {
-  background: rgba(168, 85, 247, 0.05);
-  color: #dae2fd;
+  background: var(--card-bg);
+  color: var(--editor-text);
 }
 
 .doc-tab.active {
   background: var(--vscode-bg, #2D2B55);
-  color: #ddb7ff;
-  border-top-color: #a855f7;
+  color: var(--syntax-link);
+  border-top-color: var(--syntax-bullet);
 }
 
 /* ---- Scrollable body ---- */
@@ -60,11 +60,11 @@
   overflow-y: auto;
   padding: 2.5rem 3rem;
   scrollbar-width: thin;
-  scrollbar-color: rgba(168, 85, 247, 0.3) transparent;
+  scrollbar-color: var(--card-border-hover) transparent;
 }
 
 .doc-body::-webkit-scrollbar { width: 6px; }
-.doc-body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radius: 3px; }
+.doc-body::-webkit-scrollbar-thumb { background: var(--card-border-hover); border-radius: 3px; }
 
 /* Responsive adjustments for layout */
 @media (max-width: 768px) {

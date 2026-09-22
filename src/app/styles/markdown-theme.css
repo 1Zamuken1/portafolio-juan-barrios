@@ -8,7 +8,7 @@
   margin: 0 auto;
   font-size: 1rem;
   line-height: 1.6;
-  color: #cdd9e5; /* GitHub dark theme text color */
+  color: var(--md-text); /* GitHub dark theme text color */
 }
 
 /* Typography */
@@ -19,20 +19,20 @@
   margin-bottom: 16px;
   font-weight: 600;
   line-height: 1.25;
-  color: #adbac7;
+  color: var(--md-text-soft);
 }
 
 .markdown-body h1 {
   font-size: 2em;
   padding-bottom: 0.3em;
-  border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+  border-bottom: 1px solid var(--md-code-border);
   margin-top: 0;
 }
 
 .markdown-body .subtitle {
   font-size: 1.1rem;
   font-weight: 400;
-  color: #929bb1 !important;
+  color: var(--md-text-muted) !important;
   margin-top: 4px !important;
   margin-bottom: 16px !important;
 }
@@ -40,13 +40,13 @@
 .markdown-body h2 {
   font-size: 1.5em;
   padding-bottom: 0.3em;
-  border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+  border-bottom: 1px solid var(--md-code-border);
   margin-top: 32px;
 }
 
 .markdown-body h3 {
   font-size: 1.25em;
-  color: #cfc2d6;
+  color: var(--md-text-soft);
 }
 
 .markdown-body p {
@@ -55,14 +55,14 @@
 }
 
 .markdown-body a {
-  color: #ddb7ff;
+  color: var(--md-heading);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .markdown-body a:hover {
   text-decoration: underline;
-  color: #a855f7;
+  color: var(--md-link);
 }
 
 /* Lists */
@@ -78,14 +78,14 @@
 
 /* Custom Elements: Badges and Links */
 .markdown-body .location-badge {
-  color: #929bb1;
+  color: var(--md-text-muted);
   font-size: 0.9em;
   margin-bottom: 24px !important;
 }
 
 .markdown-body .location-badge i {
   margin-right: 4px;
-  color: #ddb7ff;
+  color: var(--md-heading);
 }
 
 .markdown-body .contact-links-inline {
@@ -100,19 +100,19 @@
   align-items: center;
   gap: 8px;
   font-size: 0.9em;
-  color: #adbac7 !important;
+  color: var(--md-text-soft) !important;
   text-decoration: none !important;
   padding: 6px 12px;
-  background: rgba(15, 23, 42, 0.4);
-  border: 1px solid rgba(168, 85, 247, 0.2);
+  background: var(--md-code-bg);
+  border: 1px solid var(--md-code-border);
   border-radius: 6px;
   transition: all 0.2s;
 }
 
 .markdown-body .contact-link:hover {
-  background: rgba(168, 85, 247, 0.1);
-  border-color: rgba(168, 85, 247, 0.5);
-  color: #ddb7ff !important;
+  background: var(--md-code-bg);
+  border-color: var(--md-link);
+  color: var(--md-heading) !important;
 }
 
 /* Badges (Tech Stack) — shields.io style */
@@ -169,7 +169,7 @@
 
 .markdown-body .repo-link:hover {
   opacity: 1;
-  color: #ddb7ff !important;
+  color: var(--md-heading) !important;
 }
 
 .markdown-body .project-features {
@@ -178,7 +178,7 @@
 
 .markdown-body .project-stack {
   font-size: 0.9em;
-  color: #929bb1;
+  color: var(--md-text-muted);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -187,7 +187,7 @@
 }
 
 .markdown-body .tech-pill {
-  color: #cdd9e5;
+  color: var(--md-text);
   font-weight: 500;
 }
 
@@ -213,17 +213,17 @@
 .markdown-body label {
   font-size: 0.9em;
   font-weight: 500;
-  color: #adbac7;
+  color: var(--md-text-soft);
 }
 
 .markdown-body input,
 .markdown-body textarea {
   width: 100%;
   padding: 10px 12px;
-  background: rgba(15, 23, 42, 0.4);
-  border: 1px solid rgba(168, 85, 247, 0.2);
+  background: var(--md-code-bg);
+  border: 1px solid var(--md-code-border);
   border-radius: 6px;
-  color: #cdd9e5;
+  color: var(--md-text);
   font-family: inherit;
   font-size: 0.95em;
   transition: border-color 0.2s, background 0.2s;
@@ -232,17 +232,17 @@
 .markdown-body input:focus,
 .markdown-body textarea:focus {
   outline: none;
-  border-color: #a855f7;
+  border-color: var(--md-link);
   background: rgba(15, 23, 42, 0.6);
 }
 
 .markdown-body button[type="submit"] {
   align-self: flex-start;
   padding: 8px 16px;
-  background: rgba(168, 85, 247, 0.1);
+  background: var(--md-code-bg);
   border: 1px solid rgba(168, 85, 247, 0.5);
   border-radius: 6px;
-  color: #ddb7ff;
+  color: var(--md-heading);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -253,7 +253,7 @@
 
 .markdown-body button[type="submit"]:hover:not(:disabled) {
   background: rgba(168, 85, 247, 0.25);
-  border-color: #a855f7;
+  border-color: var(--md-link);
 }
 
 .markdown-body button[type="submit"]:disabled {

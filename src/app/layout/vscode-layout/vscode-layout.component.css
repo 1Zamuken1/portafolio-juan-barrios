@@ -33,6 +33,77 @@
   --tab-ts: #569cd6;
   --tab-json: #e8a94a;
   --tab-md: #4ec9b0;
+
+  --vscode-hover: rgba(255, 255, 255, 0.06);
+  --vscode-hover-soft: rgba(255, 255, 255, 0.03);
+  --vscode-hover-strong: rgba(255, 255, 255, 0.1);
+  --vscode-selected: rgba(168, 85, 247, 0.12);
+  --vscode-accent-line: rgba(168, 85, 247, 0.4);
+  --vscode-scrollbar: rgba(168, 85, 247, 0.25);
+  --vscode-scrollbar-hover: rgba(168, 85, 247, 0.3);
+  --vscode-overlay: rgba(8, 8, 24, 0.55);
+  --vscode-panel-glass: rgba(30, 30, 63, 0.5);
+  --vscode-shadow: rgba(0, 0, 0, 0.45);
+  --vscode-tooltip-bg: #1e293b;
+  --vscode-tooltip-text: #e2e8f0;
+  --vscode-status-text: rgba(255, 255, 255, 0.75);
+  --vscode-branch: #c4b5fd;
+  --vscode-ok: #86efac;
+  --vscode-ok-dot: #4ade80;
+}
+
+/* ---- Los mismos tokens en claro ----
+   Shades of Purple tiene variante clara y esta la sigue: fondo blanco con un
+   velo lavanda y el morado oscuro de la firma como texto. El amarillo #fad000
+   no sobrevive al cambio --da 1,5:1 sobre blanco-- asi que su papel lo hereda
+   un ambar oscuro con el mismo peso visual. Todos los contrastes estan
+   comprobados. */
+/* :host-context y no `[data-theme="light"] .theme-...`: la encapsulacion de
+   Angular le pega el atributo del componente a TODOS los compuestos del
+   selector, incluido el ancestro. El atributo data-theme vive en <html>, que
+   esta fuera del componente y no lo lleva, asi que la regla no llegaba a
+   coincidir nunca y el tema claro se quedaba sin efecto sin dar ningun error. */
+:host-context([data-theme="light"]) .theme-shades-of-purple {
+  --vscode-bg: #FBFAFF;
+  --vscode-sidebar-bg: #F2EFFB;
+  --vscode-activity-bg: #EAE5F7;
+  --vscode-titlebar-bg: #EAE5F7;
+  --vscode-statusbar-bg: #EAE5F7;
+
+  --vscode-primary: #9A4C00;
+  --vscode-primary-dim: rgba(154, 76, 0, 0.12);
+  --vscode-tertiary: #5B4FB0;
+
+  --vscode-text-main: #2D2B55;
+  --vscode-text-muted: #4A4380;
+
+  --vscode-border: #DDD6F0;
+  --vscode-border-light: rgba(91, 79, 176, 0.18);
+
+  --vscode-glass-bg: rgba(251, 250, 255, 0.85);
+  --vscode-tab-bg-active: #FBFAFF;
+  --vscode-tab-bg-inactive: #EAE5F7;
+
+  --tab-ts: #0F5FBF;
+  --tab-json: #8A5A00;
+  --tab-md: #0F6B5C;
+
+  --vscode-hover: rgba(45, 43, 85, 0.06);
+  --vscode-hover-soft: rgba(45, 43, 85, 0.04);
+  --vscode-hover-strong: rgba(45, 43, 85, 0.1);
+  --vscode-selected: rgba(109, 40, 217, 0.12);
+  --vscode-accent-line: rgba(109, 40, 217, 0.45);
+  --vscode-scrollbar: rgba(109, 40, 217, 0.3);
+  --vscode-scrollbar-hover: rgba(109, 40, 217, 0.45);
+  --vscode-overlay: rgba(251, 250, 255, 0.75);
+  --vscode-panel-glass: rgba(242, 239, 251, 0.85);
+  --vscode-shadow: rgba(45, 43, 85, 0.15);
+  --vscode-tooltip-bg: #2D2B55;
+  --vscode-tooltip-text: #F2EFFB;
+  --vscode-status-text: rgba(45, 43, 85, 0.85);
+  --vscode-branch: #5B4FB0;
+  --vscode-ok: #0F6B3C;
+  --vscode-ok-dot: #16A34A;
 }
 
 /* ---- Top-level layout ---- */
@@ -108,7 +179,7 @@
 .sidebar-scrim {
   position: absolute;
   inset: 0;
-  background: rgba(8, 8, 24, 0.55);
+  background: var(--vscode-overlay);
   z-index: 30;
   border: 0;
   padding: 0;
@@ -155,7 +226,7 @@
 
 .icon-item:hover {
   color: var(--vscode-text-main);
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: var(--vscode-hover);
 }
 
 .icon-item:hover .icon-tooltip {
@@ -170,6 +241,17 @@
   border-left: 2px solid var(--vscode-primary);
 }
 
+/* El interruptor de tema es un <button> y no un <div>, para que se pueda
+   alcanzar con el teclado y los lectores de pantalla lo anuncien como
+   control. Se le quitan los estilos propios del boton. */
+button.icon-item {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
 .icon-item.icon-disabled {
   opacity: 0.3;
   cursor: not-allowed;
@@ -181,14 +263,14 @@
   left: calc(100% + 0.75rem);
   top: 50%;
   transform: translateY(-50%) translateX(-4px);
-  background: #1e293b;
-  color: #e2e8f0;
+  background: var(--vscode-tooltip-bg);
+  color: var(--vscode-tooltip-text);
   font-size: 0.72rem;
   font-family: 'Inter', sans-serif;
   white-space: nowrap;
   padding: 0.3rem 0.6rem;
   border-radius: 0.25rem;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid var(--vscode-hover-strong);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s ease, transform 0.15s ease;
@@ -209,7 +291,7 @@
   color: white;
   font-family: 'Inter', sans-serif;
   letter-spacing: 0.05em;
-  border: 1.5px solid rgba(168, 85, 247, 0.4);
+  border: 1.5px solid var(--vscode-accent-line);
 }
 
 /* ================================================
@@ -272,7 +354,7 @@
 
 .sidebar-content::-webkit-scrollbar { width: 4px; }
 .sidebar-content::-webkit-scrollbar-track { background: transparent; }
-.sidebar-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.sidebar-content::-webkit-scrollbar-thumb { background: var(--vscode-hover-strong); border-radius: 2px; }
 
 .sidebar-section { margin-bottom: 0.5rem; }
 
@@ -290,7 +372,7 @@
   user-select: none;
 }
 
-.section-header:hover { background: rgba(255,255,255,0.03); }
+.section-header:hover { background: var(--vscode-hover-soft); }
 
 .section-list {
   display: flex;
@@ -317,12 +399,12 @@
 
 .list-item:hover {
   color: var(--vscode-text-main);
-  background: rgba(255,255,255,0.04);
+  background: var(--vscode-hover-soft);
 }
 
 .list-item.active {
   color: var(--vscode-text-main);
-  background: rgba(168, 85, 247, 0.12);
+  background: var(--vscode-selected);
   border-left: 1.5px solid var(--vscode-primary);
 }
 
@@ -348,7 +430,7 @@
 }
 
 .folder-header:hover {
-  background: rgba(255,255,255,0.04);
+  background: var(--vscode-hover-soft);
 }
 
 .folder-name {
@@ -440,7 +522,7 @@
     z-index: 35;
     transform: translateX(-102%);
     transition: transform 0.25s ease;
-    box-shadow: 0 0 2rem rgba(0, 0, 0, 0.45);
+    box-shadow: 0 0 2rem var(--vscode-shadow);
   }
 
   .sidebar-explorer.open {
@@ -474,7 +556,7 @@
   display: flex;
   align-items: center;
   padding: 0 1rem;
-  background: rgba(30, 30, 63, 0.5);
+  background: var(--vscode-panel-glass);
   border-right: 1px solid var(--vscode-border);
   color: var(--vscode-fg-muted);
   cursor: pointer;
@@ -505,7 +587,7 @@
 }
 
 .tab-close:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--vscode-hover-strong);
 }
 
 .tab-breadcrumb {
@@ -529,12 +611,12 @@
   overflow-y: auto;
   position: relative;
   scrollbar-width: thin;
-  scrollbar-color: rgba(168,85,247,0.3) transparent;
+  scrollbar-color: var(--vscode-scrollbar-hover) transparent;
 }
 
 .editor-content::-webkit-scrollbar { width: 6px; }
 .editor-content::-webkit-scrollbar-track { background: transparent; }
-.editor-content::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.25); border-radius: 3px; }
+.editor-content::-webkit-scrollbar-thumb { background: var(--vscode-scrollbar); border-radius: 3px; }
 
 /* ================================================
    STATUS BAR
@@ -562,7 +644,7 @@
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  color: rgba(255,255,255,0.75);
+  color: var(--vscode-status-text);
   cursor: default;
   padding: 0 0.25rem;
   border-radius: 0.15rem;
@@ -570,25 +652,25 @@
   white-space: nowrap;
 }
 
-.status-item:hover { background: rgba(255,255,255,0.1); }
+.status-item:hover { background: var(--vscode-hover-strong); }
 
-.status-branch { color: #c4b5fd; }
+.status-branch { color: var(--vscode-branch); }
 
-.status-available { color: #86efac; }
+.status-available { color: var(--vscode-ok); }
 
 .availability-dot {
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 50%;
-  background: #4ade80;
-  box-shadow: 0 0 4px #4ade80;
+  background: var(--vscode-ok-dot);
+  box-shadow: 0 0 4px var(--vscode-ok-dot);
   display: inline-block;
   animation: pulse-green 2s ease-in-out infinite;
 }
 
 @keyframes pulse-green {
-  0%, 100% { opacity: 1; box-shadow: 0 0 4px #4ade80; }
-  50% { opacity: 0.6; box-shadow: 0 0 8px #4ade80; }
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--vscode-ok-dot); }
+  50% { opacity: 0.6; box-shadow: 0 0 8px var(--vscode-ok-dot); }
 }
 
 /* ================================================
@@ -605,13 +687,13 @@
   bottom: 2.25rem;
   left: 3.5rem;
   width: 18rem;
-  background: rgba(30, 30, 63, 0.95);
+  background: var(--vscode-panel-glass);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  border: 1px solid var(--vscode-accent-line);
   border-radius: 0.75rem;
   z-index: 100;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(168,85,247,0.1);
+  box-shadow: 0 8px 32px var(--vscode-shadow), 0 0 0 1px var(--vscode-border-light);
   overflow: hidden;
   animation: panel-slide-up 0.2s ease;
 }
@@ -626,7 +708,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 1rem;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid var(--vscode-hover);
 }
 
 .profile-avatar {
@@ -641,7 +723,7 @@
   font-size: 0.85rem;
   color: white;
   letter-spacing: 0.05em;
-  border: 2px solid rgba(168,85,247,0.5);
+  border: 2px solid var(--vscode-accent-line);
   flex-shrink: 0;
 }
 
@@ -676,7 +758,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.78rem;
-  color: #86efac;
+  color: var(--vscode-ok);
   font-family: 'Inter', sans-serif;
 }
 
@@ -701,13 +783,13 @@
 
 .profile-link:hover {
   color: var(--vscode-text-main);
-  background: rgba(255,255,255,0.05);
+  background: var(--vscode-hover-soft);
 }
 
 .profile-link i { font-size: 0.85rem; width: 1rem; text-align: center; }
 
 .profile-panel-footer {
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid var(--vscode-hover);
   padding-top: 0.6rem;
 }
 

@@ -5,6 +5,59 @@
 
 /* ---- Light Mode (Azul Claro / Slate) ---- */
 [data-theme="light"] {
+  /* ---- Documento del caso de estudio ---- */
+  --md-text: #2D2B55;
+  --md-text-soft: #4A4380;
+  --md-text-muted: #6B649B;
+  --md-heading: #6D28D9;
+  --md-link: #6D28D9;
+  --md-code-bg: rgba(45, 43, 85, 0.05);
+  --md-code-border: rgba(109, 40, 217, 0.18);
+  --md-overlay: rgba(251, 250, 255, 0.92);
+  --md-banner-text: #2D2B55;
+  --md-banner-shadow: none;
+  --btn-outline-bg: #F2EFFB;
+  --btn-outline-text: #2D2B55;
+  --btn-outline-border: rgba(45, 43, 85, 0.2);
+  --btn-outline-hover: #E4DDF5;
+
+  /* ---- Editor (layout tipo VSCode) ----
+     El layout emula Shades of Purple. En claro se invierte manteniendo esa
+     identidad: el texto principal es el morado oscuro de la firma de SoP, no
+     un gris cualquiera. Todos los contrastes estan comprobados sobre
+     --editor-bg y --editor-surface; el mas bajo es el de los numeros de linea,
+     3,34:1, que son decoracion y no texto. */
+  --editor-bg: #FBFAFF;
+  --editor-surface: #F2EFFB;
+  --editor-text: #2D2B55;
+  --editor-text-soft: #4A4380;
+  --editor-text-muted: #6B649B;
+  --editor-line-number: #8A85AE;
+
+  --syntax-mark: #0F5FBF;
+  --syntax-heading: #9A4C00;
+  --syntax-bullet: #6D28D9;
+  --syntax-fence: #6B649B;
+  --syntax-accent: #00696F;
+  --syntax-link: #6D28D9;
+
+  --card-bg: rgba(109, 40, 217, 0.04);
+  --card-border: rgba(109, 40, 217, 0.18);
+  --card-border-hover: rgba(109, 40, 217, 0.4);
+  --card-glow: rgba(109, 40, 217, 0.1);
+  --chip-bg: rgba(91, 79, 176, 0.08);
+  --chip-border: rgba(91, 79, 176, 0.22);
+
+  /* El color de marca deja de ser el del texto: Java sobre blanco da 2,13:1.
+     Se queda en el borde y el fondo, que lo identifican igual, y el texto
+     pasa a --editor-text. */
+  --badge-text: var(--editor-text);
+  --badge-tint: 14%;
+  --badge-edge: 55%;
+  --badge-hover-shadow: rgba(45, 43, 85, 0.18);
+  /* Los devicon de color se apagan un punto: en claro deslumbran. */
+  --icono-brillo: 0.92;
+
   --bg-primary: #E2E8F0; /* Slate 200 - clearly gray-blue, not white */
   --bg-secondary: #FFFFFF; /* Pure white for cards */
   --bg-tertiary: #CBD5E1; /* Slate 300 for tags/accents */
@@ -80,6 +133,50 @@
 
 /* ---- Dark Mode (Default) ---- */
 [data-theme="dark"] {
+  /* ---- Documento del caso de estudio ---- */
+  --md-text: #CDD9E5;
+  --md-text-soft: #ADBAC7;
+  --md-text-muted: #929BB1;
+  --md-heading: #DDB7FF;
+  --md-link: #A855F7;
+  --md-code-bg: rgba(15, 23, 42, 0.4);
+  --md-code-border: rgba(168, 85, 247, 0.2);
+  --md-overlay: rgba(45, 43, 85, 0.85);
+  --md-banner-text: #FFFFFF;
+  --md-banner-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --btn-outline-bg: #21262D;
+  --btn-outline-text: #C9D1D9;
+  --btn-outline-border: rgba(240, 246, 252, 0.1);
+  --btn-outline-hover: #30363D;
+
+  /* ---- Editor (layout tipo VSCode) ---- */
+  --editor-bg: #1E1E3F;
+  --editor-surface: rgba(30, 30, 63, 0.6);
+  --editor-text: #FFFFFF;
+  --editor-text-soft: #A599E9;
+  --editor-text-muted: #C5C0E8;
+  --editor-line-number: rgba(100, 120, 160, 0.35);
+
+  --syntax-mark: #569CD6;
+  --syntax-heading: #FAD000;
+  --syntax-bullet: #A855F7;
+  --syntax-fence: rgba(86, 156, 214, 0.5);
+  --syntax-accent: #9EFFFF;
+  --syntax-link: #A855F7;
+
+  --card-bg: rgba(30, 30, 63, 0.6);
+  --card-border: rgba(168, 85, 247, 0.15);
+  --card-border-hover: rgba(168, 85, 247, 0.35);
+  --card-glow: rgba(168, 85, 247, 0.08);
+  --chip-bg: rgba(165, 153, 233, 0.08);
+  --chip-border: rgba(165, 153, 233, 0.15);
+
+  --badge-text: var(--marca);
+  --badge-tint: 12%;
+  --badge-edge: 40%;
+  --badge-hover-shadow: rgba(0, 0, 0, 0.3);
+  --icono-brillo: 1.2;
+
   --bg-primary: #000000;
   --bg-secondary: #0A0A0A;
   --bg-tertiary: #141414;

@@ -56,11 +56,16 @@
       </div>
 
       <div class="activity-icons-bottom">
-        <!-- Settings (disabled) -->
-        <div class="icon-item icon-disabled" title="Settings (coming soon)">
-          <i class="pi pi-cog"></i>
-          <span class="icon-tooltip">Settings</span>
-        </div>
+        <!-- Tema claro / oscuro -->
+        <button type="button"
+                class="icon-item"
+                (click)="tema.toggleTheme()"
+                [attr.aria-pressed]="tema.theme() === 'light'"
+                [attr.aria-label]="tema.isDark() ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'"
+                [title]="tema.isDark() ? 'Tema claro' : 'Tema oscuro'">
+          <i class="pi" [class.pi-sun]="tema.isDark()" [class.pi-moon]="!tema.isDark()"></i>
+          <span class="icon-tooltip">{{ tema.isDark() ? 'Tema claro' : 'Tema oscuro' }}</span>
+        </button>
 
         <!-- Profile panel toggle -->
         <div class="icon-item"
