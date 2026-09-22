@@ -1,6 +1,13 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../../../core/services/data.service';
 import { Project } from '../../../../shared/models/project.model';
@@ -18,6 +25,10 @@ const aLineas = (lista?: string[]): string => (lista ?? []).join('\n');
  */
 const aLista = (texto?: string): string[] =>
   (texto ?? '').split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+
+/** Longitud minima de readme que el backend acepta. Se comprueba aqui para no
+ *  gastar una llamada de pago en un texto que ya se sabe que va a rechazar. */
+const README_MINIMO = 200;
 
 // PrimeNG
 import { InputTextModule } from 'primeng/inputtext';
@@ -51,6 +62,15 @@ export class AdminProjectFormComponent implements OnInit {
   projectId: number | null = null;
   loading = signal(false);
   saving = signal(false);
+
+  /**
+   * El readme de origen para redactar el borrador. Va fuera del formulario a
+   * proposito: no es un campo del proyecto, es material de entrada y no se
+   * guarda en ningun sitio.
+   */
+  readmeFuente = new FormControl('');
+  redactando = signal(false);
+  panelBorradorAbierto = signal(false);
 
   statusOptions = [
     { label: 'Draft', value: 'Draft' },
@@ -112,8 +132,25 @@ export class AdminProjectFormComponent implements OnInit {
         mainFeatures: [''],
         technologies: [''],
         learnings: ['']
-      })
+      }),
+
+      // Cada challenge es un par de campos, no una linea con separador: ya se
+      // aprendio con las comas que meter un delimitador dentro del contenido
+      // acaba partiendo lo que no debia.
+      challenges: this.fb.array([])
     });
+  }
+
+  get challenges(): FormArray {
+    return this.form.get('challenges') as FormArray;
+  }
+
+  agregarChallenge(title = '', description = ''): void {
+    this.challenges.push(this.fb.group({ title: [title], description: [description] }));
+  }
+
+  quitarChallenge(indice: number): void {
+    this.challenges.removeAt(indice);
   }
 
   private loadProject(id: number): void {
@@ -139,6 +176,13 @@ export class AdminProjectFormComponent implements OnInit {
             highlightsText: aLineas(project.highlights),
             keywordsText: aLineas(project.keywords)
           });
+
+          // patchValue no rellena un FormArray vacio: hay que crear los
+          // controles antes. Si esto faltara, abrir un proyecto y guardarlo
+          // mandaria la lista vacia y se perderian sus challenges.
+          this.challenges.clear();
+          (project.challenges ?? []).forEach((c) =>
+            this.agregarChallenge(c.title, c.description));
         }
         this.loading.set(false);
       },
@@ -149,27 +193,111 @@ export class AdminProjectFormComponent implements OnInit {
     });
   }
 
+  /**
+   * Pide un borrador al backend y lo vuelca en el formulario.
+   *
+   * No guarda: deja el texto puesto para revisarlo. Sobrescribe lo que hubiera
+   * en los campos de prosa, y por eso el boton avisa antes cuando se esta
+   * editando un proyecto que ya tiene contenido.
+   */
+  redactarBorrador(): void {
+    const nombre = (this.form.get('name')?.value ?? '').trim();
+    const readme = (this.readmeFuente.value ?? '').trim();
+
+    if (!nombre) {
+      this.avisar('Escribe primero el nombre del proyecto: orienta la redaccion.');
+      return;
+    }
+    if (readme.length < README_MINIMO) {
+      this.avisar(
+        `El readme es muy corto (${readme.length} caracteres, minimo ${README_MINIMO}). ` +
+        'Con menos que eso el borrador se lo inventaria casi todo.');
+      return;
+    }
+    if (this.isEditMode && !confirm(
+      'Esto reemplaza las descripciones, las cinco secciones del readme y los ' +
+      'challenges por lo que redacte el borrador. Los demas campos no se tocan. ' +
+      'Nada se guarda hasta que pulses Guardar. Continuar?')) {
+      return;
+    }
+
+    this.redactando.set(true);
+    this.dataService.draftProject(nombre, readme).subscribe({
+      next: (borrador) => {
+        this.form.patchValue({
+          shortDescription: borrador.shortDescription,
+          fullDescription: borrador.fullDescription,
+          readmeMarkdown: borrador.readmeMarkdown
+        });
+
+        this.challenges.clear();
+        (borrador.challenges ?? []).forEach((c) =>
+          this.agregarChallenge(c.title, c.description));
+
+        this.redactando.set(false);
+        this.panelBorradorAbierto.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Borrador listo',
+          detail: 'Revisalo antes de guardar. Todavia no se ha guardado nada.',
+          life: 6000
+        });
+      },
+      error: (respuesta) => {
+        this.redactando.set(false);
+        // El backend distingue dos casos y manda el motivo en el cuerpo: un
+        // borrador que no sirve (422) se reintenta, un proveedor caido (503)
+        // no tiene nada que revisar. Mostrar el mensaje tal cual es lo unico
+        // que deja distinguirlos desde aqui.
+        this.messageService.add({
+          severity: 'error',
+          summary: respuesta?.status === 503 ? 'Redactor no disponible' : 'No se pudo redactar',
+          detail: respuesta?.error?.error ?? 'No se pudo contactar con el backend.',
+          life: 10000
+        });
+      }
+    });
+  }
+
+  private avisar(detalle: string): void {
+    this.messageService.add({ severity: 'warn', summary: 'Falta algo', detail: detalle, life: 7000 });
+  }
+
   onSubmit(): void {
     if (this.form.invalid) return;
 
     this.saving.set(true);
     const formValue = this.form.value;
-    
+
     const { featuresText, highlightsText, keywordsText, ...resto } = formValue;
 
     const projectData: Project = {
       ...resto,
       features: aLista(featuresText),
       highlights: aLista(highlightsText),
-      keywords: aLista(keywordsText)
+      keywords: aLista(keywordsText),
+      challenges: (resto.challenges ?? [])
+        .map((c: { title: string; description: string }) => ({
+          title: (c.title ?? '').trim(),
+          description: (c.description ?? '').trim()
+        }))
+        .filter((c: { title: string; description: string }) => c.title || c.description)
     };
 
     // Los campos que este formulario no maneja (diagramas, techStack,
-    // structuredStack, rawMetrics, challenges) no se envian. El backend hace
-    // una actualizacion parcial: lo que no llega se conserva.
+    // structuredStack, rawMetrics) no se envian. El backend hace una
+    // actualizacion parcial: lo que no llega se conserva.
+    //
+    // Las listas vacias tambien se quitan, y no solo las cadenas: mandar []
+    // borraria lo que hubiera al otro lado. Es la misma limitacion que ya
+    // tiene la fusion parcial --no se puede vaciar un campo desde aqui, hay
+    // que editarlo en el JSON y subirlo con el espejo-- y se prefiere asi
+    // despues de haber perdido el contenido dos veces desde este formulario.
     Object.keys(projectData).forEach((k) => {
       const v = (projectData as any)[k];
-      if (v === '' || v === null) delete (projectData as any)[k];
+      if (v === '' || v === null || (Array.isArray(v) && v.length === 0)) {
+        delete (projectData as any)[k];
+      }
     });
 
     const operation = this.isEditMode

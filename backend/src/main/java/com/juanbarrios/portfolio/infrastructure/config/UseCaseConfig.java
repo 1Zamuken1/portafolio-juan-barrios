@@ -22,6 +22,12 @@ public class UseCaseConfig {
     }
 
     @Bean
+    public com.juanbarrios.portfolio.application.usecase.DraftProjectUseCase draftProjectUseCase(
+            com.juanbarrios.portfolio.domain.port.out.ProjectDrafterPort projectDrafterPort) {
+        return new com.juanbarrios.portfolio.application.usecase.DraftProjectUseCase(projectDrafterPort);
+    }
+
+    @Bean
     public SkillUseCase skillUseCase(SkillRepositoryPort skillRepositoryPort) {
         return new SkillUseCase(skillRepositoryPort);
     }

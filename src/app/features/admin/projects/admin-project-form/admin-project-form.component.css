@@ -54,3 +54,106 @@
     flex-direction: column;
   }
 }
+
+/* Encabezados y nota de las secciones del formulario.
+   Estaban en la plantilla sin estilo desde que se anadieron los campos
+   nuevos, asi que se veian como texto suelto sin separacion. */
+.form-section {
+  margin: 1.5rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.form-nota {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--text-tertiary);
+}
+
+.form-nota code {
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+/* Redactor de borradores */
+.panel-borrador {
+  max-width: 900px;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+}
+
+.panel-borrador__toggle {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.panel-borrador__cuerpo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 0 1rem 1rem;
+}
+
+.panel-borrador__ayuda {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--text-tertiary);
+}
+
+.panel-borrador__cuerpo textarea {
+  width: 100%;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8125rem;
+}
+
+/* Desafios */
+.challenge {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.challenge__titulo {
+  flex: 1;
+}
+
+.challenge__descripcion {
+  flex: 2;
+}
+
+/* Alinea el boton con los campos, no con sus etiquetas. */
+.challenge__quitar {
+  margin-top: 1.75rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .challenge {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .challenge__titulo,
+  .challenge__descripcion {
+    width: 100%;
+  }
+
+  .challenge__quitar {
+    margin-top: 0;
+    align-self: flex-end;
+  }
+}

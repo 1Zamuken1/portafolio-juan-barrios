@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, map } from 'rxjs';
-import { Project } from '../../shared/models/project.model';
+import { Project, ProjectDraft } from '../../shared/models/project.model';
 import { Experience } from '../../shared/models/experience.model';
 import { AdminSkill, SkillCategory, Skill } from '../../shared/models/skill.model';
 import { environment } from '../../../environments/environment';
@@ -77,6 +77,18 @@ export class DataService {
 
   deleteProject(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/projects/${id}`);
+  }
+
+  /**
+   * Pide un borrador redactado a partir de un readme.
+   *
+   * No guarda nada: devuelve texto para rellenar el formulario, y de ahi sigue
+   * el camino normal de guardado. La clave de la API vive en el backend, que es
+   * el unico sitio donde puede vivir: el panel es Angular compilado y todo lo
+   * que llevara dentro seria publico.
+   */
+  draftProject(name: string, readme: string): Observable<ProjectDraft> {
+    return this.http.post<ProjectDraft>(`${this.apiUrl}/projects/draft`, { name, readme });
   }
 
   // ═══════════════════════════════════════════

@@ -78,6 +78,21 @@ Este repositorio contiene el portafolio personal de Juan Barrios, un Backend Dev
   - *Producción*: PostgreSQL (ej. Supabase o Neon).
 - **Contenedores**: El backend está dockerizado (`Dockerfile` y `docker-compose.yml`) para facilitar el despliegue y desarrollo local.
 
+### Redactor de borradores (Groq)
+
+`POST /api/projects/draft` recibe `{ name, readme }` y devuelve prosa redactada: `shortDescription`, `fullDescription`, las cinco secciones de `readmeMarkdown` y los `challenges`. El panel lo llama desde el formulario de proyecto y vuelca el resultado en los campos.
+
+Cuatro decisiones que conviene no deshacer sin entenderlas:
+
+- **Nunca persiste.** Devuelve un borrador que rellena el formulario; guardar sigue siendo el `POST` o el `PUT` de siempre. Así una respuesta de un modelo no puede entrar sola en la base de datos.
+- **Requiere autenticación**, y no por privacidad del contenido sino porque cada llamada gasta cuota de pago. Dejarlo abierto no sería una fuga, sería una factura.
+- **Solo genera prosa.** No toca `techStack`, `structuredStack`, `structuredFeatures` ni `rawMetrics`. Las claves de esos campos ya son inconsistentes entre los cuatro proyectos —conviven `Arquitectura` y `Architecture`, `IA` y `Artificial Intelligence`, y tres variantes de «Formatos de exportación»— y un modelo generándolas libremente añadiría una cuarta cada vez. Los iconos son peor: son clases devicon concretas, que no se adivinan, solo se aciertan por casualidad. Tampoco toca los diagramas: colocar nodos sin solapamientos es un problema de layout, no de redacción.
+- **La salida se valida en el caso de uso, no en el adaptador.** Que una descripción corta de 900 caracteres no sirve es una regla del portafolio, no del proveedor. Las cotas salen de medir los cuatro proyectos reales.
+
+Hace falta validar porque `llama-3.3-70b-versatile` **no** soporta el modo de esquema estricto, solo el modo objeto JSON: eso garantiza JSON bien formado, no que venga completo. El modelo es configurable con `GROQ_MODEL` para no atarse a una lista de capacidades que cambia cada pocos meses.
+
+Dos fallos distintos, porque la acción de quien usa el panel es distinta: **422** si el borrador no sirve (revisar y reintentar) y **503** si el proveedor no responde (no hay nada que revisar). Si ambos salieran igual el mensaje mentiría, que es justo lo que pasaba cuando todo salía como 403 vacío.
+
 ## 4. Estructura Monorepo
 El repositorio funciona como un monorepo no estricto:
 - `/` -> Proyecto Angular (Frontend). Vercel lee desde aquí.
@@ -113,6 +128,10 @@ El repositorio funciona como un monorepo no estricto:
 | `SPRING_DATASOURCE_DRIVER-CLASS-NAME` | `org.postgresql.Driver` |
 | `SPRING_PROFILES_ACTIVE` | `render` |
 | `JAVA_OPTS` | `-Xms256m -Xmx384m` |
+| `JWT_SECRET` | BASE64 de 256 bits o más: `openssl rand -base64 32` |
+| `ADMIN_USERNAME` | usuario del panel |
+| `ADMIN_PASSWORD` | contraseña del panel |
+| `GROQ_API_KEY` | **opcional** — sin ella el backend arranca igual y solo deja de funcionar el redactor de borradores |
 
 > ⚠️ NO usar `spring.datasource.url=jdbc:${DATABASE_URL}` en `application-render.properties` — el driver PostgreSQL JDBC no parsea credenciales embebidas en la URL. Usar las 4 vars `SPRING_DATASOURCE_*` separadas.
 

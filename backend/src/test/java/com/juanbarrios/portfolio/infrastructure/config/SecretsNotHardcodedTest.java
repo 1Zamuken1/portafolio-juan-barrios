@@ -49,6 +49,40 @@ class SecretsNotHardcodedTest {
         }
     }
 
+    /**
+     * Las de arriba no pueden tener valor por defecto porque sin ellas la
+     * aplicacion no debe arrancar. Pero hay credenciales que si lo admiten:
+     * {@code groq.api-key} tiene un defecto vacio a proposito, para que el
+     * backend siga en pie sin el redactor de borradores.
+     *
+     * Aun asi no puede llevar dentro un valor literal. Esta comprobacion es mas
+     * ancha que la de arriba: mira cualquier clave que suene a credencial y
+     * exige que lo que haya a la derecha empiece por un marcador de entorno,
+     * tenga defecto o no.
+     */
+    @Test
+    @DisplayName("ninguna clave que suene a credencial lleva un valor literal")
+    void ningunaCredencialLlevaValorLiteral() throws IOException {
+        Pattern sospechosa = Pattern.compile("(secret|password|api-key|apikey|token)",
+                Pattern.CASE_INSENSITIVE);
+
+        for (String linea : Files.readAllLines(CONFIG)) {
+            String limpia = linea.trim();
+            if (limpia.startsWith("#") || !limpia.contains("=")) continue;
+
+            int igual = limpia.indexOf('=');
+            String clave = limpia.substring(0, igual).trim();
+            String valor = limpia.substring(igual + 1).trim();
+
+            if (!sospechosa.matcher(clave).find()) continue;
+
+            if (!valor.startsWith("${")) {
+                fail("la clave " + clave + " parece una credencial y tiene un valor "
+                        + "literal en " + CONFIG + ". Debe leerse del entorno.");
+            }
+        }
+    }
+
     private static String valorDe(List<String> lineas, String clave) {
         for (String linea : lineas) {
             String limpia = linea.trim();

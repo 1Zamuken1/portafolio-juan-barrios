@@ -26,6 +26,11 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      # Redactor de borradores del panel. A diferencia de las de arriba, esta
+      # es opcional: sin ella el backend arranca igual y solo deja de funcionar
+      # el boton de redactar. Se saca de console.groq.com.
+      - key: GROQ_API_KEY
+        sync: false
     # La ruta de salud NO debe tocar la base de datos: si una tabla queda rota,
     # la comprobacion falla, Render no promueve el despliegue y el arreglo que
     # repararia esa tabla no llega a entrar nunca. Paso de verdad.
