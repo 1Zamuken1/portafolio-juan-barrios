@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, extname } from 'node:path';
 
 /**
@@ -123,7 +123,64 @@ test.describe('iconos', () => {
 
     expect(rotos, mensaje(rotos)).toEqual([]);
   });
+
+  /**
+   * La fuente que se sirve solo lleva los iconos que habia cuando se genero.
+   *
+   * Anadir uno nuevo y olvidar regenerarla no rompe el build ni da error en
+   * consola: el icono sencillamente no se dibuja. Es el mismo fallo silencioso
+   * de siempre, con una causa nueva.
+   */
+  test.describe('subconjunto generado', () => {
+    const generado = () => readFileSync(join(RAIZ, 'public', 'fonts', 'iconos.css'), 'utf-8');
+
+    test('las fuentes recortadas estan en el repositorio', () => {
+      for (const f of ['devicon-subset.woff2', 'fa-solid-subset.woff2', 'fa-brands-subset.woff2']) {
+        const ruta = join(RAIZ, 'public', 'fonts', f);
+        expect(existsSync(ruta), `falta ${f}: ejecuta node scripts/subset-iconos.mjs`).toBe(true);
+        // Una fuente vacia pasaria la comprobacion de existencia y no dibujaria nada.
+        expect(statSync(ruta).size, `${f} esta vacio`).toBeGreaterThan(500);
+      }
+    });
+
+    test('cada icono devicon usado tiene su regla en el CSS generado', () => {
+      const css = generado();
+      const usados = new Set([
+        ...iconosDeDatos().map((u) => u.clase.replace(/\s+colored\s*$/, '').trim()),
+        ...iconosDeCodigo().map((u) => u.clase)
+      ].filter((c) => c.startsWith('devicon-')));
+
+      const faltan = [...usados].filter((c) => !css.includes(`.${c}:before{content:`));
+      expect(faltan, regenerar(faltan)).toEqual([]);
+    });
+
+    test('cada icono de font awesome usado tiene su regla en el CSS generado', () => {
+      const css = generado();
+      const usados = new Set<string>();
+      for (const ruta of ficheros(join(RAIZ, 'src', 'app'), ['.ts', '.html'])) {
+        for (const m of readFileSync(ruta, 'utf-8').matchAll(/\bfa-([a-z0-9-]+)/g)) {
+          // fa-solid y compania nombran la familia, no un icono.
+          if (!['solid', 'regular', 'brands', 'classic', 'fw', 'spin', 'pulse'].includes(m[1])) {
+            usados.add(m[1]);
+          }
+        }
+      }
+
+      const faltan = [...usados].filter((n) => !css.includes(`.fa-${n}:before{content:`));
+      expect(faltan, regenerar(faltan)).toEqual([]);
+    });
+  });
 });
+
+function regenerar(faltan: string[]): string {
+  return (
+    'Estos iconos se usan pero no estan en la fuente recortada, asi que no se\n' +
+    'dibujan. Regenera con:\n\n' +
+    '  node scripts/subset-iconos.mjs\n\n' +
+    'y commitea lo que cambie en public/fonts/.\n\n' +
+    faltan.join('\n')
+  );
+}
 
 function mensaje(rotos: string[]): string {
   return (

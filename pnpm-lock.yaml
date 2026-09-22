@@ -72,6 +72,9 @@ importers:
       '@angular/compiler-cli':
         specifier: ^22.0.0
         version: 22.0.8(@angular/compiler@22.0.8)(typescript@6.0.3)
+      '@fortawesome/fontawesome-free':
+        specifier: ^6.5.1
+        version: 6.5.1
       '@playwright/test':
         specifier: ^1.62.1
         version: 1.62.1
@@ -546,6 +549,10 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@fortawesome/fontawesome-free@6.5.1':
+    resolution: {integrity: sha512-CNy5vSwN3fsUStPRLX7fUYojyuzoEMSXPl7zSLJ8TgtRfjv24LOnOWKT2zYwaHZCJGkdyRnTmstR0P+Ah503Gw==}
+    engines: {node: '>=6'}
 
   '@gar/promise-retry@1.0.3':
     resolution: {integrity: sha512-GmzA9ckNokPypTg10pgpeHNQe7ph+iIKKmhKu3Ob9ANkswreCx7R3cKmY781K8QK3AqVL3xVh9A42JvIAbkkSA==}
@@ -2877,6 +2884,8 @@ snapshots:
 
   '@esbuild/win32-x64@0.28.1':
     optional: true
+
+  '@fortawesome/fontawesome-free@6.5.1': {}
 
   '@gar/promise-retry@1.0.3': {}
 
