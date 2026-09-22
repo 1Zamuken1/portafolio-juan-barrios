@@ -1,56 +1,62 @@
 import { test, expect } from '@playwright/test';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join, extname } from 'node:path';
 
 /**
  * Cada icono del portafolio tiene que existir de verdad en devicon.
  *
  * Un nombre de clase inventado no falla: no dibuja nada. Queda un hueco en la
- * ficha del proyecto y no hay error en consola, asi que solo se descubre
- * mirando la pagina con atencion. Ya paso dos veces --`devicon-uml-plain`, que
- * se arreglo a mano, y `devicon-angular-original`, que llevaba tiempo sin
- * dibujarse-- y por eso esto se comprueba en vez de confiar en la vista.
+ * ficha y no hay error en consola, así que solo se descubre mirando la página
+ * con atención. Ha pasado tres veces: `devicon-uml-plain`, que se arregló a
+ * mano; `devicon-angular-original` y `devicon-playwright-original` en los
+ * datos; y otra vez `devicon-angular-original`, esta escrita a mano en
+ * `projects.component.ts`.
  *
- * La lista buena no se escribe aqui: se saca de `devicon.json`, que viene en el
- * propio paquete instalado. Asi vale para las 578 tecnologias que trae y se
- * actualiza sola al subir la version de devicon.
+ * Esa tercera se escapó porque la versión anterior de este test **solo miraba
+ * los JSON de datos**. Los iconos también viven en el código: hay una cascada
+ * de respaldo que asigna uno según el nombre de la tecnología. Por eso ahora
+ * se recorren las dos fuentes.
  *
- * Esto importa mas ahora que hay un redactor con IA: un modelo no puede
- * adivinar estas clases, solo acertarlas por casualidad. Por eso no las genera
- * --el borrador es solo prosa-- y por eso el dia que se generen tendran que
- * resolverse contra esta misma lista.
+ * La lista buena sale de `devicon.min.css`, no de `devicon.json`. El JSON
+ * describe qué variantes *deberían* existir; el CSS es el que define las
+ * reglas que el navegador aplica, así que es el único que responde a la
+ * pregunta real: ¿esta clase dibuja algo?
  */
-
-type EntradaDevicon = {
-  name: string;
-  versions: { font?: string[] };
-  aliases?: { base: string; alias: string }[];
-};
-
 const RAIZ = join(__dirname, '..');
 
-/** Las clases de fuente que devicon sabe dibujar. */
-function clasesValidas(): Set<string> {
-  const manifiesto: EntradaDevicon[] = JSON.parse(
-    readFileSync(join(RAIZ, 'node_modules', 'devicon', 'devicon.json'), 'utf-8'));
+/** Las clases que el CSS de devicon define de verdad. */
+function clasesDefinidas(): Set<string> {
+  const css = readFileSync(join(RAIZ, 'node_modules', 'devicon', 'devicon.min.css'), 'utf-8');
+  const definidas = new Set<string>();
 
-  const validas = new Set<string>();
-  for (const tecnologia of manifiesto) {
-    // Solo las variantes de fuente: el portafolio usa clases CSS, no SVG
-    // sueltos, y `versions.svg` incluye variantes que la fuente no trae.
-    for (const variante of tecnologia.versions.font ?? []) {
-      validas.add(`devicon-${tecnologia.name}-${variante}`);
-    }
-    for (const alias of tecnologia.aliases ?? []) {
-      validas.add(`devicon-${tecnologia.name}-${alias.alias}`);
+  // Una regla puede agrupar varios selectores compartiendo glifo:
+  //   .devicon-react-original:before,.devicon-react-plain:before{content:"…"}
+  for (const regla of css.matchAll(
+    /((?:\.devicon-[A-Za-z0-9-]+:before\s*,?\s*)+)\{\s*content:\s*"(.+?)"\s*\}/g)) {
+    for (const sel of regla[1].matchAll(/\.(devicon-[A-Za-z0-9-]+):before/g)) {
+      definidas.add(sel[1]);
     }
   }
-  return validas;
+  return definidas;
 }
 
-/** Recorre cualquier estructura y recoge el valor de todas las claves `icon`. */
-function iconosDe(datos: unknown, procedencia: string): { icono: string; donde: string }[] {
-  const encontrados: { icono: string; donde: string }[] = [];
+/** Todos los ficheros bajo un directorio con alguna de las extensiones dadas. */
+function ficheros(dir: string, extensiones: string[]): string[] {
+  const salida: string[] = [];
+  for (const entrada of readdirSync(dir)) {
+    const ruta = join(dir, entrada);
+    if (statSync(ruta).isDirectory()) salida.push(...ficheros(ruta, extensiones));
+    else if (extensiones.includes(extname(entrada))) salida.push(ruta);
+  }
+  return salida;
+}
+
+/** Clase de icono encontrada, con el sitio donde estaba. */
+type Uso = { clase: string; donde: string };
+
+/** Los `icon` de los ficheros de datos. */
+function iconosDeDatos(): Uso[] {
+  const usos: Uso[] = [];
 
   const recorrer = (nodo: unknown, camino: string): void => {
     if (Array.isArray(nodo)) {
@@ -61,49 +67,69 @@ function iconosDe(datos: unknown, procedencia: string): { icono: string; donde: 
 
     for (const [clave, valor] of Object.entries(nodo as Record<string, unknown>)) {
       if (clave === 'icon' && typeof valor === 'string' && valor.trim()) {
-        encontrados.push({ icono: valor, donde: `${camino}.${clave}` });
+        usos.push({ clase: valor, donde: `${camino}.${clave}` });
       } else {
         recorrer(valor, `${camino}.${clave}`);
       }
     }
   };
 
-  recorrer(datos, procedencia);
-  return encontrados;
+  for (const fichero of ['projects.json', 'skills.json', 'experiences.json']) {
+    const datos = JSON.parse(readFileSync(join(RAIZ, 'src', 'assets', 'data', fichero), 'utf-8'));
+    recorrer(datos, fichero);
+  }
+  return usos;
 }
 
-const FICHEROS = ['projects.json', 'skills.json', 'experiences.json'];
+/** Las clases devicon escritas directamente en plantillas y componentes. */
+function iconosDeCodigo(): Uso[] {
+  const usos: Uso[] = [];
+  for (const ruta of ficheros(join(RAIZ, 'src', 'app'), ['.ts', '.html'])) {
+    const texto = readFileSync(ruta, 'utf-8');
+    texto.split('\n').forEach((linea, i) => {
+      for (const m of linea.matchAll(/devicon-[a-z0-9-]+/g)) {
+        usos.push({ clase: m[0], donde: `${ruta.slice(RAIZ.length + 1)}:${i + 1}` });
+      }
+    });
+  }
+  return usos;
+}
 
 test.describe('iconos', () => {
+  const definidas = clasesDefinidas();
+
+  test('el CSS de devicon se lee correctamente', () => {
+    // Si el parseo fallara, todo lo demas daria falsos negativos en silencio.
+    expect(definidas.size).toBeGreaterThan(1000);
+    expect(definidas.has('devicon-angular-plain')).toBe(true);
+    expect(definidas.has('devicon-angular-original')).toBe(false);
+  });
+
   test('todas las clases devicon de los datos existen', () => {
-    const validas = clasesValidas();
-    expect(validas.size).toBeGreaterThan(1000);
+    const rotos = iconosDeDatos()
+      .map((u) => ({ ...u, base: u.clase.replace(/\s+colored\s*$/, '').trim() }))
+      .filter((u) => u.base.startsWith('devicon-') && !definidas.has(u.base))
+      .map((u) => `${u.donde}: "${u.clase}"`);
 
-    const rotos: string[] = [];
+    expect(rotos, mensaje(rotos)).toEqual([]);
+  });
 
-    for (const fichero of FICHEROS) {
-      const datos = JSON.parse(
-        readFileSync(join(RAIZ, 'src', 'assets', 'data', fichero), 'utf-8'));
+  test('todas las clases devicon escritas en el codigo existen', () => {
+    // Este es el que faltaba. La cascada de respaldo de ProjectsComponent
+    // asigna iconos por nombre de tecnologia y tenia uno inexistente.
+    const rotos = iconosDeCodigo()
+      .filter((u) => !definidas.has(u.clase))
+      .map((u) => `${u.donde}: "${u.clase}"`);
 
-      for (const { icono, donde } of iconosDe(datos, fichero)) {
-        // Algunos iconos llevan " colored" detras, que es un modificador de
-        // devicon y no parte del nombre de la tecnologia.
-        const base = icono.replace(/\s+colored\s*$/, '').trim();
-
-        // Los que no son de devicon (PrimeIcons, rutas a un svg propio) no se
-        // comprueban aqui: esta lista solo sabe de devicon.
-        if (!base.startsWith('devicon-')) continue;
-
-        if (!validas.has(base)) {
-          rotos.push(`${donde}: "${icono}"`);
-        }
-      }
-    }
-
-    expect(rotos,
-      'Estas clases no existen en devicon y no dibujan nada.\n' +
-      'Mira las variantes reales en node_modules/devicon/devicon.json: no todas\n' +
-      'las tecnologias traen "original", muchas solo tienen "plain".\n\n' +
-      rotos.join('\n')).toEqual([]);
+    expect(rotos, mensaje(rotos)).toEqual([]);
   });
 });
+
+function mensaje(rotos: string[]): string {
+  return (
+    'Estas clases no existen en devicon y no dibujan nada.\n' +
+    'No todas las tecnologias traen "original": muchas solo tienen "plain".\n' +
+    'Las variantes reales estan en node_modules/devicon/devicon.min.css.\n\n' +
+    rotos.join('\n')
+  );
+}
