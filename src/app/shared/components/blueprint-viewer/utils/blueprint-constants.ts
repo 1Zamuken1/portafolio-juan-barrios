@@ -2,7 +2,7 @@
  * Paleta del visor de arquitectura, con estetica de plano tecnico.
  *
  * - `dark`  -> blueprint clasico: tinta blanca sobre papel cian.
- * - `light` -> whiteprint: tinta cian sobre papel claro, el negativo del anterior.
+ * - `light` -> plano sepia: tinta calida sobre papel crema, a juego con Solarized Light.
  *
  * Todo el trazo es monocromo. La unica concesion al color es `accent`, que
  * identifica el grupo de cada nodo en la banda lateral y en el icono, en tonos

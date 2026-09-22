@@ -46,17 +46,22 @@
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+/* En claro no es un whiteprint cian sino un plano sepia: papel crema y tinta
+   calida. El cian venia de cuando el tema claro era lavanda y azul; al lado de
+   Solarized Light se veia frio y despegado del resto de la pagina. El papel es
+   el mismo #FDF6E3 del editor, para que el diagrama parezca impreso sobre la
+   propia hoja y no pegado encima. */
 .blueprint-viewer[data-theme='light'] {
-  --bp-paper: #eef5f7;
-  --bp-paper-deep: #dde9ed;
-  --bp-ink: #08414e;
-  --bp-ink-soft: rgba(8, 65, 78, 0.92);
-  --bp-ink-faint: rgba(8, 65, 78, 0.72);
-  --bp-grid-minor: rgba(13, 95, 112, 0.12);
-  --bp-grid-major: rgba(13, 95, 112, 0.30);
-  --bp-connector: rgba(8, 65, 78, 0.8);
-  --bp-mark: #b8860b;
-  --bp-panel: rgba(255, 255, 255, 0.92);
+  --bp-paper: #FDF6E3;
+  --bp-paper-deep: #EEE8D5;
+  --bp-ink: #073642;
+  --bp-ink-soft: rgba(7, 54, 66, 0.92);
+  --bp-ink-faint: rgba(7, 54, 66, 0.7);
+  --bp-grid-minor: rgba(181, 137, 0, 0.16);
+  --bp-grid-major: rgba(181, 137, 0, 0.34);
+  --bp-connector: rgba(7, 54, 66, 0.78);
+  --bp-mark: #B58900;
+  --bp-panel: rgba(253, 246, 227, 0.94);
 }
 
 /* ═══════════════════════════════════════════════════════════════

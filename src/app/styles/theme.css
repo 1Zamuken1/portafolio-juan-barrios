@@ -6,47 +6,54 @@
 /* ---- Light Mode (Azul Claro / Slate) ---- */
 [data-theme="light"] {
   /* ---- Documento del caso de estudio ---- */
-  --md-text: #2D2B55;
-  --md-text-soft: #4A4380;
-  --md-text-muted: #6B649B;
-  --md-heading: #6D28D9;
-  --md-link: #6D28D9;
-  --md-code-bg: rgba(45, 43, 85, 0.05);
-  --md-code-border: rgba(109, 40, 217, 0.18);
-  --md-overlay: rgba(251, 250, 255, 0.92);
-  --md-banner-text: #2D2B55;
+  --md-text: #073642;
+  --md-text-soft: #586E75;
+  --md-text-muted: #4A5E66;
+  --md-heading: #4F53A0;
+  --md-link: #1C6497;
+  --md-code-bg: rgba(7, 54, 66, 0.05);
+  --md-code-border: rgba(88, 110, 117, 0.22);
+  --md-overlay: rgba(253, 246, 227, 0.35);
+  --md-banner-text: #073642;
   --md-banner-shadow: none;
-  --btn-outline-bg: #F2EFFB;
-  --btn-outline-text: #2D2B55;
-  --btn-outline-border: rgba(45, 43, 85, 0.2);
-  --btn-outline-hover: #E4DDF5;
+  --btn-outline-bg: #EEE8D5;
+  --btn-outline-text: #073642;
+  --btn-outline-border: rgba(88, 110, 117, 0.3);
+  --btn-outline-hover: #E3DCC6;
 
   /* ---- Editor (layout tipo VSCode) ----
-     El layout emula Shades of Purple. En claro se invierte manteniendo esa
-     identidad: el texto principal es el morado oscuro de la firma de SoP, no
-     un gris cualquiera. Todos los contrastes estan comprobados sobre
-     --editor-bg y --editor-surface; el mas bajo es el de los numeros de linea,
-     3,34:1, que son decoracion y no texto. */
-  --editor-bg: #FBFAFF;
-  --editor-surface: #F2EFFB;
-  --editor-text: #2D2B55;
-  --editor-text-soft: #4A4380;
-  --editor-text-muted: #6B649B;
-  --editor-line-number: #8A85AE;
+     El tema oscuro es Shades of Purple, pero su variante clara resultaba
+     fria y lavada: un blanco lavanda que no se sostenia junto a la imagen de
+     los proyectos. El claro pasa a Solarized Light, que es calido de fabrica.
+     Se eligio frente a Gruvbox porque su paleta incluye un violeta (#6C71C4):
+     asi el morado de la identidad sobrevive como acento en vez de perderse, y
+     el ambar (#B58900) hereda el papel del amarillo #fad000 del tema oscuro.
+     Sus contrastes estan disenados con relaciones medidas, no elegidos a ojo,
+     y aqui se volvieron a comprobar sobre la pagina renderizada. */
+  --editor-bg: #FDF6E3;
+  --editor-surface: #EEE8D5;
+  --editor-text: #073642;
+  --editor-text-soft: #586E75;
+  --editor-text-muted: #4A5E66;
+  --editor-line-number: #93A1A1;
 
-  --syntax-mark: #0F5FBF;
-  --syntax-heading: #9A4C00;
-  --syntax-bullet: #6D28D9;
-  --syntax-fence: #6B649B;
-  --syntax-accent: #00696F;
-  --syntax-link: #6D28D9;
+  --syntax-mark: #1C6497;
+  /* Solarized es un tema de bajo contraste por diseno y su amarillo #B58900
+     da 2,98:1 sobre el papel, por debajo de AA. Como aqui hace de texto en los
+     encabezados, se oscurece hasta 4,89:1. El #B58900 original se conserva
+     donde hace de borde o de fondo, que no tienen ese requisito. */
+  --syntax-heading: #8A6600;
+  --syntax-bullet: #4F53A0;
+  --syntax-fence: #93A1A1;
+  --syntax-accent: #1A6B64;
+  --syntax-link: #4F53A0;
 
-  --card-bg: rgba(109, 40, 217, 0.04);
-  --card-border: rgba(109, 40, 217, 0.18);
-  --card-border-hover: rgba(109, 40, 217, 0.4);
-  --card-glow: rgba(109, 40, 217, 0.1);
-  --chip-bg: rgba(91, 79, 176, 0.08);
-  --chip-border: rgba(91, 79, 176, 0.22);
+  --card-bg: rgba(181, 137, 0, 0.06);
+  --card-border: rgba(88, 110, 117, 0.22);
+  --card-border-hover: rgba(181, 137, 0, 0.55);
+  --card-glow: rgba(181, 137, 0, 0.15);
+  --chip-bg: rgba(108, 113, 196, 0.08);
+  --chip-border: rgba(108, 113, 196, 0.25);
 
   /* El color de marca deja de ser el del texto: Java sobre blanco da 2,13:1.
      Se queda en el borde y el fondo, que lo identifican igual, y el texto
@@ -54,7 +61,7 @@
   --badge-text: var(--editor-text);
   --badge-tint: 14%;
   --badge-edge: 55%;
-  --badge-hover-shadow: rgba(45, 43, 85, 0.18);
+  --badge-hover-shadow: rgba(7, 54, 66, 0.18);
   /* Los devicon de color se apagan un punto: en claro deslumbran. */
   --icono-brillo: 0.92;
 

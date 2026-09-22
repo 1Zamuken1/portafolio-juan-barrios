@@ -53,57 +53,56 @@
 }
 
 /* ---- Los mismos tokens en claro ----
-   Shades of Purple tiene variante clara y esta la sigue: fondo blanco con un
-   velo lavanda y el morado oscuro de la firma como texto. El amarillo #fad000
-   no sobrevive al cambio --da 1,5:1 sobre blanco-- asi que su papel lo hereda
-   un ambar oscuro con el mismo peso visual. Todos los contrastes estan
-   comprobados. */
+   El claro no es Shades of Purple sino Solarized Light: la variante clara de
+   SoP quedaba fria y lavada al lado de las imagenes de los proyectos. El
+   ambar #B58900 hereda el papel del amarillo #fad000, y el violeta #6C71C4
+   conserva el morado de la identidad. */
 /* :host-context y no `[data-theme="light"] .theme-...`: la encapsulacion de
    Angular le pega el atributo del componente a TODOS los compuestos del
    selector, incluido el ancestro. El atributo data-theme vive en <html>, que
    esta fuera del componente y no lo lleva, asi que la regla no llegaba a
    coincidir nunca y el tema claro se quedaba sin efecto sin dar ningun error. */
 :host-context([data-theme="light"]) .theme-shades-of-purple {
-  --vscode-bg: #FBFAFF;
-  --vscode-sidebar-bg: #F2EFFB;
-  --vscode-activity-bg: #EAE5F7;
-  --vscode-titlebar-bg: #EAE5F7;
-  --vscode-statusbar-bg: #EAE5F7;
+  --vscode-bg: #FDF6E3;
+  --vscode-sidebar-bg: #F5EDD8;
+  --vscode-activity-bg: #EEE8D5;
+  --vscode-titlebar-bg: #EEE8D5;
+  --vscode-statusbar-bg: #EEE8D5;
 
-  --vscode-primary: #9A4C00;
-  --vscode-primary-dim: rgba(154, 76, 0, 0.12);
-  --vscode-tertiary: #5B4FB0;
+  --vscode-primary: #8A6600;
+  --vscode-primary-dim: rgba(181, 137, 0, 0.18);
+  --vscode-tertiary: #4F53A0;
 
-  --vscode-text-main: #2D2B55;
-  --vscode-text-muted: #4A4380;
+  --vscode-text-main: #073642;
+  --vscode-text-muted: #4A5E66;
 
-  --vscode-border: #DDD6F0;
-  --vscode-border-light: rgba(91, 79, 176, 0.18);
+  --vscode-border: #E3DCC6;
+  --vscode-border-light: rgba(88, 110, 117, 0.2);
 
-  --vscode-glass-bg: rgba(251, 250, 255, 0.85);
-  --vscode-tab-bg-active: #FBFAFF;
-  --vscode-tab-bg-inactive: #EAE5F7;
+  --vscode-glass-bg: rgba(253, 246, 227, 0.88);
+  --vscode-tab-bg-active: #FDF6E3;
+  --vscode-tab-bg-inactive: #EEE8D5;
 
-  --tab-ts: #0F5FBF;
-  --tab-json: #8A5A00;
-  --tab-md: #0F6B5C;
+  --tab-ts: #1C6497;
+  --tab-json: #B58900;
+  --tab-md: #1A6B64;
 
-  --vscode-hover: rgba(45, 43, 85, 0.06);
-  --vscode-hover-soft: rgba(45, 43, 85, 0.04);
-  --vscode-hover-strong: rgba(45, 43, 85, 0.1);
-  --vscode-selected: rgba(109, 40, 217, 0.12);
-  --vscode-accent-line: rgba(109, 40, 217, 0.45);
-  --vscode-scrollbar: rgba(109, 40, 217, 0.3);
-  --vscode-scrollbar-hover: rgba(109, 40, 217, 0.45);
-  --vscode-overlay: rgba(251, 250, 255, 0.75);
-  --vscode-panel-glass: rgba(242, 239, 251, 0.85);
-  --vscode-shadow: rgba(45, 43, 85, 0.15);
-  --vscode-tooltip-bg: #2D2B55;
-  --vscode-tooltip-text: #F2EFFB;
-  --vscode-status-text: rgba(45, 43, 85, 0.85);
-  --vscode-branch: #5B4FB0;
-  --vscode-ok: #0F6B3C;
-  --vscode-ok-dot: #16A34A;
+  --vscode-hover: rgba(7, 54, 66, 0.06);
+  --vscode-hover-soft: rgba(7, 54, 66, 0.04);
+  --vscode-hover-strong: rgba(7, 54, 66, 0.1);
+  --vscode-selected: rgba(181, 137, 0, 0.18);
+  --vscode-accent-line: rgba(181, 137, 0, 0.5);
+  --vscode-scrollbar: rgba(88, 110, 117, 0.3);
+  --vscode-scrollbar-hover: rgba(88, 110, 117, 0.45);
+  --vscode-overlay: rgba(253, 246, 227, 0.75);
+  --vscode-panel-glass: rgba(238, 232, 213, 0.9);
+  --vscode-shadow: rgba(7, 54, 66, 0.15);
+  --vscode-tooltip-bg: #073642;
+  --vscode-tooltip-text: #EEE8D5;
+  --vscode-status-text: #4A5E66;
+  --vscode-branch: #4F53A0;
+  --vscode-ok: #4B5C00;
+  --vscode-ok-dot: #859900;
 }
 
 /* ---- Top-level layout ---- */

@@ -85,6 +85,58 @@ test.describe('tema', () => {
     expect(await temaDe(), 'el tema no se recordo tras recargar').toBe(cambiado);
   });
 
+  test('en claro, ningun texto de la interfaz baja de AA', async ({ page }) => {
+    // La version anterior de este test solo miraba el h1, y por eso se colo la
+    // barra de estado a 3,57:1 --texto real, pequeno y por debajo de AA--.
+    // Comprobar un solo elemento solo demuestra que ese elemento esta bien.
+    await page.goto('/');
+    await page.evaluate(() => localStorage.setItem('jeb-theme', 'light'));
+    await page.reload();
+    await page.waitForSelector('.md-h1');
+
+    const flojos = await page.evaluate(() => {
+      const lum = (rgb: string) => {
+        const [r, g, b] = rgb.match(/[\d.]+/g)!.slice(0, 3)
+          .map((v) => { const n = Number(v) / 255; return n <= 0.03928 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4; });
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      };
+      // Una capa translucida no establece el fondo: hay que seguir subiendo.
+      // Tratarla como opaca daba 1,56:1 en los chips, que en realidad estan
+      // bien; un falso positivo asi habria hecho ignorar el test entero.
+      const opaco = (c: string) => {
+        const m = c.match(/[\d.]+/g);
+        return !!m && (m.length < 4 || Number(m[3]) >= 0.999);
+      };
+      const fondoDe = (el: Element) => {
+        let e: Element | null = el;
+        while (e) {
+          const c = getComputedStyle(e).backgroundColor;
+          if (c && opaco(c)) return c;
+          e = e.parentElement;
+        }
+        return 'rgb(255, 255, 255)';
+      };
+      const ratio = (a: string, b: string) => {
+        const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+        return (x + 0.05) / (y + 0.05);
+      };
+
+      const malos: string[] = [];
+      // Elementos con texto propio y visible, sin bajar a cada nodo del arbol.
+      for (const el of document.querySelectorAll<HTMLElement>(
+        '.md-h1, .md-h2, .md-text, .md-bold, .md-list-item, .status-item, .status-branch, ' +
+        '.status-available, .explorer-title, .file-name, .tab-label, .stack-chip, .md-link')) {
+        const texto = (el.textContent ?? '').trim();
+        if (!texto || el.offsetParent === null) continue;
+        const r = ratio(getComputedStyle(el).color, fondoDe(el));
+        if (r < 4.5) malos.push(`${el.className.split(' ')[0]} "${texto.slice(0, 22)}" = ${r.toFixed(2)}`);
+      }
+      return malos;
+    });
+
+    expect(flojos, `Texto por debajo de 4.5:1 en tema claro:\n  ${flojos.join('\n  ')}`).toEqual([]);
+  });
+
   test('en claro, el texto principal se lee sobre el fondo que lo rodea', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => localStorage.setItem('jeb-theme', 'light'));
