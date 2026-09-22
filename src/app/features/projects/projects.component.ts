@@ -289,7 +289,7 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
     if (name.includes('chromium') || name.includes('chrome')) return 'devicon-chrome-plain colored';
     if (name.includes('react')) return 'devicon-react-original colored';
     if (name.includes('vue')) return 'devicon-vuejs-plain colored';
-    if (name.includes('angular')) return 'devicon-angular-original colored';
+    if (name.includes('angular')) return 'devicon-angular-plain colored';
     if (name.includes('typescript')) return 'devicon-typescript-plain colored';
     if (name.includes('javascript')) return 'devicon-javascript-plain colored';
     if (name.includes('html')) return 'devicon-html5-plain colored';
