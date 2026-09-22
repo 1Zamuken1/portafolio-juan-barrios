@@ -63,11 +63,11 @@
    esta fuera del componente y no lo lleva, asi que la regla no llegaba a
    coincidir nunca y el tema claro se quedaba sin efecto sin dar ningun error. */
 :host-context([data-theme="light"]) .theme-shades-of-purple {
-  --vscode-bg: #F8F6F2;
-  --vscode-sidebar-bg: #F5F2EB;
-  --vscode-activity-bg: #F0EDE4;
-  --vscode-titlebar-bg: #F0EDE4;
-  --vscode-statusbar-bg: #F0EDE4;
+  --vscode-bg: #FBFAF7;
+  --vscode-sidebar-bg: #F7F5EF;
+  --vscode-activity-bg: #F3F0E7;
+  --vscode-titlebar-bg: #F3F0E7;
+  --vscode-statusbar-bg: #F3F0E7;
 
   --vscode-primary: #87671D;
   --vscode-primary-dim: rgba(135, 103, 29, 0.16);
@@ -76,12 +76,12 @@
   --vscode-text-main: #3F535A;
   --vscode-text-muted: #4E646C;
 
-  --vscode-border: #E6E1D5;
+  --vscode-border: #E9E5DA;
   --vscode-border-light: rgba(78, 100, 108, 0.18);
 
-  --vscode-glass-bg: rgba(248, 246, 242, 0.9);
-  --vscode-tab-bg-active: #F8F6F2;
-  --vscode-tab-bg-inactive: #F0EDE4;
+  --vscode-glass-bg: rgba(251, 250, 247, 0.9);
+  --vscode-tab-bg-active: #FBFAF7;
+  --vscode-tab-bg-inactive: #F3F0E7;
 
   --tab-ts: #2570B1;
   --tab-json: #87671D;
@@ -94,11 +94,11 @@
   --vscode-accent-line: rgba(135, 103, 29, 0.45);
   --vscode-scrollbar: rgba(78, 100, 108, 0.26);
   --vscode-scrollbar-hover: rgba(78, 100, 108, 0.4);
-  --vscode-overlay: rgba(248, 246, 242, 0.75);
-  --vscode-panel-glass: rgba(243, 240, 231, 0.92);
+  --vscode-overlay: rgba(251, 250, 247, 0.75);
+  --vscode-panel-glass: rgba(245, 243, 236, 0.92);
   --vscode-shadow: rgba(63, 83, 90, 0.13);
   --vscode-tooltip-bg: #3F535A;
-  --vscode-tooltip-text: #F3F0E7;
+  --vscode-tooltip-text: #F5F3EC;
   --vscode-status-text: #4E646C;
   --vscode-branch: #5B50A5;
   --vscode-ok: #396916;

@@ -13,9 +13,9 @@
      mas profunda que el papel, que es lo que da la separacion visual que
      faltaba. Y la tarjeta de datos pasa a ser opaca: al 5% de tinte, la
      captura se veia a traves de los propios datos. */
-  --banner-bg: #EEE9DD;
+  --banner-bg: #EFEADF;
   --banner-img-opacity: 0.13;
-  --panel-solid: #FCFBF8;
+  --panel-solid: #FEFEFD;
 
   /* ---- Documento del caso de estudio ---- */
   --md-text: #3F535A;
@@ -25,13 +25,13 @@
   --md-link: #2570B1;
   --md-code-bg: rgba(63, 83, 90, 0.045);
   --md-code-border: rgba(78, 100, 108, 0.2);
-  --md-overlay: rgba(248, 246, 242, 0.35);
+  --md-overlay: rgba(251, 250, 247, 0.35);
   --md-banner-text: #3F535A;
   --md-banner-shadow: none;
-  --btn-outline-bg: #F3F0E7;
+  --btn-outline-bg: #F5F3EC;
   --btn-outline-text: #3F535A;
   --btn-outline-border: rgba(78, 100, 108, 0.28);
-  --btn-outline-hover: #EAE6DB;
+  --btn-outline-hover: #EDEAE0;
 
   /* ---- Editor (layout tipo VSCode) ----
      El tema oscuro es Shades of Purple, pero su variante clara resultaba
@@ -42,8 +42,8 @@
      el ambar (#B58900) hereda el papel del amarillo #fad000 del tema oscuro.
      Sus contrastes estan disenados con relaciones medidas, no elegidos a ojo,
      y aqui se volvieron a comprobar sobre la pagina renderizada. */
-  --editor-bg: #F8F6F2;
-  --editor-surface: #F3F0E7;
+  --editor-bg: #FBFAF7;
+  --editor-surface: #F5F3EC;
   --editor-text: #3F535A;
   --editor-text-soft: #4E646C;
   --editor-text-muted: #5A6F77;
@@ -152,6 +152,9 @@
   --stat-badge-hover-bg: #0F172A;
   --stat-badge-hover-text: #FFFFFF;
   --tooltip-bg: rgba(255, 255, 255, 0.98);
+  --btn-primary-bg: #2F6B33;
+  --btn-primary-text: #FFFFFF;
+  --btn-primary-hover: #3A7C3E;
 }
 
 /* ---- Dark Mode (Default) ---- */
@@ -276,6 +279,9 @@
   --stat-badge-hover-bg: #1F1F1F;
   --stat-badge-hover-text: #FFFFFF;
   --tooltip-bg: #0A0A0A;
+  --btn-primary-bg: #238636;
+  --btn-primary-text: #FFFFFF;
+  --btn-primary-hover: #2EA043;
 }
 
 /* ---- Component Utility Classes ---- */

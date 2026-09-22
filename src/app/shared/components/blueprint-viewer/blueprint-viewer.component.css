@@ -33,6 +33,8 @@
   --bp-connector: rgba(255, 255, 255, 0.85);
   --bp-mark: #ffe082;
   --bp-panel: rgba(7, 62, 74, 0.95);
+  --bp-sheet-border: transparent;
+  --bp-sheet-shadow: none;
 
   width: 100%;
   flex: 1;
@@ -40,6 +42,11 @@
   position: relative;
   display: flex;
   flex-direction: column;
+
+  /* Marco y sombra propios de la lamina. En oscuro son transparentes: alli el
+     cian ya la separa del fondo y una sombra no aportaria nada. */
+  border: 1px solid var(--bp-sheet-border);
+  box-shadow: var(--bp-sheet-shadow);
   background-color: var(--bp-paper);
   background-image: radial-gradient(
     ellipse at 50% 40%,
@@ -55,32 +62,35 @@
    el mismo #FDF6E3 del editor, para que el diagrama parezca impreso sobre la
    propia hoja y no pegado encima. */
 .blueprint-viewer[data-theme='light'] {
-  --bp-paper: #F8F6F2;
-  --bp-paper-deep: #F0EDE4;
+  /* El tema oscuro tiene un cian de plano de verdad (#0e6a7d) y por eso la
+     hoja destaca del fondo. El claro habia perdido eso: su papel era el mismo
+     de la pagina, asi que el diagrama no se leia como una lamina sino como un
+     hueco. Aqui recupera identidad propia: papel blanco de delineante sobre el
+     escritorio calido, con rejilla y marco en azul tecnico. Frio contra el
+     calido de la pagina, que es lo que lo hace destacar sin gritar. */
+  --bp-paper: #FDFDFC;
+  --bp-paper-deep: #F4F6F8;
   --bp-ink: #3F535A;
   --bp-ink-soft: rgba(63, 83, 90, 0.9);
   --bp-ink-faint: rgba(63, 83, 90, 0.66);
 
-  /* La rejilla baja mucho y deja de ser ambar. En ambar competia con el
-     contenido: el ojo la leia como informacion en vez de como papel. */
-  --bp-grid-minor: rgba(99, 112, 105, 0.055);
-  --bp-grid-major: rgba(99, 112, 105, 0.13);
-  --bp-rule: rgba(99, 112, 105, 0.42);
+  /* La rejilla sube respecto al intento anterior, donde quedo tan tenue que
+     el plano dejo de parecer papel cuadriculado. Es azul y no gris: es lo que
+     dice "esto es un plano" antes de leer nada. */
+  --bp-grid-minor: rgba(21, 73, 126, 0.075);
+  --bp-grid-major: rgba(21, 73, 126, 0.17);
+  --bp-rule: rgba(21, 73, 126, 0.4);
 
   --bp-connector: rgba(63, 83, 90, 0.8);
-
-  /* El conector resaltado era ambar oscuro sobre papel calido: se perdia por
-     definicion, que es justo lo contrario de lo que debe hacer un resaltado.
-     Pasa a azul tinta, frio sobre el papel calido y mas oscuro que cualquier
-     color de grupo, asi que se lee como "esta linea esta activa" y no como
-     una categoria mas. 8,5:1 sobre el papel. */
   --bp-mark: #15497E;
-  --bp-panel: rgba(253, 246, 227, 0.96);
+  --bp-panel: rgba(253, 253, 252, 0.96);
 
-  /* Sobre papel hay que atenuar mucho menos: lo que en oscuro es un nodo en
-     segundo plano, aqui desaparece. */
   --bp-dim-node: 0.75;
   --bp-dim-connector: 0.45;
+
+  /* La lamina se apoya en el papel de la pagina en vez de fundirse con el. */
+  --bp-sheet-border: rgba(21, 73, 126, 0.16);
+  --bp-sheet-shadow: 0 1px 3px rgba(63, 83, 90, 0.07), 0 8px 24px rgba(63, 83, 90, 0.06);
 }
 
 /* ═══════════════════════════════════════════════════════════════
