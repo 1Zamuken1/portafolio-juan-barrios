@@ -445,6 +445,24 @@ El backend modela los 28 campos, no solo los 11 de antes. Los que tienen forma d
 
 > **La base de datos es externa.** Las gratuitas de Render se eliminan a los 30 dias. Se usa Neon con las tres variables `SPRING_DATASOURCE_*` definidas en el dashboard, y **conexion directa, no el pooler**: Hibernate ejecuta DDL al arrancar con `ddl-auto=update`, y el pooler en modo transaccion lo rompe.
 
+### Ideas pendientes
+
+**Publicar desde el panel con un boton.** Hoy llevar un cambio del panel al sitio publico son tres pasos manuales:
+
+```bash
+node scripts/mirror.mjs pull
+git add src/assets/data/ && git commit
+# push a develop -> PR a master -> Vercel despliega
+```
+
+La idea es reducirlo a una accion desde `/admin`. Lo que habria que resolver antes de implementarlo:
+
+- **Quien ejecuta el volcado.** El navegador no puede escribir en el repositorio. Haria falta un paso en CI (un workflow con `workflow_dispatch` que corra el `pull` y abra el PR) o una funcion serverless con un token de GitHub.
+- **Donde vive el token.** Un token con permiso de escritura sobre el repositorio no puede acabar en el bundle del frontend. Tiene que quedarse en el servidor o en los secretos de Actions.
+- **Que no se salte la revision.** El valor del flujo actual es que cada publicacion pasa por un diff revisable, y eso es lo que permitio recuperar el contenido las dos veces que el panel lo borro. El boton deberia **abrir un PR**, no fusionar a master.
+
+Es decir: el boton dispara el workflow, el workflow hace el volcado y abre el PR, y la persona lo revisa y lo fusiona. Se automatiza lo tedioso sin perder la red de seguridad.
+
 ### Tests e2e
 
 ```bash
