@@ -72,3 +72,35 @@
     padding: 1.5rem;
   }
 }
+
+/* ── Experiencia ──
+   El dato ya se cargaba desde el principio; lo que faltaba era dibujarlo.
+   Sigue el mismo estilo de documento que el resto de la pagina, sin tarjetas:
+   es un readme, no un panel. */
+.timeline-entry {
+  padding-left: 1rem;
+  border-left: 2px solid var(--card-border);
+  margin: 1.25rem 0 1.75rem;
+}
+
+.timeline-period {
+  font-size: 0.8rem;
+  color: var(--md-text-muted);
+  margin: 0.15rem 0 0.6rem;
+}
+
+.timeline-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+}
+
+.timeline-tech .tech-tag {
+  font-size: 0.72rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.3rem;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  color: var(--md-text-soft);
+}
