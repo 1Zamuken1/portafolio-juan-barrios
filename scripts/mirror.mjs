@@ -51,7 +51,13 @@ const leerJson = (ruta) => JSON.parse(readFileSync(ruta, 'utf-8'));
  */
 function escribirConOrdenPrevio(ruta, datos, plantilla) {
   const ordenar = (obj, modelo) => {
-    if (Array.isArray(obj)) return obj;
+    // Los elementos de un array tambien se ordenan: sin esto, los objetos
+    // anidados (los nodos del diagrama, por ejemplo) salen con sus claves en
+    // otro orden y el diff se llena de ruido que oculta los cambios reales.
+    if (Array.isArray(obj)) {
+      const plantillaItem = Array.isArray(modelo) ? modelo[0] : undefined;
+      return obj.map((item, i) => ordenar(item, (Array.isArray(modelo) ? modelo[i] : undefined) ?? plantillaItem));
+    }
     if (obj === null || typeof obj !== 'object') return obj;
     if (!modelo || typeof modelo !== 'object' || Array.isArray(modelo)) return obj;
 
@@ -244,8 +250,26 @@ async function pull() {
     pedir('/skills')
   ]);
 
-  if (!proyectos.length) {
-    throw new Error('La API devolvio cero proyectos. Aborto: sobrescribir el JSON con esto vaciaria el sitio.');
+  // Ninguna coleccion puede encoger. Protege a las tres, no solo a projects:
+  // una siembra que falla a medias deja la base con unas coleccciones llenas y
+  // otras vacias, y el volcado se llevaria por delante las que quedaron sin
+  // sembrar. Paso: un push fallo al llegar a experiences y el volcado
+  // siguiente escribio [] en experiences.json y skills.json.
+  const conteos = [
+    ['projects', proyectos.length, leerJson(ficheros.projects).length],
+    ['experiences', experiencias.length, leerJson(ficheros.experiences).length],
+    ['skills', skills.length, leerJson(ficheros.skills).reduce((n, c) => n + c.skills.length, 0)]
+  ];
+
+  const encogidas = conteos.filter(([, api, fichero]) => api < fichero);
+  if (encogidas.length && process.env.MIRROR_ALLOW_SHRINK !== '1') {
+    throw new Error(
+      'La API devuelve menos registros que el JSON:\n' +
+      encogidas.map(([n, api, fich]) => `  ${n}: ${api} en la API, ${fich} en el fichero`).join('\n') +
+      '\n\nAborto: escribir esto borraria contenido del que no hay otra copia.\n' +
+      'Suele significar que la siembra fallo a medias; revisa la salida del push.\n' +
+      'Si de verdad quieres reducirlas, repite con MIRROR_ALLOW_SHRINK=1.'
+    );
   }
 
   const previos = leerJson(ficheros.projects);

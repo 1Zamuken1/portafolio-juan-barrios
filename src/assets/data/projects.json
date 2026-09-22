@@ -155,8 +155,8 @@
       {
         "id": "landing",
         "label": "Landing",
-        "icon": "pi pi-home",
         "description": "Endpoint de entrada principal al sistema web.",
+        "icon": "pi pi-home",
         "group": "client",
         "type": "primary",
         "x": 80,
@@ -167,8 +167,8 @@
       {
         "id": "views",
         "label": "Views",
-        "icon": "pi pi-desktop",
         "description": "Renderizado dinámico de las pantallas del portafolio.",
+        "icon": "pi pi-desktop",
         "group": "client",
         "type": "secondary",
         "x": 80,
@@ -179,8 +179,8 @@
       {
         "id": "services",
         "label": "Services",
-        "icon": "pi pi-cog",
         "description": "Lógica de negocio y coordinación entre módulos.",
+        "icon": "pi pi-cog",
         "group": "application",
         "type": "primary",
         "x": 460,
@@ -191,8 +191,8 @@
       {
         "id": "auth",
         "label": "Authentication",
-        "icon": "pi pi-lock",
         "description": "Gestión de identidad y acceso de usuarios.",
+        "icon": "pi pi-lock",
         "group": "application",
         "type": "secondary",
         "x": 460,
@@ -203,8 +203,8 @@
       {
         "id": "business",
         "label": "Business Logic",
-        "icon": "pi pi-sitemap",
         "description": "Reglas y flujos propios del dominio financiero.",
+        "icon": "pi pi-sitemap",
         "group": "application",
         "type": "primary",
         "x": 460,
@@ -215,8 +215,8 @@
       {
         "id": "persistence",
         "label": "Persistence",
-        "icon": "pi pi-database",
         "description": "Gestión y lectura de información desde archivos.",
+        "icon": "pi pi-database",
         "group": "persistence",
         "type": "primary",
         "x": 840,
@@ -227,8 +227,8 @@
       {
         "id": "sqlite",
         "label": "SQLite",
-        "icon": "devicon-sqlite-plain",
         "description": "Base de datos ligera para desarrollo y testing.",
+        "icon": "devicon-sqlite-plain",
         "group": "database",
         "type": "secondary",
         "x": 1220,
@@ -239,8 +239,8 @@
       {
         "id": "postgres",
         "label": "PostgreSQL",
-        "icon": "devicon-postgresql-plain",
         "description": "Base de datos robusta para producción.",
+        "icon": "devicon-postgresql-plain",
         "group": "database",
         "type": "primary",
         "x": 1220,
@@ -251,8 +251,8 @@
       {
         "id": "ai",
         "label": "AI Engine",
-        "icon": "pi pi-sparkles",
         "description": "Procesamiento inteligente (Gemini/Groq).",
+        "icon": "pi pi-sparkles",
         "group": "external",
         "type": "primary",
         "x": 840,
@@ -263,8 +263,8 @@
       {
         "id": "export",
         "label": "Export Services",
-        "icon": "pi pi-file-export",
         "description": "Serialización a CSV/PDF/Excel.",
+        "icon": "pi pi-file-export",
         "group": "application",
         "type": "secondary",
         "x": 460,
@@ -275,8 +275,8 @@
       {
         "id": "reports",
         "label": "Reports",
-        "icon": "pi pi-file-pdf",
         "description": "Salida documental.",
+        "icon": "pi pi-file-pdf",
         "group": "client",
         "type": "secondary",
         "x": 80,
@@ -303,7 +303,36 @@
         "to": "auth",
         "routeType": "orthogonal"
       },
-      { "from": "services", "to": "business", "bendPoints": [{ "x": 505, "y": 176 }, { "x": 505, "y": 208 }, { "x": 418, "y": 208 }, { "x": 418, "y": 368 }, { "x": 585, "y": 368 }, { "x": 585, "y": 400 }] },
+      {
+        "from": "services",
+        "to": "business",
+        "bendPoints": [
+          {
+            "x": 505,
+            "y": 176
+          },
+          {
+            "x": 505,
+            "y": 208
+          },
+          {
+            "x": 418,
+            "y": 208
+          },
+          {
+            "x": 418,
+            "y": 368
+          },
+          {
+            "x": 585,
+            "y": 368
+          },
+          {
+            "x": 585,
+            "y": 400
+          }
+        ]
+      },
       {
         "from": "auth",
         "to": "persistence",
@@ -527,8 +556,8 @@
       {
         "id": "desktop",
         "label": "Desktop App",
-        "icon": "pi pi-desktop",
         "description": "Interfaz empaquetada.",
+        "icon": "pi pi-desktop",
         "group": "client",
         "type": "primary",
         "x": 80,
@@ -539,8 +568,8 @@
       {
         "id": "electron",
         "label": "Electron Process",
-        "icon": "devicon-electron-original",
         "description": "Orquestador principal.",
+        "icon": "devicon-electron-original",
         "group": "application",
         "type": "primary",
         "x": 460,
@@ -551,8 +580,8 @@
       {
         "id": "playwright",
         "label": "Playwright",
-        "icon": "devicon-playwright-original",
         "description": "Motor headless SGVA.",
+        "icon": "devicon-playwright-original",
         "group": "automation",
         "type": "primary",
         "x": 840,
@@ -563,8 +592,8 @@
       {
         "id": "parser",
         "label": "Offer Parser",
-        "icon": "pi pi-box",
         "description": "Normaliza HTML extraído.",
+        "icon": "pi pi-box",
         "group": "application",
         "type": "secondary",
         "x": 1220,
@@ -575,8 +604,8 @@
       {
         "id": "groq",
         "label": "Groq AI",
-        "icon": "devicon-thealgorithms-plain",
         "description": "Motor de lenguaje estructurado.",
+        "icon": "devicon-thealgorithms-plain",
         "group": "external",
         "type": "primary",
         "x": 1220,
@@ -587,8 +616,8 @@
       {
         "id": "cache",
         "label": "Cache Engine",
-        "icon": "pi pi-database",
         "description": "Almacenamiento local JSON.",
+        "icon": "pi pi-database",
         "group": "persistence",
         "type": "secondary",
         "x": 840,
@@ -599,8 +628,8 @@
       {
         "id": "excel",
         "label": "Export",
-        "icon": "pi pi-file-export",
         "description": "Excel / Markdown.",
+        "icon": "pi pi-file-export",
         "group": "application",
         "type": "secondary",
         "x": 460,
@@ -611,8 +640,8 @@
       {
         "id": "ui",
         "label": "User Interface",
-        "icon": "pi pi-mouse",
         "description": "Panel interactivo.",
+        "icon": "pi pi-mouse",
         "group": "client",
         "type": "secondary",
         "x": 80,
@@ -832,8 +861,8 @@
       {
         "id": "user",
         "label": "Usuario",
-        "icon": "pi pi-user",
         "description": "Actor principal.",
+        "icon": "pi pi-user",
         "group": "client",
         "type": "primary",
         "x": 80,
@@ -844,8 +873,8 @@
       {
         "id": "url",
         "label": "Local URL",
-        "icon": "pi pi-link",
         "description": "Target app.",
+        "icon": "pi pi-link",
         "group": "client",
         "type": "secondary",
         "x": 400,
@@ -856,8 +885,8 @@
       {
         "id": "detect",
         "label": "Stack Detect",
-        "icon": "pi pi-search",
         "description": "Detecta framework.",
+        "icon": "pi pi-search",
         "group": "application",
         "type": "primary",
         "x": 720,
@@ -868,8 +897,8 @@
       {
         "id": "cheerio",
         "label": "Cheerio Parser",
-        "icon": "pi pi-file",
         "description": "Static parse.",
+        "icon": "pi pi-file",
         "group": "automation",
         "type": "secondary",
         "x": 720,
@@ -880,8 +909,8 @@
       {
         "id": "playwright",
         "label": "Playwright Render",
-        "icon": "devicon-playwright-original",
         "description": "Render SPAs.",
+        "icon": "devicon-playwright-original",
         "group": "automation",
         "type": "primary",
         "x": 720,
@@ -892,8 +921,8 @@
       {
         "id": "audits",
         "label": "5 Parallel Audits",
-        "icon": "pi pi-bolt",
         "description": "SEO Metrics.",
+        "icon": "pi pi-bolt",
         "group": "application",
         "type": "primary",
         "x": 1080,
@@ -904,8 +933,8 @@
       {
         "id": "aggregate",
         "label": "Aggregator",
-        "icon": "pi pi-sitemap",
         "description": "Consolida resultados.",
+        "icon": "pi pi-sitemap",
         "group": "application",
         "type": "secondary",
         "x": 1400,
@@ -916,8 +945,8 @@
       {
         "id": "export",
         "label": "AI Export",
-        "icon": "pi pi-file-export",
         "description": "JSON / MD.",
+        "icon": "pi pi-file-export",
         "group": "persistence",
         "type": "secondary",
         "x": 1400,
@@ -1139,8 +1168,8 @@
       {
         "id": "spa",
         "label": "Angular 20 SPA",
-        "icon": "devicon-angular-original",
         "description": "Cliente reactivo.",
+        "icon": "devicon-angular-original",
         "group": "client",
         "type": "primary",
         "x": 80,
@@ -1151,8 +1180,8 @@
       {
         "id": "api",
         "label": "REST API",
-        "icon": "devicon-spring-original",
         "description": "Spring Boot.",
+        "icon": "devicon-spring-original",
         "group": "application",
         "type": "primary",
         "x": 460,
@@ -1163,8 +1192,8 @@
       {
         "id": "security",
         "label": "Security",
-        "icon": "pi pi-lock",
         "description": "JWT Tokens.",
+        "icon": "pi pi-lock",
         "group": "application",
         "type": "secondary",
         "x": 840,
@@ -1175,8 +1204,8 @@
       {
         "id": "persistence",
         "label": "Spring Data JPA",
-        "icon": "devicon-java-plain",
         "description": "ORM transactions.",
+        "icon": "devicon-java-plain",
         "group": "persistence",
         "type": "primary",
         "x": 1220,
@@ -1187,8 +1216,8 @@
       {
         "id": "mysql",
         "label": "MySQL",
-        "icon": "devicon-mysql-plain",
         "description": "Base de datos.",
+        "icon": "devicon-mysql-plain",
         "group": "database",
         "type": "primary",
         "x": 1220,
@@ -1199,8 +1228,8 @@
       {
         "id": "audit",
         "label": "SonarQube",
-        "icon": "devicon-sonarqube-plain",
         "description": "Quality gate.",
+        "icon": "devicon-sonarqube-plain",
         "group": "external",
         "type": "secondary",
         "x": 460,
