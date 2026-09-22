@@ -115,7 +115,19 @@
       <label for="linkLive">Despliegue</label>
       <input pInputText id="linkLive" formControlName="live" placeholder="https://..." />
     </div>
+    <div class="form-group flex-1">
+      <label for="linkDownload">Descarga <small>(solo si no hay despliegue)</small></label>
+      <input pInputText id="linkDownload" formControlName="download"
+             placeholder="https://github.com/usuario/repo/releases/latest" />
+    </div>
   </div>
+
+  <p class="form-nota">
+    La ficha muestra el despliegue si existe y, si no, la descarga. Para una
+    release de GitHub conviene apuntar a <code>/releases/latest</code> y no al
+    <code>.exe</code> de una version concreta: asi no hay que volver aqui cada
+    vez que publiques una nueva.
+  </p>
 
   <div class="form-group">
     <label for="imageUrl">Image URL</label>

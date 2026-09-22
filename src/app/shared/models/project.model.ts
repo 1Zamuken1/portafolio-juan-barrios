@@ -14,7 +14,11 @@ export interface Project {
   highlights: string[];
   links: {
     github: string;
-    live: string | null;
+    /** El proyecto funcionando. La mayoria no lo tiene: son de clonar y desplegar. */
+    live?: string | null;
+    /** Ejecutable publicado, para las aplicaciones de escritorio. La ficha lo
+     *  muestra solo cuando no hay `live`. */
+    download?: string | null;
   };
   githubUrl?: string; // Legacy
   liveUrl?: string | null; // Legacy

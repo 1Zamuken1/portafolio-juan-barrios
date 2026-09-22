@@ -417,7 +417,8 @@
     "databaseArchitecture": "JSON Cache",
     "aiArchitecture": "Groq (Llama 3)",
     "links": {
-      "github": "https://github.com/1Zamuken1/SGVA-Assistant"
+      "github": "https://github.com/1Zamuken1/SGVA-Assistant",
+        "download": "https://github.com/1Zamuken1/SGVA-Assistant/releases/latest"
     },
     "highlights": [
       "Automatización completa del portal SGVA (login, navegación y extracción)",
