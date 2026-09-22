@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "name": "Gastu Djang",
+    "name": "Gastu Django",
     "slug": "gastu-django",
     "type": "Web Application",
     "shortDescription": "GastuApp - Sistema de gestión financiera personal con IA.",
@@ -11,9 +11,7 @@
       "Autenticación mixta (Email/Contraseña y Google OAuth)",
       "Agente de IA para recomendaciones (Gemini Flash con fallback a Groq)",
       "Soporte dual de base de datos (SQLite/PostgreSQL)",
-      "Exportación avanzada multiformato (Excel",
-      "PDF",
-      "CSV)",
+      "Exportación avanzada multiformato (Excel, PDF, CSV)",
       "Panel de administración estilizado con Tailwind CSS",
       "Arquitectura modular separada por responsabilidades de negocio"
     ],
@@ -32,8 +30,7 @@
       "Arquitectura modular basada en Django Apps",
       "Sistema híbrido SQLite/PostgreSQL mediante variables de entorno",
       "Integración de IA con Gemini Flash y fallback automático a Groq",
-      "Exportación profesional en CSV",
-      "Excel y PDF",
+      "Exportación profesional en CSV, Excel y PDF",
       "Autenticación híbrida Email + Google OAuth",
       "Proyecto desplegado para producción"
     ],
@@ -402,10 +399,7 @@
         "description": "Implementar un patrón Circuit Breaker donde si Gemini Flash falla o excede cuotas de API, el sistema redirige la petición a Llama 3 en Groq instantáneamente."
       }
     ],
-    "displayOrder": 1,
-    "technologies": [],
-    "githubUrl": "",
-    "liveUrl": ""
+    "displayOrder": 1
   },
   {
     "id": 2,

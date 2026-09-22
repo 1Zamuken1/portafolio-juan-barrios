@@ -4,7 +4,7 @@
     "color": "#DD0031",
     "skills": [
       {
-        "id": "37",
+        "id": "1",
         "name": "Angular",
         "icon": "devicon-angularjs-plain",
         "brandColor": "#DD0031",
@@ -12,7 +12,7 @@
         "description": "Angular 22, Standalone, Signals, Zoneless"
       },
       {
-        "id": "38",
+        "id": "2",
         "name": "TypeScript",
         "icon": "devicon-typescript-plain",
         "brandColor": "#3178C6",
@@ -20,7 +20,7 @@
         "description": "Tipado estático, genéricos, utility types"
       },
       {
-        "id": "39",
+        "id": "3",
         "name": "PrimeNG",
         "icon": "devicon-primeng-plain",
         "brandColor": "#DD0031",
@@ -34,7 +34,7 @@
     "color": "#6DB33F",
     "skills": [
       {
-        "id": "40",
+        "id": "4",
         "name": "Java",
         "icon": "devicon-java-plain-wordmark",
         "brandColor": "#F89820",
@@ -42,7 +42,7 @@
         "description": "Java 17+, Spring Boot, JPA"
       },
       {
-        "id": "41",
+        "id": "5",
         "name": "Spring Boot",
         "icon": "devicon-spring-original-wordmark",
         "brandColor": "#6DB33F",
@@ -50,7 +50,7 @@
         "description": "Spring Boot 3.4.x, Security, Data JPA"
       },
       {
-        "id": "42",
+        "id": "6",
         "name": "PostgreSQL",
         "icon": "devicon-postgresql-plain-wordmark",
         "brandColor": "#4169E1",
@@ -58,7 +58,7 @@
         "description": "Bases de datos relacionales, HikariCP"
       },
       {
-        "id": "43",
+        "id": "7",
         "name": "Python",
         "icon": "devicon-python-plain-wordmark",
         "brandColor": "#3776AB",
@@ -66,7 +66,7 @@
         "description": "Python, scripting, automatización"
       },
       {
-        "id": "44",
+        "id": "8",
         "name": "Django",
         "icon": "devicon-django-plain",
         "brandColor": "#092E20",
@@ -74,7 +74,7 @@
         "description": "Django REST Framework, ORM"
       },
       {
-        "id": "45",
+        "id": "9",
         "name": "REST APIs",
         "icon": "devicon-swagger-plain",
         "brandColor": "#25A162",
@@ -88,7 +88,7 @@
     "color": "#7C3AED",
     "skills": [
       {
-        "id": "46",
+        "id": "10",
         "name": "Arq. Hexagonal",
         "icon": "devicon-unifiedmodelinglanguage-plain",
         "brandColor": "#7C3AED",
@@ -96,7 +96,7 @@
         "description": "Puertos y adaptadores, clean architecture"
       },
       {
-        "id": "47",
+        "id": "11",
         "name": "Clean Code",
         "icon": "devicon-git-plain-wordmark",
         "brandColor": "#E11D48",
@@ -104,7 +104,7 @@
         "description": "Código limpio, principios SOLID"
       },
       {
-        "id": "48",
+        "id": "12",
         "name": "Patrones Diseño",
         "icon": "devicon-unifiedmodelinglanguage-plain",
         "brandColor": "#F59E0B",
@@ -112,7 +112,7 @@
         "description": "GoF, patrones de integración y microservicios"
       },
       {
-        "id": "49",
+        "id": "13",
         "name": "Git Flow",
         "icon": "devicon-git-plain-wordmark",
         "brandColor": "#F05032",
@@ -126,7 +126,7 @@
     "color": "#0EA5E9",
     "skills": [
       {
-        "id": "50",
+        "id": "14",
         "name": "Docker",
         "icon": "devicon-docker-plain-wordmark",
         "brandColor": "#2496ED",
@@ -134,7 +134,7 @@
         "description": "Contenedores, Docker Compose"
       },
       {
-        "id": "51",
+        "id": "15",
         "name": "CI/CD",
         "icon": "devicon-githubactions-plain",
         "brandColor": "#2088FF",
@@ -142,7 +142,7 @@
         "description": "Integración y despliegue continuos"
       },
       {
-        "id": "52",
+        "id": "16",
         "name": "Vercel",
         "icon": "devicon-vercel-plain",
         "brandColor": "#000000",
@@ -150,7 +150,7 @@
         "description": "Deploy frontend Angular"
       },
       {
-        "id": "53",
+        "id": "17",
         "name": "Render",
         "icon": "devicon-railway-plain",
         "brandColor": "#00C48C",
@@ -158,7 +158,7 @@
         "description": "Deploy backend Spring Boot"
       },
       {
-        "id": "54",
+        "id": "18",
         "name": "SQL",
         "icon": "devicon-mysql-plain-wordmark",
         "brandColor": "#F29111",
