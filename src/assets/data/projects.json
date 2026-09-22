@@ -581,7 +581,7 @@
         "id": "playwright",
         "label": "Playwright",
         "description": "Motor headless SGVA.",
-        "icon": "devicon-playwright-original",
+        "icon": "devicon-playwright-plain",
         "group": "automation",
         "type": "primary",
         "x": 840,
@@ -910,7 +910,7 @@
         "id": "playwright",
         "label": "Playwright Render",
         "description": "Render SPAs.",
-        "icon": "devicon-playwright-original",
+        "icon": "devicon-playwright-plain",
         "group": "automation",
         "type": "primary",
         "x": 720,
@@ -1072,7 +1072,7 @@
       },
       {
         "name": "Angular",
-        "icon": "devicon-angular-original"
+        "icon": "devicon-angular-plain"
       },
       {
         "name": "MySQL",
@@ -1169,7 +1169,7 @@
         "id": "spa",
         "label": "Angular 20 SPA",
         "description": "Cliente reactivo.",
-        "icon": "devicon-angular-original",
+        "icon": "devicon-angular-plain",
         "group": "client",
         "type": "primary",
         "x": 80,

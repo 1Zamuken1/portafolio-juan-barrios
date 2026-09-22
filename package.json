@@ -10,7 +10,8 @@
     "e2e": "playwright test",
     "mirror:push": "node scripts/mirror.mjs push",
     "mirror:pull": "node scripts/mirror.mjs pull",
-    "mirror:publish": "node scripts/mirror.mjs publish"
+    "mirror:publish": "node scripts/mirror.mjs publish",
+    "draft": "node scripts/draft.mjs"
   },
   "private": true,
   "packageManager": "pnpm@9.12.0",
