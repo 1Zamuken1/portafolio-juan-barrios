@@ -5,6 +5,20 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../../../core/services/data.service';
 import { Project } from '../../../../shared/models/project.model';
 
+/** Lista -> texto, una entrada por linea. */
+const aLineas = (lista?: string[]): string => (lista ?? []).join('\n');
+
+/**
+ * Texto -> lista, partiendo por lineas.
+ *
+ * Antes se partia por comas, pero las viñetas del portafolio contienen comas
+ * y una sola se convertia en tres al guardar. Es el mismo error que el
+ * separador de dos barras que se retiro del backend: elegir como delimitador
+ * un caracter que aparece en el contenido.
+ */
+const aLista = (texto?: string): string[] =>
+  (texto ?? '').split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+
 // PrimeNG
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
@@ -66,18 +80,39 @@ export class AdminProjectFormComponent implements OnInit {
   private initForm(): void {
     this.form = this.fb.group({
       name: ['', Validators.required],
+      slug: [''],
+      type: [''],
       shortDescription: ['', Validators.required],
       fullDescription: [''],
       role: [''],
       year: [new Date().getFullYear(), Validators.required],
       status: ['Draft', Validators.required],
-      technologiesStr: [''],
-      featuresStr: [''],
-      highlightsStr: [''],
-      githubUrl: [''],
-      liveUrl: [''],
+      teamSize: [null],
       imageUrl: [''],
-      displayOrder: [0]
+      displayOrder: [0],
+
+      // Una entrada por linea. NO separadas por comas: el contenido lleva
+      // comas y partir por ellas convirtio una vinieta en tres.
+      featuresText: [''],
+      highlightsText: [''],
+      keywordsText: [''],
+
+      links: this.fb.group({
+        github: [''],
+        live: ['']
+      }),
+
+      coreArchitecture: [''],
+      databaseArchitecture: [''],
+      aiArchitecture: [''],
+
+      readmeMarkdown: this.fb.group({
+        objective: [''],
+        architecture: [''],
+        mainFeatures: [''],
+        technologies: [''],
+        learnings: ['']
+      })
     });
   }
 
@@ -89,9 +124,20 @@ export class AdminProjectFormComponent implements OnInit {
         if (project) {
           this.form.patchValue({
             ...project,
-            technologiesStr: project.technologies?.join(', ') || '',
-            featuresStr: project.features?.join(', ') || '',
-            highlightsStr: project.highlights?.join(', ') || ''
+            links: {
+              github: project.links?.github ?? '',
+              live: project.links?.live ?? ''
+            },
+            readmeMarkdown: {
+              objective: project.readmeMarkdown?.objective ?? '',
+              architecture: project.readmeMarkdown?.architecture ?? '',
+              mainFeatures: project.readmeMarkdown?.mainFeatures ?? '',
+              technologies: project.readmeMarkdown?.technologies ?? '',
+              learnings: project.readmeMarkdown?.learnings ?? ''
+            },
+            featuresText: aLineas(project.features),
+            highlightsText: aLineas(project.highlights),
+            keywordsText: aLineas(project.keywords)
           });
         }
         this.loading.set(false);
@@ -109,17 +155,22 @@ export class AdminProjectFormComponent implements OnInit {
     this.saving.set(true);
     const formValue = this.form.value;
     
+    const { featuresText, highlightsText, keywordsText, ...resto } = formValue;
+
     const projectData: Project = {
-      ...formValue,
-      technologies: formValue.technologiesStr ? formValue.technologiesStr.split(',').map((s: string) => s.trim()).filter((s: string) => s) : [],
-      features: formValue.featuresStr ? formValue.featuresStr.split(',').map((s: string) => s.trim()).filter((s: string) => s) : [],
-      highlights: formValue.highlightsStr ? formValue.highlightsStr.split(',').map((s: string) => s.trim()).filter((s: string) => s) : [],
+      ...resto,
+      features: aLista(featuresText),
+      highlights: aLista(highlightsText),
+      keywords: aLista(keywordsText)
     };
-    
-    // Cleanup temporary string fields
-    delete (projectData as any).technologiesStr;
-    delete (projectData as any).featuresStr;
-    delete (projectData as any).highlightsStr;
+
+    // Los campos que este formulario no maneja (diagramas, techStack,
+    // structuredStack, rawMetrics, challenges) no se envian. El backend hace
+    // una actualizacion parcial: lo que no llega se conserva.
+    Object.keys(projectData).forEach((k) => {
+      const v = (projectData as any)[k];
+      if (v === '' || v === null) delete (projectData as any)[k];
+    });
 
     const operation = this.isEditMode
       ? this.dataService.updateProject(this.projectId!, projectData)

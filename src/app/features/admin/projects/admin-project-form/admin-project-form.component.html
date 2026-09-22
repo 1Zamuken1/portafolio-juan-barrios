@@ -13,6 +13,10 @@
       <input pInputText id="name" formControlName="name" placeholder="Project name" />
     </div>
     <div class="form-group flex-1">
+      <label for="slug">Slug</label>
+      <input pInputText id="slug" formControlName="slug" placeholder="gastu-django" />
+    </div>
+    <div class="form-group flex-1">
       <label for="year">Year *</label>
       <p-inputNumber id="year" formControlName="year" [useGrouping]="false" [min]="2000" [max]="2030" />
     </div>
@@ -27,6 +31,14 @@
     <div class="form-group flex-1">
       <label for="role">Role</label>
       <input pInputText id="role" formControlName="role" placeholder="e.g. Full Stack Developer" />
+    </div>
+    <div class="form-group flex-1">
+      <label for="type">Tipo</label>
+      <input pInputText id="type" formControlName="type" placeholder="Web Application" />
+    </div>
+    <div class="form-group" style="width: 110px;">
+      <label for="teamSize">Equipo</label>
+      <p-inputNumber id="teamSize" formControlName="teamSize" [min]="1" [max]="50" />
     </div>
     <div class="form-group" style="width: 120px;">
       <label for="displayOrder">Order</label>
@@ -46,40 +58,97 @@
     <textarea pTextarea id="fullDescription" formControlName="fullDescription" rows="5" placeholder="Detailed description shown in the modal"></textarea>
   </div>
 
-  <!-- Technologies -->
+  <!-- Listas: una entrada por linea.
+       NO separadas por comas: el contenido lleva comas y partir por ellas
+       convertia una vinieta en tres al guardar. -->
   <div class="form-group">
-    <label for="technologiesStr">Technologies (comma-separated)</label>
-    <input pInputText id="technologiesStr" formControlName="technologiesStr" placeholder="Angular, Spring Boot, etc." />
+    <label for="featuresText">Features <small>(una por linea)</small></label>
+    <textarea pTextarea id="featuresText" formControlName="featuresText" rows="5"
+              placeholder="Autenticacion mixta (Email, Google OAuth)&#10;Exportacion a Excel, PDF y CSV"></textarea>
   </div>
 
-  <!-- Features -->
   <div class="form-group">
-    <label for="featuresStr">Features (comma-separated)</label>
-    <input pInputText id="featuresStr" formControlName="featuresStr" placeholder="Feature 1, Feature 2" />
+    <label for="highlightsText">Highlights <small>(una por linea)</small></label>
+    <textarea pTextarea id="highlightsText" formControlName="highlightsText" rows="4"
+              placeholder="Arquitectura modular&#10;Sistema hibrido SQLite/PostgreSQL"></textarea>
   </div>
 
-  <!-- Highlights -->
   <div class="form-group">
-    <label for="highlightsStr">Highlights (comma-separated)</label>
-    <input pInputText id="highlightsStr" formControlName="highlightsStr" placeholder="Achievement 1, Achievement 2" />
+    <label for="keywordsText">Keywords <small>(una por linea)</small></label>
+    <textarea pTextarea id="keywordsText" formControlName="keywordsText" rows="3"
+              placeholder="finanzas&#10;ia&#10;django"></textarea>
   </div>
 
-  <!-- URLs -->
-  <div class="form-row">
+  <!-- Enlaces. Van a links.github y links.live, que es donde vive el dato;
+       githubUrl y liveUrl eran campos heredados y estaban siempre vacios. -->
+  <div class="form-row" formGroupName="links">
     <div class="form-group flex-1">
-      <label for="githubUrl">GitHub URL</label>
-      <input pInputText id="githubUrl" formControlName="githubUrl" placeholder="https://github.com/..." />
+      <label for="linkGithub">Repositorio</label>
+      <input pInputText id="linkGithub" formControlName="github" placeholder="https://github.com/..." />
     </div>
     <div class="form-group flex-1">
-      <label for="liveUrl">Live URL</label>
-      <input pInputText id="liveUrl" formControlName="liveUrl" placeholder="https://..." />
+      <label for="linkLive">Despliegue</label>
+      <input pInputText id="linkLive" formControlName="live" placeholder="https://..." />
     </div>
   </div>
 
   <div class="form-group">
     <label for="imageUrl">Image URL</label>
-    <input pInputText id="imageUrl" formControlName="imageUrl" placeholder="https://..." />
+    <input pInputText id="imageUrl" formControlName="imageUrl" placeholder="/assets/images/projects/..." />
   </div>
+
+  <!-- Arquitectura: resumenes de una linea que se muestran en la ficha -->
+  <h3 class="form-section">Arquitectura</h3>
+
+  <div class="form-row">
+    <div class="form-group flex-1">
+      <label for="coreArchitecture">Core</label>
+      <input pInputText id="coreArchitecture" formControlName="coreArchitecture" placeholder="Django Apps + Services Layer" />
+    </div>
+    <div class="form-group flex-1">
+      <label for="databaseArchitecture">Base de datos</label>
+      <input pInputText id="databaseArchitecture" formControlName="databaseArchitecture" placeholder="SQLite / PostgreSQL" />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="aiArchitecture">IA</label>
+    <input pInputText id="aiArchitecture" formControlName="aiArchitecture" placeholder="Gemini Flash + Groq Fallback" />
+  </div>
+
+  <!-- Readme del caso de estudio -->
+  <h3 class="form-section">Readme</h3>
+
+  <div formGroupName="readmeMarkdown">
+    <div class="form-group">
+      <label for="rmObjective">Objetivo</label>
+      <textarea pTextarea id="rmObjective" formControlName="objective" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="rmArchitecture">Arquitectura</label>
+      <textarea pTextarea id="rmArchitecture" formControlName="architecture" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="rmMainFeatures">Funcionalidades principales</label>
+      <textarea pTextarea id="rmMainFeatures" formControlName="mainFeatures" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="rmTechnologies">Tecnologias</label>
+      <textarea pTextarea id="rmTechnologies" formControlName="technologies" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="rmLearnings">Aprendizajes</label>
+      <textarea pTextarea id="rmLearnings" formControlName="learnings" rows="3"></textarea>
+    </div>
+  </div>
+
+  <p class="form-nota">
+    El diagrama de arquitectura, el stack estructurado, las metricas y los
+    desafios no se editan aqui: se escriben en
+    <code>src/assets/data/projects.json</code> y se suben con
+    <code>pnpm run mirror:push</code>. Guardar desde este formulario no los
+    altera.
+  </p>
 
   <!-- Actions -->
   <div class="form-actions">
