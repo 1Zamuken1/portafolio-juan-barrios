@@ -38,7 +38,7 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 1 experiencia, 18 skil
 - `seo.spec.ts` — metadatos por ruta sobre la aplicación viva.
 - `prerender.spec.ts` — el HTML generado por el build, que es lo que ven los rastreadores.
 
-**Backend**, 8 clases de test (`./mvnw test`):
+**Backend**, 11 clases de test (`./mvnw test`):
 
 | Test | Qué protege |
 |---|---|
@@ -50,6 +50,9 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 1 experiencia, 18 skil
 | `DialectoNoFijadoTest` | que cada perfil declare su dialecto |
 | `ErroresVisiblesTest` | que un fallo no salga como 403 |
 | `HealthControllerTest` | que la comprobación de salud no dependa de la base |
+| `DraftProjectUseCaseTest` | que un borrador incompleto no llegue al formulario |
+| `DraftControllerTest` | que no se pueda gastar cuota de Groq sin autenticar |
+| `GroqProjectDrafterTest` | que una clave sin definir se distinga de un fallo de red |
 
 Casi todos nacieron de un fallo real, no de una previsión. Están descritos en el apartado 3.
 
@@ -137,39 +140,18 @@ git add src/assets/data/ && git commit
 
 ### Pipeline de IA para redactar contenido
 
-La idea es reducir lo tedioso de añadir un proyecto: rellenar 28 campos a mano.
+**Construido** el 22 de septiembre de 2026, en `feat/ai-drafter`. Está descrito en `AGENTS.md`, apartado 3. Resumen de lo que se acotó y por qué:
 
-**Entrada**: un README o la URL de un repositorio.
-**Salida**: un borrador con `shortDescription`, `fullDescription`, `readmeMarkdown` (sus cinco secciones), `challenges`, `structuredStack`, `structuredFeatures`, `keywords`, `techStack` y `type`.
-**No toca**: `architectureNodes`, `architectureEdges`, `architectureLayout`, `id`, `slug`, `imageUrl`, `displayOrder`.
+Se implementó **solo la prosa**: `shortDescription`, `fullDescription`, las cinco secciones del readme y los desafíos. Se dejaron fuera `techStack`, `structuredStack`, `structuredFeatures` y `rawMetrics` al descubrir, midiendo los cuatro proyectos, que sus claves **ya son inconsistentes**: conviven `Arquitectura` y `Architecture`, `IA` y `Artificial Intelligence`, y tres variantes de «Formatos de exportación» que solo se diferencian en el idioma y las mayúsculas. Un modelo generándolas libremente no habría heredado ese desorden: lo habría ensanchado. Y los iconos de `techStack` son clases devicon concretas, imposibles de adivinar —ya costó un arreglo a mano cuando `devicon-uml-plain` resultó no existir.
 
-Restricciones que condicionan el diseño:
+De paso salieron dos arreglos que hacían falta para que el borrador tuviera dónde aterrizar:
 
-- **La clave no puede vivir en el frontend.** El panel es Angular compilado: todo lo que lleve dentro es público. La llamada pasa por el backend, con `GROQ_API_KEY` en las variables de Render.
-- **La salida se valida contra el dominio antes de mostrarse.** Un modelo generando 28 campos inventa estructuras; una respuesta que no encaje debe rechazarse, no llegar al formulario.
-- **Nunca persiste.** Devuelve un borrador que rellena el formulario; la persona revisa y guarda.
-- **Los diagramas quedan fuera.** Colocar nodos sin solapamientos es un problema de layout, no de redacción, y ya costó bastante resolverlo a mano.
+- Los **desafíos ahora se editan en el panel**, con dos campos por entrada. Antes no había forma de tocarlos desde ahí.
+- El formulario **deja de enviar listas vacías**. Mandar `[]` borraba lo que hubiera al otro lado, que es exactamente como se perdió el contenido las dos veces.
 
-Sobre la API (verificado en la documentación de Groq, septiembre de 2026):
+**Pendiente**: crear la clave en console.groq.com y definirla como `GROQ_API_KEY` en el dashboard de Render. Sin ella el backend arranca igual; solo el botón deja de funcionar.
 
-- Endpoint compatible con OpenAI: `POST https://api.groq.com/openai/v1/chat/completions`.
-- **El modo de esquema estricto solo está en `openai/gpt-oss-20b`, `gpt-oss-120b`, `gpt-oss-safeguard-20b` y `qwen/qwen3.8-27b`.** `llama-3.3-70b-versatile` **no** lo soporta; para él hay *JSON Object Mode*, que garantiza JSON válido pero no conformidad con el esquema.
-- Conclusión: usar JSON Object Mode y validar en el backend, con el modelo configurable. Así no se ata a una lista que cambia cada pocos meses.
-
-Diseño acordado, siguiendo la arquitectura hexagonal:
-
-| Capa | Pieza |
-|---|---|
-| `domain/port/out` | `ProjectDrafterPort` — el dominio no sabe que existe Groq |
-| `infrastructure/adapter/out/ai` | `GroqProjectDrafter` — la llamada HTTP |
-| `application/usecase` | `DraftProjectUseCase` — prompt, parseo y validación |
-| `infrastructure/adapter/in/web` | `POST /api/projects/draft`, autenticado |
-
-El puerto permite probarlo sin clave: CI no puede llamar a Groq, así que el caso de uso se prueba con un doble que devuelva respuestas buenas, mal formadas y con campos inventados.
-
-**Pendiente antes de empezar**: conseguir una clave de Groq y definirla como `GROQ_API_KEY` en Render.
-
----
+**Lo que quedó sin hacer, a propósito**: normalizar el vocabulario de `structuredFeatures` y `rawMetrics`. Es un problema anterior a la IA y más grande que el propio pipeline, porque exige decidir un vocabulario único y reescribir los cuatro proyectos. Mientras no se haga, esos campos se siguen editando a mano en el JSON.
 
 ## 6. Limitaciones conocidas
 
