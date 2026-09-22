@@ -45,9 +45,17 @@
                 <i class="pi pi-github"></i> Source Code
               </a>
             }
+            <!-- Un despliegue si lo hay; si no, el instalador. Nunca los dos:
+                 las aplicaciones de escritorio no se visitan, se instalan, y
+                 el boton tiene que decir cual de las dos cosas va a pasar
+                 antes de pulsarlo. -->
             @if (project()!.links?.live || project()!.liveUrl) {
               <a [href]="project()!.links?.live || project()!.liveUrl" target="_blank" class="btn btn-primary">
                 <i class="pi pi-external-link"></i> Live Demo
+              </a>
+            } @else if (project()!.links?.download) {
+              <a [href]="project()!.links?.download" target="_blank" class="btn btn-primary">
+                <i class="pi pi-download"></i> Download
               </a>
             }
           </div>

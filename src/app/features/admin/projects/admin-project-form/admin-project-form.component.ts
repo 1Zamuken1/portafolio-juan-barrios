@@ -120,7 +120,8 @@ export class AdminProjectFormComponent implements OnInit {
 
       links: this.fb.group({
         github: [''],
-        live: ['']
+        live: [''],
+        download: ['']
       }),
 
       coreArchitecture: [''],
@@ -164,7 +165,8 @@ export class AdminProjectFormComponent implements OnInit {
             ...project,
             links: {
               github: project.links?.github ?? '',
-              live: project.links?.live ?? ''
+              live: project.links?.live ?? '',
+              download: project.links?.download ?? ''
             },
             readmeMarkdown: {
               objective: project.readmeMarkdown?.objective ?? '',

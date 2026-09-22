@@ -46,7 +46,7 @@ public final class ProjectFixture {
         p.setFeatures(List.of("Autenticacion hibrida", "Reportes"));
         p.setHighlights(List.of("4 desarrolladores", "En produccion"));
 
-        p.setLinks(new ProjectLinks("https://github.com/1Zamuken1/gastu", null));
+        p.setLinks(new ProjectLinks("https://github.com/1Zamuken1/gastu", null, null));
         p.setTechStack(List.of(
                 new TechStackItem("Python", "devicon-python-plain"),
                 new TechStackItem("Django", "devicon-django-plain")

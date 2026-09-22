@@ -197,19 +197,43 @@ async function pull() {
   // correcto de proyectos pero vacios por dentro, porque descarta en silencio
   // los campos que su modelo no conoce. Sobrescribir con eso se lleva los
   // diagramas, el readme y las metricas, y el JSON es la unica copia que hay.
-  const claves = (lista) => new Set(lista.flatMap((p) => Object.keys(p)));
+  // La comparacion baja hasta el fondo, no solo al primer nivel. Un backend
+  // sin desplegar sigue devolviendo `links`, solo que sin `download` dentro:
+  // mirando unicamente las claves de arriba, ese enlace se perderia en
+  // silencio. Los indices de los arrays se colapsan en [] para que anadir o
+  // quitar elementos no cuente como un campo perdido.
+  const rutasDe = (valor, prefijo, acumulado) => {
+    if (Array.isArray(valor)) {
+      valor.forEach((v) => rutasDe(v, `${prefijo}[]`, acumulado));
+      return;
+    }
+    if (valor === null || typeof valor !== 'object') return;
+    for (const [clave, dentro] of Object.entries(valor)) {
+      const ruta = prefijo ? `${prefijo}.${clave}` : clave;
+      acumulado.add(ruta);
+      rutasDe(dentro, ruta, acumulado);
+    }
+  };
+  const claves = (lista) => {
+    const rutas = new Set();
+    lista.forEach((p) => rutasDe(p, '', rutas));
+    return rutas;
+  };
+
   const antes = claves(previos);
   const ahora = claves(proyectos);
   const perdidos = [...antes].filter((c) => !ahora.has(c));
 
-  if (perdidos.length) {
+  if (perdidos.length && process.env.MIRROR_ALLOW_SHRINK !== '1') {
     throw new Error(
       `La API no devuelve ${perdidos.length} campo(s) que el JSON si tiene:\n` +
-      `  ${perdidos.join(', ')}\n\n` +
+      `  ${perdidos.join('\n  ')}\n\n` +
       'Aborto: escribir esto borraria ese contenido y no hay otra copia.\n\n' +
       'Casi siempre significa que el backend desplegado es anterior al modelo\n' +
-      'actual. Render despliega desde master: comprueba que los cambios del\n' +
-      'backend esten ahi y que el despliegue haya terminado antes de sembrar.'
+      'actual: Jackson descarta sin decir nada los campos que su modelo no\n' +
+      'conoce. Render despliega desde master: comprueba que los cambios del\n' +
+      'backend esten ahi y que el despliegue haya terminado antes de sembrar.\n\n' +
+      'Si de verdad quitaste esos campos a proposito, repite con MIRROR_ALLOW_SHRINK=1.'
     );
   }
   const sinRenumerar = conservarIds(proyectos, previos);
