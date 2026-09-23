@@ -126,6 +126,74 @@
   gap: 0.4rem;
 }
 
+/* ---- El tema ----
+   Dos opciones y un deslizador debajo que va a la elegida. El deslizador es
+   un elemento aparte y no el fondo del boton para que se mueva en vez de
+   aparecer. */
+.tema {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 0.35rem;
+  padding: 3px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--bg-primary);
+}
+
+.tema__deslizador {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.28s cubic-bezier(0.3, 0.7, 0.2, 1.1);
+}
+
+.tema[data-tema='light'] .tema__deslizador {
+  transform: translateX(100%);
+}
+
+.tema__opcion {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.5rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.tema__opcion i {
+  font-size: 0.78rem;
+}
+
+.tema__opcion[aria-checked='true'] {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.tema__opcion:focus-visible {
+  outline: 2px solid var(--estado-curso);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tema__deslizador { transition: none; }
+}
+
 /* El panel escribe en la base; el sitio publico lee los JSON del repositorio.
    Sin este recordatorio es facil guardar, mirar el sitio y no entender nada. */
 .aviso-publicar {
