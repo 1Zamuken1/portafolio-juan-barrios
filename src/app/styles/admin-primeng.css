@@ -1,0 +1,225 @@
+/* ================================================
+   PrimeNG en el panel: vidrio y Material
+   ================================================
+
+   Los colores y los radios los pone el preset (core/tema/preset-panel.ts).
+   Aqui va lo que un token no alcanza: el desenfoque del vidrio, las capas de
+   estado, los campos que crecen con su texto y las variantes propias
+   (el boton de la IA, la marca de lo que escribio la IA).
+
+   Es global a proposito, igual que lo era el ajuste de anchos que habia
+   antes en global.css: el HTML de dentro de un componente de PrimeNG no lleva
+   el atributo de encapsulacion de la vista que lo usa, y una regla escrita en
+   el CSS de esa vista no lo alcanza. No falla ni avisa: no se aplica. */
+
+/* ---- Campos ---- */
+.admin-app .p-floatlabel {
+  display: block;
+  width: 100%;
+}
+
+.admin-app .p-inputtext,
+.admin-app .p-textarea,
+.admin-app .p-select,
+.admin-app .p-inputnumber {
+  width: 100%;
+}
+
+.admin-app .p-inputtext,
+.admin-app .p-textarea,
+.admin-app .p-select {
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+/* Dentro de un inputnumber el que lleva el fondo es el grupo, no el input. */
+.admin-app .p-inputnumber .p-inputtext {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* La etiqueta de un campo obligatorio lleva el asterisco en el color del
+   fallo, como en Material. */
+.admin-app .obligatorio::after {
+  content: ' *';
+  color: var(--admin-fallo);
+}
+
+/* Las areas crecen con su texto. Era lo que se reporto: los parrafos del
+   caso de estudio se leian cortados en cajas de tres filas, con una barra de
+   desplazamiento dentro de otra. field-sizing lo hace solo donde existe;
+   donde no, la directiva appCrecerConTexto mide a mano. */
+.admin-app .p-textarea {
+  display: block;
+  resize: none;
+  overflow: hidden;
+  field-sizing: content;
+  min-height: calc(var(--filas, 2) * 1.5em + 2.3rem);
+  line-height: 1.5;
+}
+
+/* Con alto maximo (el editor del readme) si se desplaza por dentro. */
+.admin-app .p-textarea.area-editor {
+  overflow-y: auto;
+  max-height: 22rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  padding: 0.85rem 1rem;
+}
+
+.admin-app .p-textarea.area-editor:focus {
+  box-shadow: none;
+}
+
+/* Lo que escribio la IA lleva el filo izquierdo en el color de la IA hasta
+   que se toca. La marca de la etiqueta dice que es; esto lo dice sin tener
+   que leerla. */
+.admin-app .campo-ia .p-inputtext,
+.admin-app .campo-ia .p-textarea {
+  box-shadow: inset 3px 0 0 var(--admin-acento);
+}
+
+.admin-app .marca-ia {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: 0.35rem;
+  padding: 0.02rem 0.4rem;
+  border-radius: 999px;
+  background: var(--admin-resalte);
+  color: var(--admin-acento);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+
+.admin-app .marca-ia i {
+  font-size: 0.6rem;
+}
+
+/* La etiqueta flotante deja pasar el clic al campo, tambien por encima de la
+   marca de la IA. */
+.admin-app .p-floatlabel label {
+  pointer-events: none;
+}
+
+/* ---- Botones ---- */
+.admin-app .p-button {
+  letter-spacing: 0.01em;
+}
+
+/* El que lanza al modelo lleva el color del liquido. */
+.admin-app .p-button.boton-ia {
+  border: none;
+  background: linear-gradient(135deg, var(--liquido-1), color-mix(in srgb, var(--liquido-1) 55%, var(--liquido-2)));
+  color: #FFFFFF;
+  box-shadow: 0 8px 24px -8px color-mix(in srgb, var(--liquido-1) 80%, transparent);
+}
+
+.admin-app .p-button.boton-ia:not(:disabled):hover {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--liquido-1) 85%, #FFFFFF), var(--liquido-1));
+  color: #FFFFFF;
+  box-shadow: 0 10px 30px -6px color-mix(in srgb, var(--liquido-1) 90%, transparent);
+}
+
+/* Los principales desactivados pasan a superficie neutra: el amarillo al 45%
+   sobre el violeta daba un ocre turbio que no se leia como nada. */
+.admin-app .p-button:disabled:not(.p-button-text):not(.p-button-outlined) {
+  opacity: 1;
+  background: var(--admin-superficie-hover);
+  border-color: transparent;
+  color: var(--admin-texto-tenue);
+  box-shadow: none;
+}
+
+/* ---- Pestanas ---- */
+.admin-app .p-tabs .p-tablist-content {
+  background: transparent;
+}
+
+/* ---- El selector de tema: un segmentado de Material ---- */
+.admin-app .p-selectbutton {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--vidrio-borde);
+  background: var(--admin-campo);
+}
+
+.admin-app .p-selectbutton .p-togglebutton {
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--admin-texto-tenue);
+}
+
+.admin-app .p-selectbutton .p-togglebutton.p-togglebutton-checked {
+  background: transparent;
+  color: var(--admin-texto);
+}
+
+.admin-app .p-selectbutton .p-togglebutton .p-togglebutton-content {
+  border-radius: 999px;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.admin-app .p-selectbutton .p-togglebutton.p-togglebutton-checked .p-togglebutton-content {
+  background: var(--admin-superficie-hover);
+  box-shadow: var(--elev-1);
+}
+
+/* ---- Avisos ---- */
+.admin-app .p-toast .p-toast-message {
+  border: 1px solid var(--vidrio-borde);
+  background: var(--vidrio-fuerte);
+  -webkit-backdrop-filter: var(--desenfoque);
+  backdrop-filter: var(--desenfoque);
+  box-shadow: var(--elev-3);
+  color: var(--admin-texto);
+}
+
+.admin-app .p-toast .p-toast-message-success { box-shadow: var(--elev-3), inset 3px 0 0 var(--admin-ok); }
+.admin-app .p-toast .p-toast-message-info { box-shadow: var(--elev-3), inset 3px 0 0 var(--admin-acento); }
+.admin-app .p-toast .p-toast-message-warn { box-shadow: var(--elev-3), inset 3px 0 0 var(--admin-aviso); }
+.admin-app .p-toast .p-toast-message-error { box-shadow: var(--elev-3), inset 3px 0 0 var(--admin-fallo); }
+
+.admin-app .p-toast .p-toast-message-success .p-toast-message-icon { color: var(--admin-ok); }
+.admin-app .p-toast .p-toast-message-info .p-toast-message-icon { color: var(--admin-acento); }
+.admin-app .p-toast .p-toast-message-warn .p-toast-message-icon { color: var(--admin-aviso); }
+.admin-app .p-toast .p-toast-message-error .p-toast-message-icon { color: var(--admin-fallo); }
+
+.admin-app .p-toast .p-toast-summary { color: var(--admin-texto); }
+.admin-app .p-toast .p-toast-detail { color: var(--admin-texto-suave); }
+
+/* ---- Dialogo de confirmacion ----
+   Va fuera de .admin-app (PrimeNG lo cuelga del body), asi que se acota por
+   su clase y no por el panel. Los colores ya los pone el preset. */
+.p-dialog.dialogo-panel {
+  border: 1px solid var(--vidrio-borde);
+  background: var(--vidrio-fuerte);
+  -webkit-backdrop-filter: var(--desenfoque);
+  backdrop-filter: var(--desenfoque);
+}
+
+.p-dialog-mask:has(.dialogo-panel) {
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+/* ---- La lista de un desplegable ---- */
+.p-select-overlay {
+  border: 1px solid var(--admin-borde);
+}
