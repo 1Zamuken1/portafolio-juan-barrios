@@ -1,23 +1,27 @@
 /* ================================================
-   La redaccion como una linea de montaje
+   La redaccion como un circuito de liquido
    ================================================
 
-   Los colores de cada estado salen de los tokens --estado-* a traves de
-   data-estado. No se escriben dos veces: si en el tema cambia el color de un
-   estado, aqui cambia solo.
+   Las estaciones son vasos de vidrio casi transparente: se ve el fondo del
+   panel a traves. El liquido sale del readme, baja por los tubos y va
+   llenando cada estacion mientras trabaja; una estacion llena es una estacion
+   terminada. Si una falla, el vaso se agrieta y el liquido se sale.
 
-   La unica medida que manda es --insignia, el lado del icono de cada
-   estacion: el conducto que las une baja por su centro. Con numeros sueltos,
-   cambiar el icono dejaba el conducto colgando donde estaba antes. */
+   Legibilidad antes que efecto: el liquido es translucido y va DETRAS del
+   texto, que conserva su color y lleva una sombra suave. Con el vaso lleno
+   el texto se sigue leyendo igual que vacio.
+
+   Los colores salen de --liquido-1/2 (el liquido), --estado-* (los estados)
+   y --vidrio-* (el vaso), todos del tema del panel. */
 
 :host {
-  --insignia: 30px;
-  --relleno: 0.8rem;
+  --relleno: 0.9rem;
+  --glifo: 30px;
   display: block;
 }
 
-/* El angulo del borde que gira alrededor del modelo mientras trabaja. Hace
-   falta declararlo para que el navegador sepa interpolarlo. */
+/* El angulo del filo de luz que gira alrededor del modelo. Declararlo es lo
+   que permite al navegador animarlo. */
 @property --giro {
   syntax: '<angle>';
   inherits: false;
@@ -29,161 +33,240 @@
   flex-direction: column;
 }
 
-/* ---- Una estacion ---- */
+/* ---- El vaso ---- */
 .estacion {
+  --nivel: 0;
+  --tinta-liquido-1: var(--liquido-1);
+  --tinta-liquido-2: var(--liquido-2);
   position: relative;
-  padding: 0.7rem var(--relleno) 0.75rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  background: var(--bg-primary);
-  transition: border-color 0.35s ease, box-shadow 0.35s ease, opacity 0.35s ease;
+  isolation: isolate;
+  padding: 0.8rem var(--relleno) 0.85rem;
+  border-radius: 20px;
+  border: 1px solid var(--vidrio-borde);
+  background: color-mix(in srgb, var(--vidrio) 55%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), var(--elev-1);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease, opacity 0.4s ease;
 }
 
+/* El reflejo del vidrio: una franja de luz en diagonal arriba a la izquierda.
+   Es lo que hace que se lea como un vaso y no como una caja. Va dentro del
+   vaso, detras del texto: encima lo lavaba. */
+.vaso::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: linear-gradient(125deg, rgba(255, 255, 255, 0.1) 0%, transparent 28%);
+  pointer-events: none;
+}
+
+.vaso {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+/* ---- El liquido ---- */
+.liquido {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--nivel) * 100%);
+  background: linear-gradient(0deg,
+    color-mix(in srgb, var(--tinta-liquido-1) 42%, transparent) 0%,
+    color-mix(in srgb, var(--tinta-liquido-1) 24%, color-mix(in srgb, var(--tinta-liquido-2) 18%, transparent)) 100%);
+  transition: height 1.1s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Las olas: una mascara con forma de onda, el doble de ancha que el vaso,
+   que se desplaza en horizontal. Dos, a distinto ritmo y altura, para que la
+   superficie no se lea como un dibujo que se repite. */
+.ola {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% - 1px);
+  width: 200%;
+  height: 10px;
+  background: color-mix(in srgb, var(--tinta-liquido-1) 24%, color-mix(in srgb, var(--tinta-liquido-2) 18%, transparent));
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10' preserveAspectRatio='none'><path d='M0 5 Q 15 0 30 5 T 60 5 T 90 5 T 120 5 V10 H0 Z'/></svg>") repeat-x 0 0 / 50% 100%;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10' preserveAspectRatio='none'><path d='M0 5 Q 15 0 30 5 T 60 5 T 90 5 T 120 5 V10 H0 Z'/></svg>") repeat-x 0 0 / 50% 100%;
+  animation: ola 3.2s linear infinite;
+}
+
+.ola--atras {
+  height: 13px;
+  opacity: 0.55;
+  animation-duration: 5.1s;
+  animation-direction: reverse;
+}
+
+@keyframes ola {
+  to { transform: translateX(-50%); }
+}
+
+/* Sin liquido no hay olas: si no, se veria una linea ondulando en el fondo
+   de un vaso vacio. */
+.estacion[data-estado='espera'] .ola,
+.estacion[data-estado='no-alcanzado'] .ola {
+  display: none;
+}
+
+/* Burbujas subiendo, solo mientras el vaso se esta llenando. */
+.burbujas {
+  display: none;
+  position: absolute;
+  inset: 0;
+}
+
+.estacion[data-estado='curso'] > .vaso .burbujas {
+  display: block;
+}
+
+.burbujas i {
+  position: absolute;
+  bottom: -6px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--tinta-liquido-2) 70%, transparent);
+  animation: burbuja 2.6s ease-in infinite;
+}
+
+.burbujas i:nth-child(1) { left: 18%; animation-delay: 0s; }
+.burbujas i:nth-child(2) { left: 52%; animation-delay: 0.9s; width: 4px; height: 4px; }
+.burbujas i:nth-child(3) { left: 78%; animation-delay: 1.7s; }
+
+@keyframes burbuja {
+  0%   { transform: translateY(0); opacity: 0; }
+  15%  { opacity: 0.9; }
+  100% { transform: translateY(calc(-1 * var(--alto-burbuja, 60px))); opacity: 0; }
+}
+
+/* ---- La cabecera ---- */
 .estacion__cabeza {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.65rem;
+}
+
+.glifo {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--glifo);
+  height: var(--glifo);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
+  transition: color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .estacion__titulo {
-  font-size: 0.86rem;
-  font-weight: 650;
+  font-size: 0.9rem;
+  font-weight: 700;
   letter-spacing: 0.01em;
   color: var(--text-primary);
+  text-shadow: 0 1px 8px color-mix(in srgb, var(--fondo-app) 60%, transparent);
 }
 
-.estacion__detalle {
-  margin: 0.45rem 0 0;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.68rem;
-  line-height: 1.5;
-  color: var(--text-tertiary);
-  overflow-wrap: anywhere;
-}
-
-/* El icono de la estacion, con su estado en la esquina. */
-.insignia {
-  position: relative;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--insignia);
-  height: var(--insignia);
-  border-radius: 9px;
-  border: 1px solid var(--border-default);
-  background: var(--bg-secondary);
-  color: var(--text-tertiary);
-  font-size: 0.8rem;
-  transition: color 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
-}
-
-.insignia__estado {
-  position: absolute;
-  right: -5px;
-  bottom: -5px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  border: 2px solid var(--bg-primary);
-  background: var(--text-tertiary);
-  color: var(--bg-primary);
-  font-size: 0.45rem;
-}
-
-.chip {
+.estado {
   margin-left: auto;
   flex-shrink: 0;
-  padding: 0.12rem 0.5rem;
-  border-radius: 999px;
-  border: 1px solid var(--border-subtle);
-  font-size: 0.64rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
   color: var(--text-tertiary);
   white-space: nowrap;
 }
 
-.chip__tiempo {
+.estado__tiempo {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
-/* ---- Los estados de una estacion ----
-   Solo destacan la que trabaja y la que fallo. Si destacaran todas no
-   destacaria ninguna, que es el problema que ya dio el blueprint. */
-.estacion[data-estado='espera'] { opacity: 0.62; }
+.estacion__detalle {
+  position: relative;
+  margin: 0.5rem 0 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+  text-shadow: 0 1px 6px color-mix(in srgb, var(--fondo-app) 70%, transparent);
+}
+
+/* ---- Estados de una estacion ---- */
+.estacion[data-estado='espera'] {
+  opacity: 0.55;
+}
 
 .estacion[data-estado='curso'] {
-  border-color: color-mix(in srgb, var(--estado-curso) 55%, var(--border-subtle));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--estado-curso) 10%, transparent),
-              0 10px 30px -12px color-mix(in srgb, var(--estado-curso) 55%, transparent);
+  border-color: color-mix(in srgb, var(--liquido-1) 50%, var(--vidrio-borde));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08),
+              0 14px 40px -18px var(--liquido-1);
 }
 
-.estacion[data-estado='curso'] > .estacion__cabeza .insignia {
-  border-color: var(--estado-curso);
+.estacion[data-estado='curso'] > .estacion__cabeza .glifo {
+  background: color-mix(in srgb, var(--liquido-1) 24%, transparent);
   color: var(--estado-curso);
-  background: color-mix(in srgb, var(--estado-curso) 12%, var(--bg-secondary));
+  box-shadow: 0 0 14px -2px var(--liquido-1);
 }
 
-.estacion[data-estado='curso'] > .estacion__cabeza .insignia__estado { background: var(--estado-curso); }
-.estacion[data-estado='curso'] > .estacion__cabeza .chip {
-  border-color: color-mix(in srgb, var(--estado-curso) 45%, transparent);
-  color: var(--estado-curso);
-}
+.estacion[data-estado='curso'] > .estacion__cabeza .estado { color: var(--estado-curso); }
 
 .estacion[data-estado='hecho'] {
-  border-color: color-mix(in srgb, var(--estado-ok) 28%, var(--border-subtle));
+  border-color: color-mix(in srgb, var(--liquido-2) 30%, var(--vidrio-borde));
 }
 
-.estacion[data-estado='hecho'] > .estacion__cabeza .insignia {
-  border-color: color-mix(in srgb, var(--estado-ok) 55%, var(--border-default));
+.estacion[data-estado='hecho'] > .estacion__cabeza .glifo {
+  background: color-mix(in srgb, var(--estado-ok) 20%, transparent);
   color: var(--estado-ok);
 }
 
-.estacion[data-estado='hecho'] > .estacion__cabeza .insignia__estado { background: var(--estado-ok); }
-.estacion[data-estado='hecho'] > .estacion__cabeza .chip { color: var(--estado-ok); }
+.estacion[data-estado='hecho'] > .estacion__cabeza .estado { color: var(--estado-ok); }
 
-.estacion[data-estado='fallo'] {
-  border-color: var(--estado-fallo);
-  background: color-mix(in srgb, var(--estado-fallo) 6%, var(--bg-primary));
-}
+/* Lleno y quieto: las olas se calman cuando el paso ha terminado. */
+.estacion[data-estado='hecho'] > .vaso .ola { animation-duration: 7s; }
+.estacion[data-estado='hecho'] > .vaso .ola--atras { animation-duration: 11s; }
 
-.estacion[data-estado='fallo'] > .estacion__cabeza .insignia {
-  border-color: var(--estado-fallo);
-  color: var(--estado-fallo);
-}
-
-.estacion[data-estado='fallo'] > .estacion__cabeza .insignia__estado { background: var(--estado-fallo); }
-.estacion[data-estado='fallo'] > .estacion__cabeza .chip,
-.estacion[data-estado='fallo'] > .estacion__detalle,
-.estacion[data-estado='fallo'] > .modelo__datos .estacion__detalle { color: var(--estado-fallo); }
-
-/* "No se llego" va con trazo discontinuo: ya no va a pasar, y no debe
-   confundirse con "todavia no ha pasado". */
 .estacion[data-estado='no-alcanzado'] {
   border-style: dashed;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 /* ---- El modelo ----
-   Mientras trabaja, un arco de luz le da la vuelta al borde. Es la unica
-   estacion que se mueve asi: es donde pasa casi todo el tiempo, y lo que dice
-   el giro es "sigue vivo" durante los segundos en que nada mas cambia. */
-.estacion--modelo[data-estado='curso'] {
-  border-color: transparent;
-  background:
-    linear-gradient(var(--bg-primary), var(--bg-primary)) padding-box,
-    conic-gradient(from var(--giro),
-      color-mix(in srgb, var(--estado-curso) 25%, transparent) 0deg,
-      var(--estado-curso) 70deg,
-      color-mix(in srgb, var(--estado-curso) 25%, transparent) 140deg,
-      color-mix(in srgb, var(--estado-curso) 25%, transparent) 360deg) border-box;
-  animation: girar 2.6s linear infinite;
+   Mientras trabaja, un arco de luz le da la vuelta al borde. Va en una capa
+   aparte con mascara, y no en el fondo del vaso, porque el vaso es
+   translucido: un degradado de fondo se veria a traves de todo el cristal. */
+.estacion--modelo::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: 3;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--giro),
+    transparent 0deg, var(--liquido-1) 60deg, var(--liquido-2) 110deg, transparent 170deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.estacion--modelo[data-estado='curso']::before {
+  opacity: 1;
+  animation: girar 2.8s linear infinite;
 }
 
 @keyframes girar {
@@ -191,33 +274,34 @@
 }
 
 .espectro {
+  position: relative;
   display: flex;
   align-items: flex-end;
   gap: 2px;
-  height: 30px;
-  margin-top: 0.65rem;
-  padding: 0 1px;
-  border-bottom: 1px solid var(--border-subtle);
+  height: 26px;
+  margin-top: 0.7rem;
 }
 
 .espectro__barra {
   flex: 1;
-  height: calc(var(--h, 0.08) * 100%);
+  height: calc(var(--h, 0.1) * 100%);
   min-height: 2px;
-  border-radius: 2px 2px 0 0;
-  background: var(--border-default);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--text-primary) 14%, transparent);
   transition: height 0.14s ease-out, background-color 0.4s ease;
 }
 
 .estacion--modelo[data-estado='curso'] .espectro__barra {
-  background: linear-gradient(180deg, var(--estado-curso), color-mix(in srgb, var(--estado-curso) 35%, transparent));
+  background: linear-gradient(0deg, var(--liquido-1), var(--liquido-2));
+  box-shadow: 0 0 8px -2px var(--liquido-1);
 }
 
 .estacion--modelo[data-estado='hecho'] .espectro__barra {
-  background: color-mix(in srgb, var(--estado-ok) 45%, var(--border-default));
+  background: color-mix(in srgb, var(--estado-ok) 55%, transparent);
 }
 
 .modelo__datos {
+  position: relative;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -232,281 +316,378 @@
   color: var(--text-secondary);
 }
 
-/* ---- Los cartuchos ---- */
-.cartuchos {
+/* ---- Los viales ----
+   Sin caja: una fila con un frasco redondo que se llena y el texto al lado.
+   Cuatro cajas dentro de otra caja era justo lo que habia que quitar. */
+.viales {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  margin: 0.7rem 0 0;
-  padding: 0;
+  gap: 0.15rem;
+  margin: 0.75rem 0 0;
+  padding: 0.5rem 0 0;
+  border-top: 1px solid var(--border-subtle);
   list-style: none;
 }
 
-.cartucho {
+/* Cada vial es un p-button de texto con contenido propio. El anfitrion
+   lleva el estado (data-estado) y el boton de dentro, que dibuja PrimeNG, la
+   forma: se alcanza con ::ng-deep acotado a esta vista. */
+.vial {
+  display: block;
+  transition: opacity 0.3s ease;
+}
+
+:host ::ng-deep .vial__boton {
   display: grid;
-  grid-template-columns: 26px minmax(0, 1fr);
-  gap: 0.6rem;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 0.65rem;
   align-items: center;
   width: 100%;
-  padding: 0.4rem 0.55rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: 9px;
-  background: var(--bg-secondary);
-  font: inherit;
+  padding: 0.35rem 0.4rem;
+  border-radius: 12px;
   text-align: left;
-  cursor: pointer;
-  transition: border-color 0.25s ease, background-color 0.25s ease, transform 0.15s ease, opacity 0.3s ease;
+  color: inherit;
 }
 
-.cartucho:hover {
-  border-color: var(--border-default);
-  transform: translateX(2px);
-}
-
-.cartucho:focus-visible {
-  outline: 2px solid var(--estado-curso);
-  outline-offset: 1px;
-}
-
-.cartucho__icono {
+.vial__frasco {
+  --nivel: 0;
+  --tinta-liquido-1: var(--liquido-1);
+  --tinta-liquido-2: var(--liquido-2);
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  background: var(--bg-tertiary);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--vidrio-borde);
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  overflow: hidden;
+  isolation: isolate;
   color: var(--text-tertiary);
   font-size: 0.7rem;
-  transition: color 0.3s ease, background-color 0.3s ease;
 }
 
-.cartucho__cuerpo {
+.vial__frasco .liquido {
+  z-index: -1;
+  transition-duration: 0.5s;
+}
+
+.vial__frasco .ola {
+  height: 5px;
+  animation-duration: 1.8s;
+}
+
+.vial__frasco .ola--atras,
+.vial__frasco .burbujas {
+  display: none;
+}
+
+.vial__texto {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 0.32rem;
-  min-width: 0;
-  min-height: 26px;
-}
-
-/* Una linea: el nombre, lo que lleva escrito y cuanto tardo. El estado lo
-   dicen el icono y el color; escrito ademas, no cabia sin partir la fila. */
-.cartucho__cabeza {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
+  gap: 0.05rem;
   min-width: 0;
 }
 
-.cartucho__titulo {
-  flex-shrink: 0;
-  font-size: 0.78rem;
+.vial__titulo {
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.cartucho__tiempo {
-  flex-shrink: 0;
-  margin-left: auto;
+.vial__detalle {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-tertiary);
-}
-
-.cartucho__barra {
-  display: block;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--bg-tertiary);
-  overflow: hidden;
-}
-
-.cartucho__relleno {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--border-strong);
-  transition: width 0.25s ease-out, background-color 0.3s ease;
-}
-
-.cartucho__detalle {
-  min-width: 0;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem;
+  font-size: 0.64rem;
   color: var(--text-tertiary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.cartucho[data-estado='espera'] { opacity: 0.55; }
-
-.cartucho[data-estado='curso'] {
-  border-color: color-mix(in srgb, var(--estado-curso) 50%, var(--border-subtle));
-  background: color-mix(in srgb, var(--estado-curso) 6%, var(--bg-secondary));
+.vial__tiempo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
 }
 
-.cartucho[data-estado='curso'] .cartucho__icono {
-  background: color-mix(in srgb, var(--estado-curso) 18%, var(--bg-tertiary));
+.vial[data-estado='espera'] { opacity: 0.5; }
+.vial[data-estado='espera'] .ola { display: none; }
+
+.vial[data-estado='curso'] .vial__frasco {
+  border-color: color-mix(in srgb, var(--liquido-1) 60%, transparent);
   color: var(--estado-curso);
+  box-shadow: 0 0 12px -3px var(--liquido-1);
 }
 
-.cartucho[data-estado='curso'] .cartucho__tiempo { color: var(--estado-curso); }
+.vial[data-estado='curso'] .vial__tiempo { color: var(--estado-curso); }
 
-/* Lo que se esta llenando brilla al avanzar: una franja de luz que recorre el
-   relleno. */
-.cartucho[data-estado='curso'] .cartucho__relleno {
-  background:
-    linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%) 0 0 / 60% 100% no-repeat,
-    var(--estado-curso);
-  animation: brillo 1.1s linear infinite;
-}
-
-@keyframes brillo {
-  from { background-position: -80% 0, 0 0; }
-  to   { background-position: 180% 0, 0 0; }
-}
-
-.cartucho[data-estado='hecho'] .cartucho__icono {
-  background: color-mix(in srgb, var(--estado-ok) 16%, var(--bg-tertiary));
+.vial[data-estado='hecho'] .vial__frasco {
+  border-color: color-mix(in srgb, var(--estado-ok) 50%, transparent);
   color: var(--estado-ok);
 }
 
-.cartucho[data-estado='hecho'] .cartucho__tiempo { color: var(--estado-ok); }
-.cartucho[data-estado='hecho'] .cartucho__relleno { background: var(--estado-ok); }
+.vial[data-estado='hecho'] .vial__tiempo { color: var(--estado-ok); }
 
-.cartucho[data-estado='no-alcanzado'] {
+.vial[data-estado='no-alcanzado'] {
+  opacity: 0.4;
+}
+
+.vial[data-estado='no-alcanzado'] .vial__frasco {
   border-style: dashed;
-  opacity: 0.45;
 }
 
-/* ---- El conducto entre estaciones ---- */
-.conducto {
+/* ---- Los tubos ----
+   Un tubo de vidrio entre dos estaciones. Vacio, con el liquido bajando a
+   chorro mientras se recorre, o lleno cuando lo de abajo ya termino. */
+.tubo {
   position: relative;
-  width: 2px;
-  height: 20px;
-  margin-left: calc(var(--relleno) + var(--insignia) / 2 - 1px);
-  background: var(--border-default);
-  transition: background-color 0.4s ease;
+  width: 8px;
+  height: 22px;
+  margin-left: calc(var(--relleno) + var(--glifo) / 2 - 4px);
+  border-left: 1px solid var(--vidrio-borde);
+  border-right: 1px solid var(--vidrio-borde);
+  background: color-mix(in srgb, var(--vidrio) 50%, transparent);
+  overflow: hidden;
 }
 
-.conducto[data-estado='recorrido'] {
-  background: color-mix(in srgb, var(--estado-ok) 55%, var(--border-default));
+.tubo__chorro {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--liquido-1) 70%, transparent), color-mix(in srgb, var(--liquido-2) 55%, transparent));
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.6s ease;
 }
 
-.conducto[data-estado='activo'] {
-  background: color-mix(in srgb, var(--estado-curso) 40%, transparent);
+.tubo[data-estado='recorrido'] .tubo__chorro {
+  transform: scaleY(1);
+  opacity: 0.55;
 }
 
-/* El pulso: una gota de luz bajando por el tramo que se esta recorriendo. */
-.conducto__pulso {
+/* Recorriendose: el tubo se llena de arriba abajo y una gota brillante baja
+   por dentro sin parar. Es el "desbordarse" de una estacion a la siguiente. */
+.tubo[data-estado='activo'] .tubo__chorro {
+  transform: scaleY(1);
+  background:
+    repeating-linear-gradient(180deg,
+      color-mix(in srgb, var(--liquido-2) 70%, transparent) 0 5px,
+      color-mix(in srgb, var(--liquido-1) 70%, transparent) 5px 11px) 0 0 / 100% 11px;
+  animation: chorro 0.5s linear infinite;
+}
+
+@keyframes chorro {
+  to { background-position: 0 11px; }
+}
+
+.tubo__gota {
   display: none;
   position: absolute;
-  left: 50%;
-  top: 0;
-  width: 6px;
+  left: 1px;
+  right: 1px;
+  top: -6px;
   height: 6px;
-  margin-left: -3px;
   border-radius: 50%;
-  background: var(--estado-curso);
-  box-shadow: 0 0 10px 2px var(--estado-curso);
+  background: #FFFFFF;
+  opacity: 0.8;
+  box-shadow: 0 0 8px var(--liquido-2);
 }
 
-.conducto[data-estado='activo'] .conducto__pulso {
+.tubo[data-estado='activo'] .tubo__gota {
   display: block;
-  animation: bajar 0.9s ease-in infinite;
+  animation: gota 0.9s ease-in infinite;
 }
 
-@keyframes bajar {
-  0%   { transform: translateY(-3px); opacity: 0; }
-  20%  { opacity: 1; }
-  100% { transform: translateY(17px); opacity: 0; }
+@keyframes gota {
+  to { transform: translateY(30px); }
 }
 
 /* ---- El JSON ---- */
 .claves {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.6rem;
+  gap: 0.3rem 0.45rem;
+  margin: 0.6rem 0 0;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem;
+  font-size: 0.64rem;
 }
 
 .claves__llave {
   color: var(--text-tertiary);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 
 .clave {
-  padding: 0.1rem 0.4rem;
-  border-radius: 5px;
-  border: 1px dashed var(--border-default);
   color: var(--text-tertiary);
-  transition: all 0.3s ease;
+  opacity: 0.6;
+  transition: color 0.3s ease, opacity 0.3s ease, text-shadow 0.3s ease;
 }
 
 .clave[data-estado='curso'] {
-  border-style: solid;
-  border-color: color-mix(in srgb, var(--estado-curso) 55%, transparent);
   color: var(--estado-curso);
+  opacity: 1;
 }
 
 .clave[data-estado='hecho'] {
-  border-style: solid;
-  border-color: color-mix(in srgb, var(--estado-ok) 45%, transparent);
-  background: color-mix(in srgb, var(--estado-ok) 10%, transparent);
   color: var(--estado-ok);
+  opacity: 1;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--estado-ok) 60%, transparent);
 }
 
 /* ---- Las cotas ---- */
 .marcas {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 5px;
   margin-top: 0.6rem;
 }
 
 .marca {
-  width: 11px;
-  height: 11px;
-  border-radius: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
   border: 1px solid var(--border-default);
 }
 
-.estacion--cotas[data-estado='curso'] .marca {
+.estacion[data-estado='curso'] .marca {
   border-color: var(--estado-curso);
   animation: tantear 1s ease-in-out infinite;
   animation-delay: calc(var(--i) * 70ms);
 }
 
 @keyframes tantear {
-  50% { background: color-mix(in srgb, var(--estado-curso) 40%, transparent); }
+  50% { background: color-mix(in srgb, var(--liquido-1) 50%, transparent); }
 }
 
-/* Al terminar se marcan una detras de otra: es la comprobacion, campo a
-   campo, que el backend acaba de hacer. */
-.estacion--cotas[data-estado='hecho'] .marca {
+/* Al terminar se llenan una detras de otra, como gotas cayendo en su sitio:
+   es la comprobacion, campo a campo, que acaba de hacer el backend. */
+.estacion[data-estado='hecho'] .marca {
   border-color: var(--estado-ok);
   background: var(--estado-ok);
-  animation: marcar 0.35s ease-out backwards;
+  box-shadow: 0 0 8px -1px var(--estado-ok);
+  animation: marcar 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) backwards;
   animation-delay: calc(var(--i) * 45ms);
 }
 
 @keyframes marcar {
-  from { transform: scale(0.3); opacity: 0; }
+  from { transform: scale(0.2) translateY(-8px); opacity: 0; }
 }
 
-/* Quien pidio que no se muevan las cosas no quiere giros, pulsos ni brillos.
-   El estado se sigue viendo: el color y el icono no dependen del movimiento. */
+/* ---- La rotura ----
+   Una estacion que falla tiembla, se agrieta y se vacia: el liquido cambia al
+   color del fallo y baja hasta el fondo mientras unas gotas se salen por
+   abajo. Pasa una vez; despues el vaso queda roto y quieto. */
+.estacion[data-estado='fallo'] {
+  --tinta-liquido-1: var(--estado-fallo);
+  --tinta-liquido-2: var(--estado-fallo);
+  border-color: var(--estado-fallo);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06),
+              0 14px 40px -18px var(--estado-fallo);
+  animation: temblar 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+.estacion[data-estado='fallo'] > .vaso .liquido {
+  transition: height 1.6s cubic-bezier(0.55, 0, 0.9, 0.4);
+}
+
+.estacion[data-estado='fallo'] > .estacion__cabeza .glifo {
+  background: color-mix(in srgb, var(--estado-fallo) 20%, transparent);
+  color: var(--estado-fallo);
+}
+
+.estacion[data-estado='fallo'] > .estacion__cabeza .estado,
+.estacion[data-estado='fallo'] > .estacion__detalle,
+.estacion[data-estado='fallo'] > .modelo__datos .estacion__detalle {
+  color: var(--estado-fallo);
+}
+
+@keyframes temblar {
+  15%, 85% { transform: translateX(-1px); }
+  30%, 70% { transform: translateX(3px); }
+  45%, 55% { transform: translateX(-4px); }
+}
+
+.grieta {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.grieta path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--estado-fallo) 75%, #FFFFFF);
+  stroke-width: 0.6;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  filter: drop-shadow(0 0 2px var(--estado-fallo));
+  animation: agrietar 0.5s 0.1s ease-out forwards;
+}
+
+.grieta path:nth-child(2) { animation-delay: 0.3s; }
+.grieta path:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes agrietar {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Las gotas se salen por debajo del vaso, cruzando el borde. */
+.gotas {
+  position: absolute;
+  left: 40%;
+  right: 30%;
+  top: 100%;
+  height: 0;
+  pointer-events: none;
+}
+
+.gotas i {
+  position: absolute;
+  top: -4px;
+  width: 5px;
+  height: 7px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: var(--estado-fallo);
+  opacity: 0;
+  animation: gotear 1.1s ease-in 2 forwards;
+}
+
+.gotas i:nth-child(1) { left: 10%; animation-delay: 0.35s; }
+.gotas i:nth-child(2) { left: 40%; animation-delay: 0.7s; }
+.gotas i:nth-child(3) { left: 65%; animation-delay: 0.5s; }
+.gotas i:nth-child(4) { left: 90%; animation-delay: 0.95s; }
+
+@keyframes gotear {
+  0%   { transform: translateY(0) scale(0.6); opacity: 0; }
+  15%  { opacity: 0.9; }
+  100% { transform: translateY(46px) scale(1); opacity: 0; }
+}
+
+/* Quien pidio que no se muevan las cosas no quiere olas, burbujas, chorros,
+   giros ni temblores. El nivel del liquido se sigue viendo: dice lo mismo
+   quieto. */
 @media (prefers-reduced-motion: reduce) {
-  .estacion--modelo[data-estado='curso'],
-  .conducto[data-estado='activo'] .conducto__pulso,
-  .cartucho[data-estado='curso'] .cartucho__relleno,
-  .estacion--cotas .marca {
-    animation: none;
+  .ola,
+  .burbujas i,
+  .tubo__chorro,
+  .tubo__gota,
+  .estacion--modelo::before,
+  .estacion,
+  .marca,
+  .grieta path,
+  .gotas i {
+    animation: none !important;
   }
+
+  .grieta path { stroke-dashoffset: 0; }
+  .liquido { transition: none; }
 }

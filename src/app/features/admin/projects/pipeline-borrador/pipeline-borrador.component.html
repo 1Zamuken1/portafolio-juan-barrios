@@ -1,43 +1,70 @@
-<!-- La cabecera de una estacion: su icono con el estado en la esquina, el
-     nombre, y el estado con su tiempo. -->
+<!-- El liquido de una estacion o de un vial: una capa que sube hasta
+     --nivel, con dos olas encima que se mueven a distinto ritmo. -->
+<ng-template #liquido>
+  <span class="liquido" aria-hidden="true">
+    <span class="ola"></span>
+    <span class="ola ola--atras"></span>
+    <span class="burbujas"><i></i><i></i><i></i></span>
+  </span>
+</ng-template>
+
+<!-- Lo que se ve cuando una estacion falla: el vaso se agrieta y lo que
+     tenia se sale por abajo, gota a gota. -->
+<ng-template #rotura>
+  <svg class="grieta" viewBox="0 0 100 60" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M58 0 L52 14 L60 22 L48 36 L55 44 L46 60" />
+    <path d="M52 14 L40 18 L34 27" />
+    <path d="M48 36 L62 40 L70 52" />
+  </svg>
+  <span class="gotas" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+</ng-template>
+
+<!-- La cabecera de una estacion: su icono, el nombre y el estado. -->
 <ng-template #cabeza let-nodo>
   @let l = lectura(nodo.estado);
   @let t = tiempo(nodo);
   <header class="estacion__cabeza">
-    <span class="insignia" aria-hidden="true">
-      <i [class]="nodo.icono"></i>
-      @if (nodo.estado !== 'espera') {
-        <span class="insignia__estado"><i [class]="l.icono"></i></span>
-      }
+    <span class="glifo" aria-hidden="true">
+      <i [class]="nodo.estado === 'curso' || nodo.estado === 'espera' ? nodo.icono : l.icono"></i>
     </span>
     <span class="estacion__titulo">{{ nodo.titulo }}</span>
-    <span class="chip">{{ l.etiqueta }}@if (t) {<span class="chip__tiempo">&nbsp;· {{ t }}</span>}</span>
+    <span class="estado">{{ l.etiqueta }}@if (t) {<span class="estado__tiempo">&nbsp;· {{ t }}</span>}</span>
   </header>
+</ng-template>
+
+<!-- El tubo entre dos estaciones: vacio, con el liquido bajando, o lleno. -->
+<ng-template #tubo let-estado>
+  <div class="tubo" [attr.data-estado]="estado" aria-hidden="true">
+    <span class="tubo__chorro"></span>
+    <span class="tubo__gota"></span>
+  </div>
 </ng-template>
 
 <div class="linea">
 
-  <!-- ===== El readme entra ===== -->
+  <!-- ===== El readme: de aqui sale el liquido ===== -->
   @if (readme(); as n) {
-    <section class="estacion estacion--readme nodo" [attr.data-estado]="n.estado"
+    <section class="estacion nodo" [attr.data-estado]="n.estado" [style.--nivel]="nivel(n)"
              [attr.aria-label]="n.titulo + ': ' + lectura(n.estado).etiqueta">
+      <span class="vaso"><ng-container *ngTemplateOutlet="liquido" /></span>
+      @if (n.estado === 'fallo') { <ng-container *ngTemplateOutlet="rotura" /> }
       <ng-container *ngTemplateOutlet="cabeza; context: { $implicit: n }" />
       <p class="estacion__detalle">{{ n.detalle || 'README.md, esperando a salir' }}</p>
     </section>
   }
 
-  <div class="conducto" [attr.data-estado]="conducto(readme(), modelo())" aria-hidden="true">
-    <span class="conducto__pulso"></span>
-  </div>
+  <ng-container *ngTemplateOutlet="tubo; context: { $implicit: conducto(readme(), modelo()) }" />
 
   <!-- ===== El modelo: la estacion grande ===== -->
   @if (modelo(); as n) {
-    <section class="estacion estacion--modelo nodo" [attr.data-estado]="n.estado"
+    <section class="estacion estacion--modelo nodo" [attr.data-estado]="n.estado" [style.--nivel]="nivel(n)"
              [attr.aria-label]="n.titulo + ': ' + lectura(n.estado).etiqueta">
+      <span class="vaso"><ng-container *ngTemplateOutlet="liquido" /></span>
+      @if (n.estado === 'fallo') { <ng-container *ngTemplateOutlet="rotura" /> }
       <ng-container *ngTemplateOutlet="cabeza; context: { $implicit: n }" />
 
-      <!-- El espectro late con lo que se va escribiendo: cada barra es un
-           latido reciente, y su altura, cuantas letras salieron. -->
+      <!-- El espectro son las ultimas letras escritas: los espacios bajos y
+           cada letra con su altura, asi que se ve pasar la forma del texto. -->
       <div class="espectro" aria-hidden="true">
         @for (h of barras(); track $index) {
           <span class="espectro__barra" [style.--h]="h"></span>
@@ -51,65 +78,62 @@
         }
       </div>
 
-      <!-- Lo que sale, como cartuchos que se llenan. Se escriben mientras el
+      <!-- Lo que sale, como viales que se llenan. Se escriben mientras el
            modelo responde; pulsar uno lleva la vista previa a su parte. -->
-      <ol class="cartuchos" aria-label="Lo que se redacta">
+      <ol class="viales" aria-label="Lo que se redacta">
         @for (s of salidas(); track s.clave) {
           @let l = lectura(s.estado);
           @let t = tiempo(s);
           <li>
-            <button type="button" class="cartucho nodo" [attr.data-estado]="s.estado"
-                    [attr.aria-label]="s.titulo + ': ' + l.etiqueta"
-                    title="Ver en la vista previa" (click)="elegir.emit(s.clave)">
-              <span class="cartucho__icono" aria-hidden="true">
-                <i [class]="s.estado === 'espera' || s.estado === 'curso' ? s.icono : l.icono"></i>
+            <p-button [text]="true" severity="secondary" class="vial nodo" styleClass="vial__boton"
+                      [attr.data-estado]="s.estado" [attr.aria-label]="s.titulo + ': ' + l.etiqueta"
+                      [ariaLabel]="s.titulo + ': ' + l.etiqueta + '. Ver en la vista previa'"
+                      (onClick)="elegir.emit(s.clave)">
+              <span class="vial__frasco" [style.--nivel]="s.estado === 'hecho' ? 1 : (s.progreso ?? 0)">
+                <ng-container *ngTemplateOutlet="liquido" />
+                <i [class]="s.estado === 'hecho' ? l.icono : s.icono" aria-hidden="true"></i>
               </span>
-              <span class="cartucho__cuerpo">
-                <span class="cartucho__cabeza">
-                  <span class="cartucho__titulo">{{ s.titulo }}</span>
-                  <span class="cartucho__detalle">{{ s.detalle || l.etiqueta }}</span>
-                  @if (t) { <span class="cartucho__tiempo">{{ t }}</span> }
-                </span>
-                <span class="cartucho__barra" aria-hidden="true">
-                  <span class="cartucho__relleno" [style.width.%]="(s.progreso ?? 0) * 100"></span>
-                </span>
+              <span class="vial__texto">
+                <span class="vial__titulo">{{ s.titulo }}</span>
+                <span class="vial__detalle">{{ s.detalle || l.etiqueta }}</span>
               </span>
-            </button>
+              @if (t) { <span class="vial__tiempo">{{ t }}</span> }
+            </p-button>
           </li>
         }
       </ol>
     </section>
   }
 
-  <div class="conducto" [attr.data-estado]="conducto(modelo(), parseo())" aria-hidden="true">
-    <span class="conducto__pulso"></span>
-  </div>
+  <ng-container *ngTemplateOutlet="tubo; context: { $implicit: conducto(modelo(), parseo()) }" />
 
   <!-- ===== El JSON se lee =====
        Sus claves se encienden segun se cierran los campos que contienen. -->
   @if (parseo(); as n) {
-    <section class="estacion estacion--json nodo" [attr.data-estado]="n.estado"
+    <section class="estacion nodo" [attr.data-estado]="n.estado" [style.--nivel]="nivel(n)"
              [attr.aria-label]="n.titulo + ': ' + lectura(n.estado).etiqueta">
+      <span class="vaso"><ng-container *ngTemplateOutlet="liquido" /></span>
+      @if (n.estado === 'fallo') { <ng-container *ngTemplateOutlet="rotura" /> }
       <ng-container *ngTemplateOutlet="cabeza; context: { $implicit: n }" />
-      <div class="claves" aria-hidden="true">
+      <p class="claves" aria-hidden="true">
         <span class="claves__llave">{{ '{' }}</span>
         @for (c of claves(); track c.clave) {
           <span class="clave" [attr.data-estado]="c.estado">{{ c.clave }}</span>
         }
         <span class="claves__llave">{{ '}' }}</span>
-      </div>
+      </p>
       @if (n.detalle) { <p class="estacion__detalle">{{ n.detalle }}</p> }
     </section>
   }
 
-  <div class="conducto" [attr.data-estado]="conducto(parseo(), validacion())" aria-hidden="true">
-    <span class="conducto__pulso"></span>
-  </div>
+  <ng-container *ngTemplateOutlet="tubo; context: { $implicit: conducto(parseo(), validacion()) }" />
 
   <!-- ===== Las cotas se comprueban ===== -->
   @if (validacion(); as n) {
-    <section class="estacion estacion--cotas nodo" [attr.data-estado]="n.estado"
+    <section class="estacion nodo" [attr.data-estado]="n.estado" [style.--nivel]="nivel(n)"
              [attr.aria-label]="n.titulo + ': ' + lectura(n.estado).etiqueta">
+      <span class="vaso"><ng-container *ngTemplateOutlet="liquido" /></span>
+      @if (n.estado === 'fallo') { <ng-container *ngTemplateOutlet="rotura" /> }
       <ng-container *ngTemplateOutlet="cabeza; context: { $implicit: n }" />
       <div class="marcas" aria-hidden="true">
         @for (i of marcas(); track i) {
