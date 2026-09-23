@@ -18,7 +18,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
   imports: [CommonModule, TableModule, ButtonModule, ConfirmDialogModule, ToastModule, TooltipModule],
   providers: [ConfirmationService, MessageService],
   templateUrl: './admin-experiences.component.html',
-  styleUrl: './admin-experiences.component.css'
+  styleUrls: ['../../admin.css']
 })
 export class AdminExperiencesComponent implements OnInit {
   experiences = signal<Experience[]>([]);

@@ -19,7 +19,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
   imports: [CommonModule, TableModule, ButtonModule, TagModule, ConfirmDialogModule, ToastModule, TooltipModule],
   providers: [ConfirmationService, MessageService],
   templateUrl: './admin-projects.component.html',
-  styleUrl: './admin-projects.component.css'
+  styleUrls: ['../../admin.css', './admin-projects.component.css']
 })
 export class AdminProjectsComponent implements OnInit {
   projects = signal<Project[]>([]);

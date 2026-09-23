@@ -1,14 +1,25 @@
 <p-toast />
 <p-confirmDialog />
 
-<div class="admin-projects-header">
-  <h2 class="font-code-lg">Projects</h2>
-  <button pButton label="+ New Project" class="p-button-sm" (click)="createNew()"></button>
-</div>
+<header class="pagina-cabecera">
+  <div>
+    <h2 class="pagina-titulo">
+      Proyectos
+      @if (!loading()) { <span class="pagina-cuenta">{{ projects().length }}</span> }
+    </h2>
+    <p class="pagina-descripcion">
+      Las fichas de caso de estudio del portafolio. El diagrama de arquitectura
+      y las métricas se editan en el JSON y se suben con el espejo.
+    </p>
+  </div>
+  <div class="pagina-acciones">
+    <button pButton icon="pi pi-plus" label="Nuevo proyecto" class="p-button-sm" (click)="createNew()"></button>
+  </div>
+</header>
 
-<div *ngIf="loading()" class="loading-state" style="padding: 3rem; text-align: center;">
-  <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
-  <p style="margin-top: 1rem;">Loading projects...</p>
+<div *ngIf="loading()" class="estado-cargando">
+  <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+  <p>Cargando proyectos…</p>
 </div>
 
 <div *ngIf="!loading()">
@@ -17,17 +28,17 @@
     [paginator]="true"
     [rows]="10"
     [showCurrentPageReport]="true"
-    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} projects"
+    currentPageReportTemplate="{first}–{last} de {totalRecords}"
     styleClass="p-datatable-sm p-datatable-striped"
   >
     <ng-template pTemplate="header">
       <tr>
         <th style="width: 60px">ID</th>
-        <th>Name</th>
-        <th>Status</th>
-        <th style="width: 80px">Year</th>
-        <th style="width: 80px">Order</th>
-        <th style="width: 180px">Actions</th>
+        <th>Nombre</th>
+        <th>Estado</th>
+        <th style="width: 80px">Año</th>
+        <th style="width: 80px">Orden</th>
+        <th style="width: 110px">Acciones</th>
       </tr>
     </ng-template>
 
@@ -47,8 +58,8 @@
         <td>{{ project.displayOrder }}</td>
         <td>
           <div class="action-buttons">
-            <button pButton icon="pi pi-pencil" class="p-button-sm p-button-text p-button-info" (click)="editProject(project)" pTooltip="Edit"></button>
-            <button pButton icon="pi pi-trash" class="p-button-sm p-button-text p-button-danger" (click)="confirmDelete(project)" pTooltip="Delete"></button>
+            <button pButton icon="pi pi-pencil" class="p-button-sm p-button-text p-button-info" (click)="editProject(project)" pTooltip="Editar"></button>
+            <button pButton icon="pi pi-trash" class="p-button-sm p-button-text p-button-danger" (click)="confirmDelete(project)" pTooltip="Eliminar"></button>
           </div>
         </td>
       </tr>
@@ -56,8 +67,12 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="6" style="text-align: center; padding: 2rem;">
-          <p>No projects yet. Click <strong>+ New Project</strong> to create one.</p>
+        <td colspan="6">
+          <div class="estado-vacio">
+            <i class="pi pi-folder-open" aria-hidden="true"></i>
+            <p>Todavía no hay proyectos.</p>
+            <span class="pista">Pulsa «Nuevo proyecto» para crear el primero.</span>
+          </div>
         </td>
       </tr>
     </ng-template>

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.juanbarrios.portfolio.domain.model.ProjectDraft;
+import com.juanbarrios.portfolio.domain.port.out.AvisoDeEtapa;
 import com.juanbarrios.portfolio.domain.port.out.DrafterNoDisponibleException;
 import com.juanbarrios.portfolio.domain.port.out.ProjectDrafterPort;
 import org.slf4j.Logger;
@@ -118,7 +119,7 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
     }
 
     @Override
-    public ProjectDraft draft(String nombre, String readme) {
+    public ProjectDraft draft(String nombre, String readme, AvisoDeEtapa aviso) {
         if (apiKey.isEmpty()) {
             throw new DrafterNoDisponibleException(
                     "No hay clave de Groq configurada. Define GROQ_API_KEY en el entorno.");
@@ -132,7 +133,20 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
 
         for (String modelo : modelos) {
             try {
-                ProjectDraft borrador = parsear(pedirRespuesta(modelo, nombre, readme));
+                aviso.avisar("modelo", retirados.isEmpty()
+                        ? "Consultando " + modelo
+                        : "Probando " + modelo + ", que es el siguiente de la lista");
+
+                long arranque = System.nanoTime();
+                String contenido = pedirRespuesta(modelo, nombre, readme);
+                long tardo = (System.nanoTime() - arranque) / 1_000_000;
+
+                aviso.avisar("respuesta", modelo + " respondio " + contenido.length()
+                        + " caracteres en " + segundos(tardo));
+
+                ProjectDraft borrador = parsear(contenido);
+                aviso.avisar("parseo", "El JSON tiene la forma esperada");
+
                 if (!retirados.isEmpty()) {
                     // Que quede constancia: el borrador salio, pero de un
                     // modelo distinto al preferido y eso cambia el resultado.
@@ -142,6 +156,7 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
                 return borrador;
             } catch (ModeloRetirado e) {
                 retirados.add(e.modelo);
+                aviso.avisar("modelo", "Groq ya no tiene " + e.modelo + "; queda retirado");
                 // Se prueba el siguiente. Cualquier otro fallo --401, 429, un
                 // corte de red-- sube tal cual: reintentarlo con otro modelo
                 // no arreglaria nada y solo gastaria cuota.
@@ -149,6 +164,17 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
         }
 
         throw new DrafterNoDisponibleException(sinModelosVivos(retirados));
+    }
+
+    /**
+     * Milisegundos a algo que se lee de un vistazo: "8,4 s".
+     *
+     * A mano y no con String.format porque el formato numerico depende de la
+     * configuracion regional del servidor, y este texto va a una interfaz en
+     * espaniol: en Render saldria "8.4 s" sin que aqui se viera el porque.
+     */
+    private static String segundos(long ms) {
+        return (ms / 1000) + "," + ((ms % 1000) / 100) + " s";
     }
 
     /**

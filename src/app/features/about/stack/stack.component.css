@@ -1,0 +1,41 @@
+/* El conmutador entre la lista y el anillo.
+   Se pinta como dos pestanias y no como un interruptor: lo que cambia no es
+   una opcion encendida o apagada, son dos formas de ver lo mismo. */
+.vista-selector {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin: 0 0 1.5rem;
+  padding: 0.25rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+}
+
+.vista-boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border: none;
+  border-radius: calc(var(--radius-md) - 2px);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.vista-boton:hover {
+  color: var(--text-primary);
+}
+
+.vista-boton.activa {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.vista-boton:focus-visible {
+  outline: 2px solid var(--text-accent);
+  outline-offset: 2px;
+}

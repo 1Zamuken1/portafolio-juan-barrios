@@ -1,14 +1,25 @@
 <p-toast />
 <p-confirmDialog />
 
-<div class="admin-section-header">
-  <h2 class="font-code-lg">Experiencia</h2>
-  <button pButton label="+ Nueva Experiencia" class="p-button-sm" (click)="createNew()"></button>
-</div>
+<header class="pagina-cabecera">
+  <div>
+    <h2 class="pagina-titulo">
+      Trayectoria
+      @if (!loading()) { <span class="pagina-cuenta">{{ experiences().length }}</span> }
+    </h2>
+    <p class="pagina-descripcion">
+      Experiencia y formación, en una sola línea de tiempo. El orden lo decide
+      el campo «Orden», de lo más reciente a lo más antiguo.
+    </p>
+  </div>
+  <div class="pagina-acciones">
+    <button pButton icon="pi pi-plus" label="Nueva entrada" class="p-button-sm" (click)="createNew()"></button>
+  </div>
+</header>
 
-<div *ngIf="loading()" class="loading-state" style="padding: 3rem; text-align: center;">
-  <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
-  <p style="margin-top: 1rem;">Cargando experiencias...</p>
+<div *ngIf="loading()" class="estado-cargando">
+  <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+  <p>Cargando la trayectoria…</p>
 </div>
 
 <div *ngIf="!loading()">
@@ -17,7 +28,7 @@
     [paginator]="true"
     [rows]="10"
     [showCurrentPageReport]="true"
-    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} experiencias"
+    currentPageReportTemplate="{first}–{last} de {totalRecords}"
     styleClass="p-datatable-sm p-datatable-striped"
   >
     <ng-template pTemplate="header">
@@ -27,7 +38,7 @@
         <th>Rol</th>
         <th>Período</th>
         <th style="width: 80px">Orden</th>
-        <th style="width: 180px">Acciones</th>
+        <th style="width: 110px">Acciones</th>
       </tr>
     </ng-template>
 
@@ -51,8 +62,12 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="6" style="text-align: center; padding: 2rem;">
-          <p>No hay experiencias. Haz clic en <strong>+ Nueva Experiencia</strong> para crear una.</p>
+        <td colspan="6">
+          <div class="estado-vacio">
+            <i class="pi pi-calendar" aria-hidden="true"></i>
+            <p>Todavía no hay entradas en la trayectoria.</p>
+            <span class="pista">Pulsa «Nueva entrada» para añadir la primera.</span>
+          </div>
         </td>
       </tr>
     </ng-template>

@@ -12,22 +12,41 @@
     <h1>Tecnologías y herramientas</h1>
     <p class="doc-intro">Lo que uso a diario y lo que he aplicado en los proyectos de este portafolio.</p>
 
-    @for (grupo of porCategoria(); track grupo.categoria) {
-      <h2 [id]="ancla(grupo.categoria)">{{ grupo.categoria }}</h2>
+    <!-- El anillo es lo mismo, mirado de otra forma. La lista manda: es la que
+         se prerenderiza y la que se puede recorrer con el teclado. -->
+    <div class="vista-selector" role="group" aria-label="Forma de ver el stack">
+      <button type="button" class="vista-boton" [class.activa]="!anillo()"
+              [attr.aria-pressed]="!anillo()" (click)="anillo.set(false)">
+        <i class="pi pi-list" aria-hidden="true"></i> Lista
+      </button>
+      <button type="button" class="vista-boton" [class.activa]="anillo()"
+              [attr.aria-pressed]="anillo()" (click)="anillo.set(true)">
+        <i class="pi pi-circle" aria-hidden="true"></i> Anillo
+      </button>
+    </div>
 
-      <div class="stack-grid">
-        @for (skill of grupo.skills; track skill.id) {
-          <div class="stack-card">
-            <span class="stack-card-head">
-              <i [class]="skill.icon" [style.color]="skill.color" aria-hidden="true"></i>
-              <strong>{{ skill.name }}</strong>
-            </span>
-            @if (skill.description) {
-              <span class="stack-card-desc">{{ skill.description }}</span>
-            }
-          </div>
-        }
-      </div>
+    @if (anillo()) {
+      <app-anillo-stack [skills]="todas()" />
+    }
+
+    @if (!anillo()) {
+      @for (grupo of porCategoria(); track grupo.categoria) {
+        <h2 [id]="ancla(grupo.categoria)">{{ grupo.categoria }}</h2>
+
+        <div class="stack-grid">
+          @for (skill of grupo.skills; track skill.id) {
+            <div class="stack-card">
+              <span class="stack-card-head">
+                <i [class]="skill.icon" [style.color]="skill.color" aria-hidden="true"></i>
+                <strong>{{ skill.name }}</strong>
+              </span>
+              @if (skill.description) {
+                <span class="stack-card-desc">{{ skill.description }}</span>
+              }
+            </div>
+          }
+        </div>
+      }
     }
 
     <nav class="doc-nav" aria-label="Otros documentos del perfil">

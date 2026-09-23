@@ -91,6 +91,14 @@
   --text-tertiary: #475569; /* Slate 600 */
   --text-accent: #2563EB; /* Blue 600 */
 
+  /* Salio bien / salio mal. Hasta ahora no habia hecho falta nombrarlo, y el
+     primer sitio que lo necesito --la pipeline del redactor-- estuvo a punto
+     de meter dos hex sueltos que no habrian cambiado con el tema.
+     Verde y rojo oscurecidos sobre papel: los de marca (#6DB33F, #E53935) se
+     quedan por debajo de AA sobre fondo claro. */
+  --estado-ok: #2F7D32;
+  --estado-fallo: #C62828;
+
   --border-subtle: #CBD5E1;
   --border-default: #94A3B8;
   --border-strong: #475569;
@@ -217,6 +225,10 @@
   --text-secondary: #A1A1AA;
   --text-tertiary: #71717A;
   --text-accent: #FFFFFF;
+
+  /* Aclarados para el fondo negro: los mismos de arriba no se leerian. */
+  --estado-ok: #7BC96F;
+  --estado-fallo: #FF6B6B;
 
   --border-subtle: #1F1F1F;
   --border-default: #27272A;

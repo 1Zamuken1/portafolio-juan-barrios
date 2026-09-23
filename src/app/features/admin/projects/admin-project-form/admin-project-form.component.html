@@ -1,7 +1,18 @@
 <p-toast />
 
-<div class="form-header">
-  <h2 class="font-code-lg">{{ isEditMode ? 'Edit Project' : 'New Project' }}</h2>
+<header class="pagina-cabecera">
+  <div>
+    <h2 class="pagina-titulo">{{ isEditMode ? 'Editar proyecto' : 'Nuevo proyecto' }}</h2>
+    <p class="pagina-descripcion">
+      La ficha completa: lo que se ve en la tarjeta, lo que se ve al abrirla y
+      el readme del caso de estudio.
+    </p>
+  </div>
+</header>
+
+<div *ngIf="loading()" class="estado-cargando">
+  <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+  <p>Cargando el proyecto…</p>
 </div>
 
 <!-- Redactar un borrador a partir de un readme.
@@ -21,203 +32,279 @@
       y las metricas no se tocan.
     </p>
 
+    <!-- Traer el readme sin pegarlo a mano. Las dos vias dejan el texto en el
+         area de abajo, que sigue siendo lo unico que se le manda al modelo. -->
+    <div class="fuentes">
+      <div class="fuentes__repo">
+        <input pInputText type="text" [formControl]="enlaceRepo"
+               placeholder="https://github.com/usuario/repo"
+               (keydown.enter)="traerDeGithub()" aria-label="Enlace del repositorio" />
+        <button pButton type="button" label="Traer readme" icon="pi pi-github"
+                class="p-button-outlined" [loading]="trayendo()"
+                (click)="traerDeGithub()"></button>
+      </div>
+
+      <span class="fuentes__o">o</span>
+
+      <label class="fuentes__subir">
+        <i class="pi pi-upload" aria-hidden="true"></i>
+        Subir un .md
+        <input type="file" accept=".md,.markdown,text/markdown,text/plain"
+               (change)="subirMarkdown($event)" />
+      </label>
+    </div>
+
+    <p class="panel-borrador__ayuda">
+      Solo repositorios publicos: no se manda ningun token. El fichero que
+      subes se lee en el navegador y no viaja a ningun sitio; lo unico que sale
+      de aqui es el texto de abajo, y solo al pulsar Redactar.
+    </p>
+
     <textarea pTextarea id="readmeFuente" [formControl]="readmeFuente" rows="10"
               placeholder="# Mi proyecto&#10;&#10;Pega aqui el readme completo..."></textarea>
 
     <button pButton type="button" label="Redactar borrador" icon="pi pi-sparkles"
             [loading]="redactando()" (click)="redactarBorrador()"></button>
+
+    <!-- Por donde va. Cada linea la manda el backend al pasar por el paso; no
+         hay ningun temporizador aqui simulando progreso. -->
+    @if (pasos().length) {
+      <ol class="pipeline" aria-live="polite">
+        @for (paso of pasos(); track paso.clave) {
+          <li class="pipeline__paso" [attr.data-estado]="paso.estado">
+            <span class="pipeline__marca" aria-hidden="true">
+              @switch (paso.estado) {
+                @case ('curso')  { <i class="pi pi-spin pi-spinner"></i> }
+                @case ('hecho')  { <i class="pi pi-check"></i> }
+                @case ('fallo')  { <i class="pi pi-times"></i> }
+                @default         { <i class="pi pi-circle"></i> }
+              }
+            </span>
+            <span class="pipeline__texto">
+              <span class="pipeline__titulo">{{ paso.titulo }}</span>
+              @if (paso.detalle) {
+                <span class="pipeline__detalle">{{ paso.detalle }}</span>
+              }
+            </span>
+          </li>
+        }
+      </ol>
+    }
   </div>
 </div>
 
 <form [formGroup]="form" (ngSubmit)="onSubmit()" class="project-form" *ngIf="!loading()">
 
-  <!-- Row 1: Name & Year -->
-  <div class="form-row">
-    <div class="form-group flex-2">
-      <label for="name">Name *</label>
-      <input pInputText id="name" formControlName="name" placeholder="Project name" />
-    </div>
-    <div class="form-group flex-1">
-      <label for="slug">Slug</label>
-      <input pInputText id="slug" formControlName="slug" placeholder="gastu-django" />
-    </div>
-    <div class="form-group flex-1">
-      <label for="year">Year *</label>
-      <p-inputNumber id="year" formControlName="year" [useGrouping]="false" [min]="2000" [max]="2030" />
-    </div>
-  </div>
+  <section class="form-seccion">
+    <h3 class="form-seccion-titulo">Identidad</h3>
 
-  <!-- Row 2: Status & Role -->
-  <div class="form-row">
-    <div class="form-group flex-1">
-      <label for="status">Status *</label>
-      <p-select id="status" formControlName="status" [options]="statusOptions" optionLabel="label" optionValue="value" placeholder="Select status" />
-    </div>
-    <div class="form-group flex-1">
-      <label for="role">Role</label>
-      <input pInputText id="role" formControlName="role" placeholder="e.g. Full Stack Developer" />
-    </div>
-    <div class="form-group flex-1">
-      <label for="type">Tipo</label>
-      <input pInputText id="type" formControlName="type" placeholder="Web Application" />
-    </div>
-    <div class="form-group" style="width: 110px;">
-      <label for="teamSize">Equipo</label>
-      <p-inputNumber id="teamSize" formControlName="teamSize" [min]="1" [max]="50" />
-    </div>
-    <div class="form-group" style="width: 120px;">
-      <label for="displayOrder">Order</label>
-      <p-inputNumber id="displayOrder" formControlName="displayOrder" [min]="0" [max]="100" />
-    </div>
-  </div>
-
-  <!-- Short Description -->
-  <div class="form-group">
-    <label for="shortDescription">Short Description *</label>
-    <textarea pTextarea id="shortDescription" formControlName="shortDescription" rows="2" placeholder="Brief summary visible on the card"></textarea>
-  </div>
-
-  <!-- Full Description -->
-  <div class="form-group">
-    <label for="fullDescription">Full Description</label>
-    <textarea pTextarea id="fullDescription" formControlName="fullDescription" rows="5" placeholder="Detailed description shown in the modal"></textarea>
-  </div>
-
-  <!-- Listas: una entrada por linea.
-       NO separadas por comas: el contenido lleva comas y partir por ellas
-       convertia una vinieta en tres al guardar. -->
-  <div class="form-group">
-    <label for="featuresText">Features <small>(una por linea)</small></label>
-    <textarea pTextarea id="featuresText" formControlName="featuresText" rows="5"
-              placeholder="Autenticacion mixta (Email, Google OAuth)&#10;Exportacion a Excel, PDF y CSV"></textarea>
-  </div>
-
-  <div class="form-group">
-    <label for="highlightsText">Highlights <small>(una por linea)</small></label>
-    <textarea pTextarea id="highlightsText" formControlName="highlightsText" rows="4"
-              placeholder="Arquitectura modular&#10;Sistema hibrido SQLite/PostgreSQL"></textarea>
-  </div>
-
-  <div class="form-group">
-    <label for="keywordsText">Keywords <small>(una por linea)</small></label>
-    <textarea pTextarea id="keywordsText" formControlName="keywordsText" rows="3"
-              placeholder="finanzas&#10;ia&#10;django"></textarea>
-  </div>
-
-  <!-- Enlaces. Van a links.github y links.live, que es donde vive el dato;
-       githubUrl y liveUrl eran campos heredados y estaban siempre vacios. -->
-  <div class="form-row" formGroupName="links">
-    <div class="form-group flex-1">
-      <label for="linkGithub">Repositorio</label>
-      <input pInputText id="linkGithub" formControlName="github" placeholder="https://github.com/..." />
-    </div>
-    <div class="form-group flex-1">
-      <label for="linkLive">Despliegue</label>
-      <input pInputText id="linkLive" formControlName="live" placeholder="https://..." />
-    </div>
-    <div class="form-group flex-1">
-      <label for="linkDownload">Descarga <small>(solo si no hay despliegue)</small></label>
-      <input pInputText id="linkDownload" formControlName="download"
-             placeholder="https://github.com/usuario/repo/releases/latest" />
-    </div>
-  </div>
-
-  <p class="form-nota">
-    La ficha muestra el despliegue si existe y, si no, la descarga. Para una
-    release de GitHub conviene apuntar a <code>/releases/latest</code> y no al
-    <code>.exe</code> de una version concreta: asi no hay que volver aqui cada
-    vez que publiques una nueva.
-  </p>
-
-  <div class="form-group">
-    <label for="imageUrl">Image URL</label>
-    <input pInputText id="imageUrl" formControlName="imageUrl" placeholder="/assets/images/projects/..." />
-  </div>
-
-  <!-- Arquitectura: resumenes de una linea que se muestran en la ficha -->
-  <h3 class="form-section">Arquitectura</h3>
-
-  <div class="form-row">
-    <div class="form-group flex-1">
-      <label for="coreArchitecture">Core</label>
-      <input pInputText id="coreArchitecture" formControlName="coreArchitecture" placeholder="Django Apps + Services Layer" />
-    </div>
-    <div class="form-group flex-1">
-      <label for="databaseArchitecture">Base de datos</label>
-      <input pInputText id="databaseArchitecture" formControlName="databaseArchitecture" placeholder="SQLite / PostgreSQL" />
-    </div>
-  </div>
-
-  <div class="form-group">
-    <label for="aiArchitecture">IA</label>
-    <input pInputText id="aiArchitecture" formControlName="aiArchitecture" placeholder="Gemini Flash + Groq Fallback" />
-  </div>
-
-  <!-- Readme del caso de estudio -->
-  <h3 class="form-section">Readme</h3>
-
-  <div formGroupName="readmeMarkdown">
-    <div class="form-group">
-      <label for="rmObjective">Objetivo</label>
-      <textarea pTextarea id="rmObjective" formControlName="objective" rows="3"></textarea>
-    </div>
-    <div class="form-group">
-      <label for="rmArchitecture">Arquitectura</label>
-      <textarea pTextarea id="rmArchitecture" formControlName="architecture" rows="3"></textarea>
-    </div>
-    <div class="form-group">
-      <label for="rmMainFeatures">Funcionalidades principales</label>
-      <textarea pTextarea id="rmMainFeatures" formControlName="mainFeatures" rows="3"></textarea>
-    </div>
-    <div class="form-group">
-      <label for="rmTechnologies">Tecnologias</label>
-      <textarea pTextarea id="rmTechnologies" formControlName="technologies" rows="3"></textarea>
-    </div>
-    <div class="form-group">
-      <label for="rmLearnings">Aprendizajes</label>
-      <textarea pTextarea id="rmLearnings" formControlName="learnings" rows="3"></textarea>
-    </div>
-  </div>
-
-  <!-- Desafios. Cada uno son dos campos y no una linea con separador: ya se
-       aprendio con las comas que meter un delimitador dentro del contenido
-       acaba partiendo lo que no debia. -->
-  <h3 class="form-section">Desafios</h3>
-
-  <div formArrayName="challenges">
-    <div class="challenge" *ngFor="let c of challenges.controls; let i = index" [formGroupName]="i">
-      <div class="form-group challenge__titulo">
-        <label [for]="'challengeTitle' + i">Titulo</label>
-        <input pInputText [id]="'challengeTitle' + i" formControlName="title"
-               placeholder="Implementacion de autenticacion hibrida" />
+    <div class="form-row">
+      <div class="form-group flex-2">
+        <label for="name">Nombre *</label>
+        <input pInputText id="name" formControlName="name" placeholder="Gastu" />
       </div>
-      <div class="form-group challenge__descripcion">
-        <label [for]="'challengeDesc' + i">Descripcion</label>
-        <textarea pTextarea [id]="'challengeDesc' + i" formControlName="description" rows="2"
-                  placeholder="En que consistia la dificultad y como se resolvio"></textarea>
+      <div class="form-group flex-1">
+        <label for="slug">Slug</label>
+        <input pInputText id="slug" formControlName="slug" placeholder="gastu-django" />
       </div>
-      <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-danger challenge__quitar"
-              (click)="quitarChallenge(i)" [attr.aria-label]="'Quitar el desafio ' + (i + 1)"></button>
+      <div class="form-group flex-1">
+        <label for="year">Año *</label>
+        <p-inputNumber id="year" formControlName="year" [useGrouping]="false" [min]="2000" [max]="2030" />
+      </div>
     </div>
-  </div>
+    <p class="campo-ayuda">
+      El slug es la parte final de la URL de la ficha. Si lo cambias en un
+      proyecto ya publicado, el enlace antiguo deja de funcionar.
+    </p>
 
-  <button pButton type="button" label="Anadir desafio" icon="pi pi-plus"
-          class="p-button-text" (click)="agregarChallenge()"></button>
+    <div class="form-row">
+      <div class="form-group flex-1">
+        <label for="status">Estado *</label>
+        <p-select id="status" formControlName="status" [options]="statusOptions" optionLabel="label" optionValue="value" placeholder="Elige un estado" />
+      </div>
+      <div class="form-group flex-1">
+        <label for="role">Rol</label>
+        <input pInputText id="role" formControlName="role" placeholder="Full Stack Developer" />
+      </div>
+      <div class="form-group flex-1">
+        <label for="type">Tipo</label>
+        <input pInputText id="type" formControlName="type" placeholder="Aplicación web" />
+      </div>
+      <div class="form-group" style="width: 110px;">
+        <label for="teamSize">Equipo</label>
+        <p-inputNumber id="teamSize" formControlName="teamSize" [min]="1" [max]="50" />
+      </div>
+      <div class="form-group" style="width: 120px;">
+        <label for="displayOrder">Orden</label>
+        <p-inputNumber id="displayOrder" formControlName="displayOrder" [min]="0" [max]="100" />
+      </div>
+    </div>
+  </section>
 
-  <p class="form-nota">
-    El diagrama de arquitectura, el stack estructurado y las metricas no se
-    editan aqui: se escriben en <code>src/assets/data/projects.json</code> y se
+  <section class="form-seccion">
+    <h3 class="form-seccion-titulo">Descripciones</h3>
+
+    <div class="form-group">
+      <label for="shortDescription">Descripción corta *</label>
+      <textarea pTextarea id="shortDescription" formControlName="shortDescription" rows="2" placeholder="La frase que se lee en la tarjeta"></textarea>
+      <p class="campo-ayuda">Una o dos frases. Es lo único que se ve sin abrir la ficha.</p>
+    </div>
+
+    <div class="form-group">
+      <label for="fullDescription">Descripción completa</label>
+      <textarea pTextarea id="fullDescription" formControlName="fullDescription" rows="5" placeholder="El detalle que se muestra al abrir la ficha"></textarea>
+    </div>
+  </section>
+
+  <section class="form-seccion">
+    <h3 class="form-seccion-titulo">Listas</h3>
+    <!-- Una entrada por linea, NO separadas por comas: el contenido lleva
+         comas y partir por ellas convertia una vinieta en tres al guardar. -->
+    <p class="form-seccion-nota">
+      Una entrada por línea. No se separan por comas a propósito: el contenido
+      lleva comas y partir por ellas convertía una viñeta en tres.
+    </p>
+
+    <div class="form-group">
+      <label for="featuresText">Funcionalidades</label>
+      <textarea pTextarea id="featuresText" formControlName="featuresText" rows="5"
+                placeholder="Autenticacion mixta (Email, Google OAuth)&#10;Exportacion a Excel, PDF y CSV"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="highlightsText">Destacados</label>
+      <textarea pTextarea id="highlightsText" formControlName="highlightsText" rows="4"
+                placeholder="Arquitectura modular&#10;Sistema hibrido SQLite/PostgreSQL"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="keywordsText">Palabras clave</label>
+      <textarea pTextarea id="keywordsText" formControlName="keywordsText" rows="3"
+                placeholder="finanzas&#10;ia&#10;django"></textarea>
+    </div>
+  </section>
+
+  <section class="form-seccion">
+    <h3 class="form-seccion-titulo">Enlaces</h3>
+
+    <!-- Van a links.github y links.live, que es donde vive el dato;
+         githubUrl y liveUrl eran campos heredados y estaban siempre vacios. -->
+    <div class="form-row" formGroupName="links">
+      <div class="form-group flex-1">
+        <label for="linkGithub">Repositorio</label>
+        <input pInputText id="linkGithub" formControlName="github" placeholder="https://github.com/..." />
+      </div>
+      <div class="form-group flex-1">
+        <label for="linkLive">Despliegue</label>
+        <input pInputText id="linkLive" formControlName="live" placeholder="https://..." />
+      </div>
+      <div class="form-group flex-1">
+        <label for="linkDownload">Descarga</label>
+        <input pInputText id="linkDownload" formControlName="download"
+               placeholder="https://github.com/usuario/repo/releases/latest" />
+      </div>
+    </div>
+
+    <p class="campo-ayuda">
+      La ficha muestra el despliegue si existe y, si no, la descarga. Para una
+      release de GitHub conviene apuntar a <code>/releases/latest</code> y no al
+      <code>.exe</code> de una versión concreta: así no hay que volver aquí cada
+      vez que publiques una nueva.
+    </p>
+
+    <div class="form-group">
+      <label for="imageUrl">Imagen</label>
+      <input pInputText id="imageUrl" formControlName="imageUrl" placeholder="/assets/images/projects/..." />
+    </div>
+  </section>
+
+  <section class="form-seccion">
+    <h3 class="form-seccion-titulo">Arquitectura</h3>
+    <p class="form-seccion-nota">Resúmenes de una línea que se muestran en la ficha.</p>
+
+    <div class="form-row">
+      <div class="form-group flex-1">
+        <label for="coreArchitecture">Núcleo</label>
+        <input pInputText id="coreArchitecture" formControlName="coreArchitecture" placeholder="Django Apps + Services Layer" />
+      </div>
+      <div class="form-group flex-1">
+        <label for="databaseArchitecture">Base de datos</label>
+        <input pInputText id="databaseArchitecture" formControlName="databaseArchitecture" placeholder="SQLite / PostgreSQL" />
+      </div>
+      <div class="form-group flex-1">
+        <label for="aiArchitecture">IA</label>
+        <input pInputText id="aiArchitecture" formControlName="aiArchitecture" placeholder="Gemini Flash + Groq Fallback" />
+      </div>
+    </div>
+  </section>
+
+  <section class="form-seccion">
+    <h3 class="form-seccion-titulo">Readme</h3>
+    <p class="form-seccion-nota">Las cinco secciones del caso de estudio.</p>
+
+    <div formGroupName="readmeMarkdown">
+      <div class="form-group">
+        <label for="rmObjective">Objetivo</label>
+        <textarea pTextarea id="rmObjective" formControlName="objective" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="rmArchitecture">Arquitectura</label>
+        <textarea pTextarea id="rmArchitecture" formControlName="architecture" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="rmMainFeatures">Funcionalidades principales</label>
+        <textarea pTextarea id="rmMainFeatures" formControlName="mainFeatures" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="rmTechnologies">Tecnologías</label>
+        <textarea pTextarea id="rmTechnologies" formControlName="technologies" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="rmLearnings">Aprendizajes</label>
+        <textarea pTextarea id="rmLearnings" formControlName="learnings" rows="3"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <section class="form-seccion">
+    <h3 class="form-seccion-titulo">Desafíos</h3>
+    <!-- Cada uno son dos campos y no una linea con separador: ya se aprendio
+         con las comas que meter un delimitador dentro del contenido acaba
+         partiendo lo que no debia. -->
+
+    <div formArrayName="challenges">
+      <div class="challenge" *ngFor="let c of challenges.controls; let i = index" [formGroupName]="i">
+        <div class="form-group challenge__titulo">
+          <label [for]="'challengeTitle' + i">Título</label>
+          <input pInputText [id]="'challengeTitle' + i" formControlName="title"
+                 placeholder="Implementacion de autenticacion hibrida" />
+        </div>
+        <div class="form-group challenge__descripcion">
+          <label [for]="'challengeDesc' + i">Descripción</label>
+          <textarea pTextarea [id]="'challengeDesc' + i" formControlName="description" rows="2"
+                    placeholder="En que consistia la dificultad y como se resolvio"></textarea>
+        </div>
+        <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-danger challenge__quitar"
+                (click)="quitarChallenge(i)" [attr.aria-label]="'Quitar el desafio ' + (i + 1)"></button>
+      </div>
+    </div>
+
+    <button pButton type="button" label="Añadir desafío" icon="pi pi-plus"
+            class="p-button-text" (click)="agregarChallenge()"></button>
+  </section>
+
+  <p class="campo-ayuda">
+    El diagrama de arquitectura, el stack estructurado y las métricas no se
+    editan aquí: se escriben en <code>src/assets/data/projects.json</code> y se
     suben con <code>pnpm run mirror:push</code>. Guardar desde este formulario
     no los altera.
   </p>
 
-  <!-- Actions -->
-  <div class="form-actions">
-    <button pButton type="button" label="Cancel" class="p-button-text" (click)="cancel()"></button>
-    <button pButton type="submit" [label]="isEditMode ? 'Update Project' : 'Create Project'" [loading]="saving()" [disabled]="form.invalid"></button>
+  <div class="barra-guardado">
+    <span class="barra-guardado-estado">
+      Guardar escribe en la base de datos, no publica el sitio.
+    </span>
+    <button pButton type="button" label="Cancelar" class="p-button-text" (click)="cancel()"></button>
+    <button pButton type="submit" [label]="isEditMode ? 'Guardar cambios' : 'Crear proyecto'" [loading]="saving()" [disabled]="form.invalid"></button>
   </div>
 </form>
-
-<div *ngIf="loading()" style="text-align: center; padding: 3rem;">
-  <p>Loading project data...</p>
-</div>
