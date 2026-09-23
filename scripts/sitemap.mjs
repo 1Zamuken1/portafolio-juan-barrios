@@ -60,6 +60,8 @@ const fecha = fechaDeLosDatos();
 const paginas = [
   { ruta: '/', prioridad: '1.0' },
   { ruta: '/about', prioridad: '0.8' },
+  { ruta: '/about/trayectoria', prioridad: '0.8' },
+  { ruta: '/about/stack', prioridad: '0.7' },
   { ruta: '/projects', prioridad: '0.7' },
   ...publicados.map((p) => ({ ruta: `/projects/${p.id}`, prioridad: '0.9' }))
 ];

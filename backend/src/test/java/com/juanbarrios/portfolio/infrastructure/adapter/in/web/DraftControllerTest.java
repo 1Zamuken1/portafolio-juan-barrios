@@ -13,16 +13,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * El endpoint de borradores, visto desde fuera.
@@ -52,6 +57,7 @@ class DraftControllerTest {
 
     private static ProjectDraft borradorValido() {
         return new ProjectDraft(
+                "Gastu",
                 "Gestor de finanzas personales construido con Django.",
                 "Una aplicacion que centraliza ingresos, gastos y presupuestos, "
                         + "con informes mensuales y exportacion a varios formatos. "
@@ -86,7 +92,7 @@ class DraftControllerTest {
     @Test
     @DisplayName("autenticado devuelve el borrador")
     void autenticadoDevuelveElBorrador() throws Exception {
-        given(drafter.draft(anyString(), anyString())).willReturn(borradorValido());
+        given(drafter.draft(anyString(), anyString(), any())).willReturn(borradorValido());
 
         mockMvc.perform(post("/api/projects/draft")
                         .with(user("admin"))
@@ -103,8 +109,8 @@ class DraftControllerTest {
         // Al modelo se le olvido una seccion. Es un caso esperado, no un fallo
         // del servidor: quien usa el panel tiene que poder distinguirlo.
         ProjectDraft v = borradorValido();
-        given(drafter.draft(anyString(), anyString())).willReturn(new ProjectDraft(
-                v.shortDescription(), v.fullDescription(),
+        given(drafter.draft(anyString(), anyString(), any())).willReturn(new ProjectDraft(
+                v.name(), v.shortDescription(), v.fullDescription(),
                 new ReadmeMarkdown(v.readmeMarkdown().objective(),
                         v.readmeMarkdown().architecture(),
                         v.readmeMarkdown().mainFeatures(),
@@ -124,7 +130,7 @@ class DraftControllerTest {
     @DisplayName("si el proveedor no responde sale como 503")
     void siElProveedorNoRespondeSaleComo503() throws Exception {
         willThrow(new DrafterNoDisponibleException("Groq no responde"))
-                .given(drafter).draft(anyString(), anyString());
+                .given(drafter).draft(anyString(), anyString(), any());
 
         mockMvc.perform(post("/api/projects/draft")
                         .with(user("admin"))
@@ -132,5 +138,75 @@ class DraftControllerTest {
                         .content(cuerpo(README)))
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.error").exists());
+    }
+
+    // ── El endpoint en streaming ──────────────────────────────────────────
+
+    @Test
+    @DisplayName("el streaming tampoco se puede llamar sin autenticar")
+    void elStreamingTampocoSeAbre() throws Exception {
+        // Gasta la misma cuota que el otro. Tener dos puertas y proteger solo
+        // una es la forma habitual de que la nueva se quede abierta.
+        mockMvc.perform(post("/api/projects/draft/stream")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(cuerpo(README)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("el streaming va contando las etapas y termina con el borrador")
+    void elStreamingCuentaLasEtapas() throws Exception {
+        // El doble avisa como lo haria el adaptador real, para comprobar que
+        // los avisos llegan hasta el cuerpo y no se quedan por el camino.
+        given(drafter.draft(anyString(), anyString(), any())).willAnswer(llamada -> {
+            com.juanbarrios.portfolio.domain.port.out.AvisoDeEtapa aviso = llamada.getArgument(2);
+            aviso.avisar("modelo", "Consultando un-modelo");
+            aviso.avisar("respuesta", "un-modelo respondio 100 caracteres en 1,0 s");
+            aviso.avisar("parseo", "El JSON tiene la forma esperada");
+            return borradorValido();
+        });
+
+        String cuerpo = ejecutarStream();
+
+        assertTrue(cuerpo.contains("\"etapa\":\"entrada\""), cuerpo);
+        assertTrue(cuerpo.contains("\"etapa\":\"modelo\""), cuerpo);
+        assertTrue(cuerpo.contains("\"etapa\":\"respuesta\""), cuerpo);
+        assertTrue(cuerpo.contains("\"etapa\":\"validacion\""), cuerpo);
+        assertTrue(cuerpo.contains("\"etapa\":\"fin\""), cuerpo);
+        assertTrue(cuerpo.contains("learnings"), "el borrador viaja en la ultima linea: " + cuerpo);
+    }
+
+    @Test
+    @DisplayName("en streaming el fallo viaja en el cuerpo, no en el codigo de estado")
+    void enStreamingElFalloViajaEnElCuerpo() throws Exception {
+        // Para cuando falla ya se mandaron los 200 y las cabeceras. Si la
+        // interfaz mirara el estado veria un exito donde no lo hubo, asi que la
+        // linea de error tiene que distinguir igual que lo hacen el 422 y el
+        // 503: se reintenta, o solo se espera.
+        willThrow(new DrafterNoDisponibleException("Groq no responde"))
+                .given(drafter).draft(anyString(), anyString(), any());
+
+        String cuerpo = ejecutarStream();
+
+        assertTrue(cuerpo.contains("\"etapa\":\"error\""), cuerpo);
+        assertTrue(cuerpo.contains("\"tipo\":\"nodisponible\""), cuerpo);
+        assertTrue(cuerpo.contains("Groq no responde"), cuerpo);
+        assertTrue(!cuerpo.contains("\"etapa\":\"fin\""), "no hubo borrador: " + cuerpo);
+    }
+
+    /** Lanza la peticion en streaming y devuelve el cuerpo entero ya cerrado. */
+    private String ejecutarStream() throws Exception {
+        MvcResult resultado = mockMvc.perform(post("/api/projects/draft/stream")
+                        .with(user("admin"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(cuerpo(README)))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        return mockMvc.perform(asyncDispatch(resultado))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
     }
 }

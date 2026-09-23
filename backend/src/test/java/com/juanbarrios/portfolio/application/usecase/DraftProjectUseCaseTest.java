@@ -33,6 +33,7 @@ class DraftProjectUseCaseTest {
 
     private static ProjectDraft borradorValido() {
         return new ProjectDraft(
+                "Gastu",
                 "Gestor de finanzas personales construido con Django.",
                 "Una aplicacion que centraliza ingresos, gastos y presupuestos, "
                         + "con informes mensuales y exportacion a varios formatos. "
@@ -57,7 +58,7 @@ class DraftProjectUseCaseTest {
 
     /** Puerto de mentira: devuelve lo que se le diga, sin salir a la red. */
     private static DraftProjectUseCase conRespuesta(ProjectDraft respuesta) {
-        return new DraftProjectUseCase((nombre, readme) -> respuesta);
+        return new DraftProjectUseCase((nombre, readme, aviso) -> respuesta);
     }
 
     @Test
@@ -72,7 +73,7 @@ class DraftProjectUseCaseTest {
     void seRechazaSiFaltaUnaSeccion() {
         ProjectDraft v = borradorValido();
         ProjectDraft incompleto = new ProjectDraft(
-                v.shortDescription(), v.fullDescription(),
+                v.name(), v.shortDescription(), v.fullDescription(),
                 new ReadmeMarkdown(
                         v.readmeMarkdown().objective(),
                         v.readmeMarkdown().architecture(),
@@ -92,7 +93,7 @@ class DraftProjectUseCaseTest {
     void seRechazaSiUnaSeccionLlegaEnBlanco() {
         ProjectDraft v = borradorValido();
         ProjectDraft enBlanco = new ProjectDraft(
-                v.shortDescription(), v.fullDescription(),
+                v.name(), v.shortDescription(), v.fullDescription(),
                 new ReadmeMarkdown("   ",
                         v.readmeMarkdown().architecture(),
                         v.readmeMarkdown().mainFeatures(),
@@ -109,7 +110,8 @@ class DraftProjectUseCaseTest {
     void seRechazaUnaDescripcionCortaDemasiadoLarga() {
         ProjectDraft v = borradorValido();
         ProjectDraft desbordada = new ProjectDraft(
-                "palabra ".repeat(60), v.fullDescription(), v.readmeMarkdown(), v.challenges());
+                v.name(), "palabra ".repeat(60), v.fullDescription(),
+                v.readmeMarkdown(), v.challenges());
 
         BorradorInvalidoException e = assertThrows(BorradorInvalidoException.class,
                 () -> conRespuesta(desbordada).draft("Gastu", README));
@@ -121,7 +123,8 @@ class DraftProjectUseCaseTest {
     void seRechazaSinChallenges() {
         ProjectDraft v = borradorValido();
         ProjectDraft sinChallenges = new ProjectDraft(
-                v.shortDescription(), v.fullDescription(), v.readmeMarkdown(), List.of());
+                v.name(), v.shortDescription(), v.fullDescription(),
+                v.readmeMarkdown(), List.of());
 
         assertThrows(BorradorInvalidoException.class,
                 () -> conRespuesta(sinChallenges).draft("Gastu", README));
@@ -132,7 +135,7 @@ class DraftProjectUseCaseTest {
     void seRechazaUnChallengeSinDescripcion() {
         ProjectDraft v = borradorValido();
         ProjectDraft manco = new ProjectDraft(
-                v.shortDescription(), v.fullDescription(), v.readmeMarkdown(),
+                v.name(), v.shortDescription(), v.fullDescription(), v.readmeMarkdown(),
                 List.of(
                         new Challenge("Un titulo suelto", ""),
                         new Challenge("Otro titulo", "Con su descripcion.")));
@@ -146,7 +149,7 @@ class DraftProjectUseCaseTest {
     @DisplayName("un readme demasiado corto se rechaza sin llegar a llamar al redactor")
     void seRechazaUnReadmeCortoSinLlamar() {
         boolean[] llamado = {false};
-        DraftProjectUseCase caso = new DraftProjectUseCase((nombre, readme) -> {
+        DraftProjectUseCase caso = new DraftProjectUseCase((nombre, readme, aviso) -> {
             llamado[0] = true;
             return borradorValido();
         });
@@ -156,10 +159,30 @@ class DraftProjectUseCaseTest {
     }
 
     @Test
-    @DisplayName("se rechaza sin nombre de proyecto")
-    void seRechazaSinNombre() {
-        assertThrows(BorradorInvalidoException.class,
-                () -> conRespuesta(borradorValido()).draft("  ", README));
+    @DisplayName("sin nombre tambien se redacta: el nombre lo pone el borrador")
+    void sinNombreTambienSeRedacta() {
+        // Antes esto era un rechazo. Exigir el nombre a la entrada ponia un
+        // paso manual delante del automatico para pedir un dato que casi
+        // siempre esta ya en el readme.
+        ProjectDraft salida = conRespuesta(borradorValido()).draft("  ", README);
+        assertEquals("Gastu", salida.name());
+    }
+
+    @Test
+    @DisplayName("se rechaza un borrador que vuelve sin nombre")
+    void seRechazaUnBorradorSinNombre() {
+        // La otra cara de lo anterior: si el nombre ya no se exige a la
+        // entrada, este es el unico sitio que queda para comprobarlo. Sin esto,
+        // un borrador sin nombre llegaria al formulario con el campo requerido
+        // en blanco y sin que nada lo dijera.
+        ProjectDraft v = borradorValido();
+        ProjectDraft anonimo = new ProjectDraft(
+                "  ", v.shortDescription(), v.fullDescription(),
+                v.readmeMarkdown(), v.challenges());
+
+        BorradorInvalidoException e = assertThrows(BorradorInvalidoException.class,
+                () -> conRespuesta(anonimo).draft("", README));
+        assertTrue(e.getMessage().contains("name"), e.getMessage());
     }
 
     @Test
@@ -168,7 +191,7 @@ class DraftProjectUseCaseTest {
         // Son dos situaciones distintas para quien usa el panel: un borrador
         // invalido se reintenta o se mejora el readme; un proveedor caido no
         // tiene nada que revisar. Si ambas salieran igual, el mensaje mentiria.
-        DraftProjectUseCase caso = new DraftProjectUseCase((nombre, readme) -> {
+        DraftProjectUseCase caso = new DraftProjectUseCase((nombre, readme, aviso) -> {
             throw new DrafterNoDisponibleException("Groq no responde");
         });
 

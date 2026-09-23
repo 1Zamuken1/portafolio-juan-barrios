@@ -4,6 +4,7 @@ import { Router, RouterOutlet, RouterLink, NavigationEnd, ActivatedRoute } from 
 import { ThemeService } from '../../core/services/theme.service';
 import { DataService } from '../../core/services/data.service';
 import { Project } from '../../shared/models/project.model';
+import { Perfil } from '../../shared/models/perfil.model';
 import { filter, Subscription } from 'rxjs';
 interface EditorTab {
   id: string;
@@ -74,6 +75,9 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
    * no tenia un solo uso en todo el proyecto desde que se quito el navbar.
    */
   protected tema = inject(ThemeService);
+
+  /** Cabecera del perfil, en src/assets/data/perfil.json. */
+  protected perfil = signal<Perfil | null>(null);
   private routerSub?: Subscription;
   private fragmentSub?: Subscription;
 
@@ -109,11 +113,19 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
 
     if (path === '/') {
       label = 'README.md';
+    } else if (path === '/about/trayectoria') {
+      // Cada documento del perfil es una ruta propia y no un fragmento del
+      // mismo texto, asi que la pestana sale del camino y no del ancla.
+      label = 'trayectoria.md';
+      icon = 'pi pi-calendar';
+      iconColor = '#e8a94a';
+    } else if (path === '/about/stack') {
+      label = 'stack.md';
+      icon = 'pi pi-database';
+      iconColor = '#e8a94a';
     } else if (path === '/about') {
-      label = fragment === 'experience' ? 'timeline.json' : 
-              fragment === 'stack' ? 'tech-stack.yml' : 'profile.md';
-      icon = fragment === 'experience' ? 'pi pi-calendar' : 
-             fragment === 'stack' ? 'pi pi-database' : 'pi pi-user';
+      label = 'profile.md';
+      icon = 'pi pi-user';
       iconColor = '#e8a94a';
     } else if (path.startsWith('/projects/')) {
       let pIcon = 'pi pi-file';
@@ -150,6 +162,8 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.dataService.getStaticPerfil().subscribe(p => this.perfil.set(p));
+
     // En movil el explorer es un panel flotante y arranca cerrado, para no
     // comerse el area del editor.
     if (this.isBrowser) {
@@ -199,7 +213,7 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
     
     // Set active menu based on path
     if (path.startsWith('/projects')) this.activeMenu.set('projects');
-    else if (path === '/about') this.activeMenu.set('about');
+    else if (path.startsWith('/about')) this.activeMenu.set('about');
     else this.activeMenu.set('home');
 
     // Ignore project internal fragments (like #readme, #stack) from creating new tabs,

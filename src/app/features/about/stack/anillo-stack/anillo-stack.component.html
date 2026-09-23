@@ -1,0 +1,54 @@
+<div class="escena"
+     (mousedown)="empezarArrastre($event)"
+     (mousemove)="moverArrastre($event)"
+     (mouseup)="terminarArrastre()"
+     (mouseleave)="terminarArrastre()"
+     (touchstart)="empezarArrastre($event)"
+     (touchmove)="moverArrastre($event)"
+     (touchend)="terminarArrastre()">
+
+  <div class="resplandor" aria-hidden="true"></div>
+
+  <!-- Lo que hay en el centro: el nombre del portafolio mientras no se seniala
+       nada, y la tecnologia cuando se seniala una. -->
+  <div class="centro" [class.oculto]="activa()" aria-hidden="true">
+    <span class="centro-rotulo">STACK</span>
+  </div>
+
+  <div class="ficha" [class.visible]="activa()" aria-hidden="true">
+    @if (activa(); as skill) {
+      <span class="ficha-categoria">{{ skill.category }}</span>
+      <span class="ficha-nombre"
+            [style.--brand-color]="skill.color"
+            [style.--brand-color-light]="skill.brandColorLight"
+            [style.--brand-color-dark]="skill.brandColorDark">{{ skill.name }}</span>
+      @if (skill.description) {
+        <span class="ficha-descripcion">{{ skill.description }}</span>
+      }
+    }
+  </div>
+
+  <div class="anillo" #anillo>
+    <div class="orbita" aria-hidden="true"></div>
+    <div class="orbita orbita--media" aria-hidden="true"></div>
+    <div class="orbita orbita--externa" aria-hidden="true"></div>
+
+    @for (item of conAngulo(); track item.skill.id) {
+      <div class="brazo" [style.--angulo]="item.angulo + 'deg'">
+        <div class="planeta"
+             #planeta
+             [style.--brand-color]="item.skill.color"
+             [attr.title]="item.skill.name"
+             (mouseenter)="entrar(item.skill)"
+             (mouseleave)="salir()">
+          <i [class]="item.skill.icon" aria-hidden="true"></i>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<p class="pista">
+  <i class="pi pi-arrows-h" aria-hidden="true"></i>
+  Arrastra para girarlo. Pasa el puntero por una tecnología para verla.
+</p>

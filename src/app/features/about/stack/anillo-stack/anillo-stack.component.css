@@ -1,0 +1,273 @@
+/* ================================================
+   El anillo del stack
+   ================================================
+
+   La geometria viene del componente que ocupaba toda la pagina de «about»
+   antes de partirla en tres documentos: la inclinacion de 72 grados y el radio
+   son los de entonces, porque es lo que le da el aspecto de orbita vista casi
+   de canto en vez de una rueda de frente.
+
+   Los colores salen de las variables que theme.css ya define en sus dos
+   variantes, asi que el anillo sigue el tema claro y el oscuro sin reglas
+   aparte.
+*/
+
+/* Todo el anillo se dibuja a partir de un solo numero, el radio, y ese numero
+   lo marca el ancho del sitio donde cae y no el de la ventana.
+   La diferencia importa: este documento vive dentro de una columna bastante
+   mas estrecha que la pantalla, y con un radio fijo de 280px las tecnologias
+   de los extremos quedaban cortadas por el borde. Con medidas de ventana
+   habria pasado lo mismo, porque la ventana no sabe de la barra lateral.
+   El tope de 280px es el del componente antiguo: pasado ese tamanio el anillo
+   deja de leerse de un vistazo. */
+:host {
+  container-type: inline-size;
+  display: block;
+  --radio: min(280px, 42cqw);
+}
+
+/* La altura tambien sale de la geometria y no de un numero redondo. Inclinado
+   72 grados, un anillo de radio R solo ocupa 2*R*cos(72deg) de alto, o sea un
+   62% del radio; lo demas es sitio para las esferas y para la ficha del
+   centro. Con los 500px fijos del componente antiguo, media escena era
+   hueco. */
+.escena {
+  perspective: 1200px;
+  height: calc(var(--radio) * 0.62 + 105px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.escena:active {
+  cursor: grabbing;
+}
+
+.resplandor {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--radio) * 2.1);
+  height: calc(var(--radio) * 1.05);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse,
+    var(--ring-glow-center) 0%,
+    var(--ring-glow-outer) 40%,
+    transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+/* ---- El centro ---- */
+.centro,
+.ficha {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 5;
+}
+
+.centro-rotulo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.4em;
+  /* La letra hereda el degradado del tema, que en claro es oscuro y en oscuro
+     es claro; por eso no hay un color escrito aqui. */
+  background: var(--core-text-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.centro.oculto {
+  opacity: 0;
+}
+
+.ficha {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 240px;
+  max-width: 280px;
+  padding: 1rem 1.5rem;
+  opacity: 0;
+  background: var(--tooltip-bg);
+  border: 1px solid var(--center-skill-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+}
+
+.ficha.visible {
+  opacity: 1;
+}
+
+.ficha-categoria {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* El color de marca, pero el que corresponde al tema: el de una tecnologia
+   suele estar pensado para uno de los dos fondos y no para los dos. */
+.ficha-nombre {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--brand-color-dark, var(--brand-color));
+}
+
+:host-context([data-theme='light']) .ficha-nombre {
+  color: var(--brand-color-light, var(--brand-color));
+}
+
+.ficha-descripcion {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+/* ---- El anillo ---- */
+.anillo {
+  position: relative;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+}
+
+.orbita {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--radio) * 1.8);
+  height: calc(var(--radio) * 1.8);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid var(--orbital-track-base);
+  border-left-color: var(--orbital-track-left);
+  border-right-color: var(--orbital-track-right);
+  pointer-events: none;
+}
+
+.orbita--media {
+  width: calc(var(--radio) * 2.4);
+  height: calc(var(--radio) * 2.4);
+  border: 1px dashed var(--orbital-track-left);
+  border-left-color: transparent;
+  border-right-color: transparent;
+  animation: orbitar 60s linear infinite reverse;
+}
+
+.orbita--externa {
+  width: calc(var(--radio) * 2.9);
+  height: calc(var(--radio) * 2.9);
+  border: 1px solid var(--orbital-track-base);
+  animation: orbitar 90s linear infinite;
+}
+
+@keyframes orbitar {
+  from { transform: translate(-50%, -50%) rotateZ(0deg); }
+  to   { transform: translate(-50%, -50%) rotateZ(360deg); }
+}
+
+/* Las orbitas de fuera giran solas; el bucle no las toca, asi que hay que
+   pararlas aqui. */
+@media (prefers-reduced-motion: reduce) {
+  .orbita--media,
+  .orbita--externa {
+    animation: none;
+  }
+}
+
+/* ---- Cada tecnologia ---- */
+.brazo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-style: preserve-3d;
+  transform: rotateZ(var(--angulo)) translateX(var(--radio));
+}
+
+.planeta {
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  background: var(--planet-bg);
+  border: 1px solid var(--planet-border);
+  box-shadow: var(--planet-shadow), inset 0 1px 1px var(--planet-icon-shadow);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.planeta:hover {
+  transform: scale(1.15);
+  border-color: var(--brand-color, var(--planet-border));
+}
+
+/* El icono lleva el color de marca de la tecnologia. En el componente antiguo
+   eran todos blancos y las marcas no se distinguian. */
+.planeta i {
+  color: var(--brand-color, var(--text-primary));
+  filter: drop-shadow(0 1px 2px var(--planet-icon-shadow));
+  transition: transform 0.2s ease;
+}
+
+.planeta:hover i {
+  transform: scale(1.1);
+}
+
+/* ---- La pista ---- */
+.pista {
+  margin: 0.5rem 0 0;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+}
+
+.pista i {
+  margin-right: 0.35rem;
+}
+
+/* ---- Contenedores estrechos ----
+   El radio y todo lo que cuelga de el ya se encogen solos; aqui solo quedan
+   las dos cosas que no escalan con la geometria. Las esferas se encogen porque
+   con un radio pequenio se tocarian entre ellas, y la ficha se estrecha porque
+   su texto no puede ir menguando o deja de leerse --que es justo el motivo de
+   no resolver esto con un scale() sobre toda la escena--. */
+@container (max-width: 560px) {
+  .planeta {
+    width: 42px;
+    height: 42px;
+    margin: -21px 0 0 -21px;
+    font-size: 1.25rem;
+  }
+
+  .ficha {
+    min-width: 0;
+    max-width: 210px;
+    padding: 0.75rem 1rem;
+  }
+}

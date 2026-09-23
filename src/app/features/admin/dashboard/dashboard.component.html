@@ -1,19 +1,41 @@
 <div class="dashboard-layout">
+
   <aside class="sidebar">
     <div class="sidebar-header">
-      <h2 class="font-code-md tracking-widest uppercase">Admin Panel</h2>
+      <span class="marca">
+        <i class="pi pi-code" aria-hidden="true"></i>
+        <span>Panel</span>
+      </span>
+      <span class="marca-sub">portafolio-juan-barrios</span>
     </div>
-    <nav class="sidebar-nav">
-      <a class="nav-link" routerLink="projects" routerLinkActive="active">Proyectos</a>
-      <a class="nav-link" routerLink="experience" routerLinkActive="active">Experiencia</a>
-      <a class="nav-link" routerLink="skills" routerLinkActive="active">Habilidades</a>
-    </nav>
-    <div class="sidebar-footer">
-      <a routerLink="/" class="nav-link" style="margin-bottom: 0.5rem;">
-        <i class="pi pi-home"></i> View Portfolio
+
+    <nav class="sidebar-nav" aria-label="Secciones del panel">
+      <span class="nav-grupo">Contenido</span>
+      <a class="nav-link" routerLink="projects" routerLinkActive="active">
+        <i class="pi pi-folder" aria-hidden="true"></i> Proyectos
       </a>
-      <button (click)="logout()" class="logout-btn font-code-sm uppercase">
-        <i class="pi pi-sign-out"></i> Logout
+      <a class="nav-link" routerLink="experience" routerLinkActive="active">
+        <i class="pi pi-calendar" aria-hidden="true"></i> Trayectoria
+      </a>
+      <a class="nav-link" routerLink="skills" routerLinkActive="active">
+        <i class="pi pi-database" aria-hidden="true"></i> Stack
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <!-- Recordatorio de que guardar aqui no publica nada: el sitio lee los
+           JSON del repositorio, no la base de datos. Se ha olvidado alguna vez. -->
+      <p class="aviso-publicar">
+        <i class="pi pi-info-circle" aria-hidden="true"></i>
+        Guardar cambia la base, no el sitio. Para publicar:
+        <code>pnpm run mirror:publish</code>
+      </p>
+
+      <a routerLink="/" class="nav-link">
+        <i class="pi pi-external-link" aria-hidden="true"></i> Ver el portafolio
+      </a>
+      <button (click)="logout()" class="logout-btn">
+        <i class="pi pi-sign-out" aria-hidden="true"></i> Cerrar sesión
       </button>
     </div>
   </aside>
@@ -22,4 +44,3 @@
     <router-outlet></router-outlet>
   </main>
 </div>
-

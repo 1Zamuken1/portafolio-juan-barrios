@@ -1,11 +1,41 @@
+/* ================================================
+   Armazón del panel de administración
+   ================================================ */
+/* El panel es su propia ventana: ocupa la pantalla y lo que se desplaza es el
+   area de contenido, no el documento.
+
+   Esto no es una preferencia, es la unica forma que funciona aqui. La primera
+   version dejaba correr el documento y pegaba la barra con position: sticky,
+   pero body lleva overflow-x: hidden --que obliga a un overflow-y computado--
+   y eso convierte a body en contenedor de desplazamiento: sticky deja de tener
+   contra que pegarse y la barra se va con la pagina.
+
+   Con el scroll dentro del panel no hace falta pegar nada, y de paso la barra
+   de guardado de los formularios, que tambien es sticky, pasa a tener un
+   contenedor real contra el que quedarse. */
 .dashboard-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   background-color: var(--bg-primary);
 }
 
+/* ---- Barra lateral ----
+
+   Se queda quieta, y eso era el problema a resolver. Antes se estiraba con el
+   alto del documento: en la lista de proyectos no se notaba, pero la ficha de
+   un proyecto mide varios miles de pixeles y, como .sidebar-nav lleva flex:1,
+   el aviso de publicar y el boton de salir se iban al fondo de ese documento.
+   La barra parecia otra en cada vista.
+
+   Ahora mide lo que la ventana y tiene su propio desplazamiento, asi que se ve
+   igual en todas: los enlaces arriba y el pie abajo del todo de la pantalla. */
 .sidebar {
-  width: 280px;
+  width: 260px;
+  flex-shrink: 0;
+  height: 100%;
+  overflow-y: auto;
   background-color: var(--bg-secondary);
   border-right: 1px solid var(--border-subtle);
   display: flex;
@@ -13,29 +43,67 @@
 }
 
 .sidebar-header {
-  padding: 2rem;
+  padding: 1.5rem 1.25rem;
   border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
-.sidebar-header h2 {
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--text-primary);
+}
+
+.marca-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
 }
 
 .sidebar-nav {
   flex: 1;
-  padding: 1.5rem;
+  padding: 1.25rem 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.2rem;
+}
+
+/* Un solo grupo hoy, pero el rotulo evita que al anadir el segundo la lista
+   quede como un monton de enlaces sin jerarquia. */
+.nav-grupo {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  padding: 0.5rem 0.75rem 0.35rem;
 }
 
 .nav-link {
-  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
   border-radius: var(--radius-md);
   color: var(--text-secondary);
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-link i {
+  font-size: 0.9rem;
+  width: 1rem;
 }
 
 .nav-link:hover {
@@ -44,65 +112,99 @@
 }
 
 .nav-link.active {
-  background-color: var(--text-primary);
-  color: var(--bg-secondary);
-}
-
-.nav-link.disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  pointer-events: none;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--text-accent);
 }
 
 .sidebar-footer {
-  padding: 1.5rem;
+  padding: 1rem 0.75rem;
   border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* El panel escribe en la base; el sitio publico lee los JSON del repositorio.
+   Sin este recordatorio es facil guardar, mirar el sitio y no entender nada. */
+.aviso-publicar {
+  margin: 0 0 0.5rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+.aviso-publicar i {
+  margin-right: 0.25rem;
+}
+
+.aviso-publicar code {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
 }
 
 .logout-btn {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.6rem;
   background: transparent;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
-  color: var(--text-primary);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.85rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: all var(--transition-fast);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .logout-btn:hover {
   background: var(--bg-tertiary);
   border-color: var(--border-strong);
+  color: var(--text-primary);
 }
 
+/* ---- Área de contenido ---- */
 .dashboard-content {
   flex: 1;
-  padding: 2.5rem;
+  min-width: 0;
+  padding: 2rem 2.25rem;
   overflow-y: auto;
 }
 
-.content-header {
-  margin-bottom: 2.5rem;
-}
-
-.dashboard-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.stat-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-}
-
-.mt-2 {
-  margin-top: 0.5rem;
+@media (max-width: 860px) {
+  /* Apilada arriba, la pantalla vuelve a ser del documento: dos barras de
+     desplazamiento en un movil son una de mas. */
+  .dashboard-layout {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    overflow-y: visible;
+  }
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .nav-grupo,
+  .aviso-publicar {
+    display: none;
+  }
+  .dashboard-content {
+    overflow-y: visible;
+    padding: 1.25rem;
+  }
 }

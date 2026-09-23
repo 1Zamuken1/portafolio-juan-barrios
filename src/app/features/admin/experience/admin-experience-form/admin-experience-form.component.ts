@@ -27,7 +27,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
   ],
   providers: [MessageService],
   templateUrl: './admin-experience-form.component.html',
-  styleUrl: './admin-experience-form.component.css'
+  styleUrls: ['../../admin.css']
 })
 export class AdminExperienceFormComponent implements OnInit {
   form!: FormGroup;
@@ -60,7 +60,13 @@ export class AdminExperienceFormComponent implements OnInit {
       period: ['', Validators.required],
       description: [''],
       achievementsStr: [''],
-      icon: ['fas fa-briefcase', Validators.required],
+      // Sin el prefijo de Font Awesome, que este sitio ya no carga: la
+      // trayectoria traduce 'briefcase', 'code' y 'graduation-cap' a iconos de
+      // PrimeIcons, y cualquier otro valor cae al de por defecto. El valor que
+      // habia aqui, 'fas fa-briefcase', no coincidia con ninguno de los tres,
+      // asi que una entrada nueva nacia con el icono generico sin que nada lo
+      // dijera.
+      icon: ['briefcase', Validators.required],
       technologiesStr: [''],
       displayOrder: [0]
     });

@@ -9,7 +9,9 @@ export const routes: Routes = [
       { path: '', loadComponent: () => import('./features/welcome/welcome.component').then(m => m.WelcomeComponent) },
       { path: 'projects', loadComponent: () => import('./features/projects/projects.component').then(m => m.ProjectsComponent) },
       { path: 'projects/:id', loadComponent: () => import('./features/projects/projects.component').then(m => m.ProjectsComponent) },
-      { path: 'about', loadComponent: () => import('./features/about/about.component').then(m => m.AboutComponent) }
+      { path: 'about', loadComponent: () => import('./features/about/about.component').then(m => m.AboutComponent) },
+      { path: 'about/trayectoria', loadComponent: () => import('./features/about/trayectoria/trayectoria.component').then(m => m.TrayectoriaComponent) },
+      { path: 'about/stack', loadComponent: () => import('./features/about/stack/stack.component').then(m => m.StackComponent) }
     ]
   },
   { path: 'admin/login', loadComponent: () => import('./features/admin/login/login.component').then(m => m.LoginComponent) },

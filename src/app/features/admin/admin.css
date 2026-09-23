@@ -1,0 +1,227 @@
+/* ================================================
+   Piezas compartidas de las páginas del panel
+   ================================================
+
+   Cada vista traía su propia cabecera con estilos sueltos y márgenes
+   distintos, así que la misma acción caía en un sitio diferente según la
+   página. Esto las unifica sin montar un componente contenedor.
+
+   Todo sale de las variables de tema, así que el panel sigue el claro y el
+   oscuro como el resto del sitio.
+*/
+
+/* ---- Cabecera de página ---- */
+.pagina-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.pagina-titulo {
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pagina-descripcion {
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  max-width: 60ch;
+}
+
+.pagina-acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Cuenta de registros junto al título, para saber qué hay sin contar filas. */
+.pagina-cuenta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 1rem;
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  vertical-align: middle;
+  margin-left: 0.5rem;
+}
+
+/* ---- Estados ---- */
+.estado-vacio,
+.estado-cargando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3.5rem 1.5rem;
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.estado-vacio i,
+.estado-cargando i {
+  font-size: 1.75rem;
+  opacity: 0.7;
+}
+
+.estado-vacio p,
+.estado-cargando p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Un estado vacío que no dice qué hacer es solo un hueco. */
+.estado-vacio .pista {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  opacity: 0.85;
+}
+
+/* ---- Tarjeta contenedora ---- */
+.panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* ---- Secciones de formulario ---- */
+.form-seccion {
+  margin: 1.75rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.form-seccion:first-of-type {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.form-seccion-titulo {
+  margin: 0 0 0.25rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.form-seccion-nota {
+  margin: 0 0 1rem;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--text-tertiary);
+}
+
+/* ---- Barra de guardado fija ----
+   Las fichas de proyecto pasan de 30 campos. Con el botón al final había que
+   recorrer todo el formulario para guardar un cambio de una línea. */
+.barra-guardado {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  padding: 0.9rem 1rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.barra-guardado-estado {
+  margin-right: auto;
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+}
+
+/* ---- Formularios ----
+   Las tres fichas (proyecto, trayectoria, stack) repetian este mismo bloque
+   en su propio CSS, con valores que ya habian empezado a separarse entre si.
+   Vive aqui una sola vez; cada ficha se queda solo con lo suyo. */
+.admin-form,
+.project-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 900px;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+}
+
+.flex-1 { flex: 1; }
+.flex-2 { flex: 2; }
+
+/* Una etiqueta dice como se llama el campo; esto dice que se espera dentro,
+   que es lo que de verdad hace falta cuando el formato importa (un hex, una
+   clase de devicon, una lista separada por comas). */
+.campo-ayuda {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+.campo-ayuda code {
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: 0.95em;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+  }
+}
+
+/* Los iconos de editar y borrar al final de cada fila. Las tres listas
+   repetian esta misma regla. */
+.action-buttons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+/* Los campos de PrimeNG que no heredan el ancho de su grupo se ajustan en
+   global.css y no aqui. No es capricho: el <input> de verdad lo dibuja PrimeNG,
+   asi que no lleva el atributo de este componente y una regla encapsulada no
+   llega a el. Es la misma trampa que dejo sin pintar el tema claro del
+   blueprint. */

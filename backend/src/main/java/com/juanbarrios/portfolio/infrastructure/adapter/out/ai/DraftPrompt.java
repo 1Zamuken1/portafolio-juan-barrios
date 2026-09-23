@@ -36,6 +36,7 @@ final class DraftPrompt {
             FORMA EXACTA DE LA RESPUESTA:
 
             {
+              "name": "string",
               "shortDescription": "string",
               "fullDescription": "string",
               "readmeMarkdown": {
@@ -52,6 +53,12 @@ final class DraftPrompt {
 
             QUE VA EN CADA CAMPO:
 
+            - name: como se llama el proyecto, para leerlo una persona. Menos de
+              60 caracteres. Si el readme trae un titulo, usa ese. Si lo que
+              trae es un identificador de repositorio --"tsuki-translator",
+              "sgva_assistant"-- conviertelo en nombre: quita guiones y guiones
+              bajos y pon mayusculas iniciales. No le anadas una descripcion
+              detras ni lo traduzcas si es un nombre propio.
             - shortDescription: una sola frase, entre 50 y 90 caracteres. Es la
               linea que aparece en la tarjeta del proyecto.
             - fullDescription: un parrafo de entre 200 y 300 caracteres, que
@@ -75,13 +82,26 @@ final class DraftPrompt {
             No pongas titulos dentro: el sitio ya los dibuja por su cuenta.
             """;
 
-    static String usuario(String nombre, String readme) {
+    /**
+     * @param pista nombre que ya haya escrito una persona, o vacio. Es una
+     *              pista y no un dato: cuando viene, manda sobre lo que diga el
+     *              readme --alguien decidio como se llama el proyecto-- y
+     *              cuando no viene, el nombre sale del propio readme. Antes era
+     *              obligatorio, y obligaba a escribir a mano algo que casi
+     *              siempre estaba ya en el texto de entrada.
+     */
+    static String usuario(String pista, String readme) {
+        String cabecera = (pista == null || pista.isBlank())
+                ? "El readme no viene acompanado de un nombre: sacalo del propio texto."
+                : "Nombre del proyecto, ya decidido: " + pista.trim()
+                        + "\nUsa ese nombre tal cual en el campo name, sin cambiarlo.";
+
         return """
-                Nombre del proyecto: %s
+                %s
 
                 Readme:
 
                 %s
-                """.formatted(nombre, readme);
+                """.formatted(cabecera, readme);
     }
 }

@@ -1,10 +1,56 @@
 [
   {
+    "category": "Backend",
+    "color": "#6DB33F",
+    "skills": [
+      {
+        "id": "1",
+        "name": "Java",
+        "icon": "devicon-java-plain",
+        "brandColor": "#F89820",
+        "brandColorLight": "#FFB74D",
+        "description": "POO, colecciones, streams, manejo de excepciones"
+      },
+      {
+        "id": "2",
+        "name": "Spring Boot",
+        "icon": "devicon-spring-plain",
+        "brandColor": "#6DB33F",
+        "brandColorLight": "#8BC34A",
+        "description": "APIs REST, Spring Security, Spring Data JPA"
+      },
+      {
+        "id": "3",
+        "name": "Python",
+        "icon": "devicon-python-plain",
+        "brandColor": "#3776AB",
+        "brandColorLight": "#5B9BD5",
+        "description": "Scripting, automatización e integración de servicios"
+      },
+      {
+        "id": "4",
+        "name": "Django",
+        "icon": "devicon-django-plain",
+        "brandColor": "#092E20",
+        "brandColorLight": "#44B78B",
+        "description": "Apps modulares, ORM y capa de servicios"
+      },
+      {
+        "id": "5",
+        "name": "REST APIs",
+        "icon": "devicon-json-plain",
+        "brandColor": "#00897B",
+        "brandColorLight": "#4DB6AC",
+        "description": "Diseño de endpoints, versionado y códigos de estado"
+      }
+    ]
+  },
+  {
     "category": "Frontend",
     "color": "#DD0031",
     "skills": [
       {
-        "id": "1",
+        "id": "6",
         "name": "Angular",
         "icon": "devicon-angularjs-plain",
         "brandColor": "#DD0031",
@@ -12,7 +58,7 @@
         "description": "Angular 22, Standalone, Signals, Zoneless"
       },
       {
-        "id": "2",
+        "id": "7",
         "name": "TypeScript",
         "icon": "devicon-typescript-plain",
         "brandColor": "#3178C6",
@@ -20,7 +66,23 @@
         "description": "Tipado estático, genéricos, utility types"
       },
       {
-        "id": "3",
+        "id": "8",
+        "name": "HTML",
+        "icon": "devicon-html5-plain",
+        "brandColor": "#E34F26",
+        "brandColorLight": "#FF7043",
+        "description": "Marcado semántico y accesibilidad"
+      },
+      {
+        "id": "9",
+        "name": "CSS",
+        "icon": "devicon-css3-plain",
+        "brandColor": "#1572B6",
+        "brandColorLight": "#42A5F5",
+        "description": "Flexbox, grid, variables nativas y diseño responsivo"
+      },
+      {
+        "id": "10",
         "name": "PrimeNG",
         "icon": "devicon-primeng-plain",
         "brandColor": "#DD0031",
@@ -30,140 +92,116 @@
     ]
   },
   {
-    "category": "Backend",
-    "color": "#6DB33F",
+    "category": "Bases de datos",
+    "color": "#336791",
     "skills": [
-      {
-        "id": "4",
-        "name": "Java",
-        "icon": "devicon-java-plain-wordmark",
-        "brandColor": "#F89820",
-        "brandColorLight": "#FFB74D",
-        "description": "Java 17+, Spring Boot, JPA"
-      },
-      {
-        "id": "5",
-        "name": "Spring Boot",
-        "icon": "devicon-spring-original-wordmark",
-        "brandColor": "#6DB33F",
-        "brandColorLight": "#81C784",
-        "description": "Spring Boot 3.4.x, Security, Data JPA"
-      },
-      {
-        "id": "6",
-        "name": "PostgreSQL",
-        "icon": "devicon-postgresql-plain-wordmark",
-        "brandColor": "#4169E1",
-        "brandColorLight": "#6A8FED",
-        "description": "Bases de datos relacionales, HikariCP"
-      },
-      {
-        "id": "7",
-        "name": "Python",
-        "icon": "devicon-python-plain-wordmark",
-        "brandColor": "#3776AB",
-        "brandColorLight": "#5A9FD4",
-        "description": "Python, scripting, automatización"
-      },
-      {
-        "id": "8",
-        "name": "Django",
-        "icon": "devicon-django-plain",
-        "brandColor": "#092E20",
-        "brandColorLight": "#2E7D32",
-        "description": "Django REST Framework, ORM"
-      },
-      {
-        "id": "9",
-        "name": "REST APIs",
-        "icon": "devicon-swagger-plain",
-        "brandColor": "#25A162",
-        "brandColorLight": "#4CAF50",
-        "description": "Diseño e implementación de APIs RESTful"
-      }
-    ]
-  },
-  {
-    "category": "Arquitectura",
-    "color": "#7C3AED",
-    "skills": [
-      {
-        "id": "10",
-        "name": "Arq. Hexagonal",
-        "icon": "devicon-unifiedmodelinglanguage-plain",
-        "brandColor": "#7C3AED",
-        "brandColorLight": "#A78BFA",
-        "description": "Puertos y adaptadores, clean architecture"
-      },
       {
         "id": "11",
-        "name": "Clean Code",
-        "icon": "devicon-git-plain-wordmark",
-        "brandColor": "#E11D48",
-        "brandColorLight": "#F06292",
-        "description": "Código limpio, principios SOLID"
+        "name": "PostgreSQL",
+        "icon": "devicon-postgresql-plain",
+        "brandColor": "#336791",
+        "brandColorLight": "#5B8FC9",
+        "description": "Modelado relacional, consultas y columnas JSON"
       },
       {
         "id": "12",
-        "name": "Patrones Diseño",
-        "icon": "devicon-unifiedmodelinglanguage-plain",
-        "brandColor": "#F59E0B",
-        "brandColorLight": "#FBBF24",
-        "description": "GoF, patrones de integración y microservicios"
+        "name": "MySQL",
+        "icon": "devicon-mysql-plain",
+        "brandColor": "#00758F",
+        "brandColorLight": "#4DB6D6",
+        "description": "Esquemas relacionales y consultas"
       },
       {
         "id": "13",
-        "name": "Git Flow",
-        "icon": "devicon-git-plain-wordmark",
-        "brandColor": "#F05032",
-        "brandColorLight": "#FF7043",
-        "description": "Git Flow, conventional commits, code review"
+        "name": "SQLite",
+        "icon": "devicon-sqlite-plain",
+        "brandColor": "#003B57",
+        "brandColorLight": "#4A90B8",
+        "description": "Base embebida para desarrollo y escritorio"
       }
     ]
   },
   {
-    "category": "DevOps",
-    "color": "#0EA5E9",
+    "category": "DevOps y herramientas",
+    "color": "#2496ED",
     "skills": [
       {
         "id": "14",
         "name": "Docker",
-        "icon": "devicon-docker-plain-wordmark",
+        "icon": "devicon-docker-plain",
         "brandColor": "#2496ED",
-        "brandColorLight": "#5BA3E6",
-        "description": "Contenedores, Docker Compose"
+        "brandColorLight": "#64B5F6",
+        "description": "Contenedores, imágenes y despliegue reproducible"
       },
       {
         "id": "15",
-        "name": "CI/CD",
-        "icon": "devicon-githubactions-plain",
-        "brandColor": "#2088FF",
-        "brandColorLight": "#5BA3E6",
-        "description": "Integración y despliegue continuos"
+        "name": "Git",
+        "icon": "devicon-git-plain",
+        "brandColor": "#F05032",
+        "brandColorLight": "#FF7043",
+        "description": "Ramas, pull requests y commits atómicos"
       },
       {
         "id": "16",
-        "name": "Vercel",
-        "icon": "devicon-vercel-plain",
-        "brandColor": "#000000",
-        "brandColorLight": "#1a1a2e",
-        "description": "Deploy frontend Angular"
+        "name": "CI/CD",
+        "icon": "devicon-githubactions-plain",
+        "brandColor": "#2088FF",
+        "brandColorLight": "#64B5F6",
+        "description": "GitHub Actions: tests y build en cada push"
       },
       {
         "id": "17",
-        "name": "Render",
-        "icon": "devicon-railway-plain",
-        "brandColor": "#00C48C",
-        "brandColorLight": "#4DB6AC",
-        "description": "Deploy backend Spring Boot"
+        "name": "Vercel",
+        "icon": "devicon-vercel-original",
+        "brandColor": "#000000",
+        "brandColorLight": "#888888",
+        "description": "Despliegue del frontend con prerender"
       },
       {
         "id": "18",
-        "name": "SQL",
-        "icon": "devicon-mysql-plain-wordmark",
-        "brandColor": "#F29111",
-        "brandColorLight": "#FFB74D",
-        "description": "Consultas complejas, modelado de datos"
+        "name": "Render",
+        "icon": "devicon-docker-plain",
+        "brandColor": "#46E3B7",
+        "brandColorLight": "#7FF0D0",
+        "description": "Despliegue del backend en contenedor"
+      }
+    ]
+  },
+  {
+    "category": "Arquitectura y prácticas",
+    "color": "#A855F7",
+    "skills": [
+      {
+        "id": "19",
+        "name": "Arq. Hexagonal",
+        "icon": "devicon-unifiedmodelinglanguage-plain",
+        "brandColor": "#A855F7",
+        "brandColorLight": "#CE93D8",
+        "description": "Puertos y adaptadores, dominio sin framework"
+      },
+      {
+        "id": "20",
+        "name": "Clean Code",
+        "icon": "devicon-sonarqube-plain",
+        "brandColor": "#4E9BCD",
+        "brandColorLight": "#81C4E8",
+        "description": "Nombres claros, funciones cortas, responsabilidad única"
+      },
+      {
+        "id": "21",
+        "name": "Patrones de diseño",
+        "icon": "devicon-unifiedmodelinglanguage-plain",
+        "brandColor": "#A855F7",
+        "brandColorLight": "#CE93D8",
+        "description": "Repositorio, estrategia, fábrica e inyección de dependencias"
+      },
+      {
+        "id": "22",
+        "name": "Git Flow",
+        "icon": "devicon-git-plain",
+        "brandColor": "#F05032",
+        "brandColorLight": "#FF7043",
+        "description": "Ramas por tarea y publicación mediante pull request"
       }
     ]
   }

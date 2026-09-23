@@ -1,146 +1,111 @@
-<!-- IDE Tab Header (internal to the editor pane) -->
 <div class="about-editor">
 
-  <!-- Document Header (mimics file tab) -->
   <div class="doc-tab-bar">
     <div class="doc-tab active">
-      <i class="pi pi-book"></i>
-      <span>README.md</span>
+      <i class="pi pi-user"></i>
+      <span>profile.md</span>
     </div>
   </div>
 
-  <!-- Scrollable document content -->
   <div class="doc-body markdown-body" #cuerpo>
 
-    <!-- 1. Presentación -->
-    <h1>Hola, soy Juan Barrios</h1>
-    <h3 class="subtitle">Desarrollador Backend Junior | Java & Spring Boot</h3>
-    
-    <p>Tecnólogo en Análisis y Desarrollo de Software — SENA</p>
-    
-    <p>Actualmente estoy buscando una oportunidad de etapa productiva para continuar desarrollándome profesionalmente en el área de software.</p>
-    
-    <p class="location-badge">
-      <i class="pi pi-map-marker"></i> Bogotá, Colombia
-    </p>
+    <!-- 1. Presentación. Sale de perfil.json: estas mismas cadenas estaban
+         escritas a mano aqui, en la portada y en la barra de estado, y tres
+         de ellas se quedaron desactualizadas durante meses. -->
+    @if (perfil(); as p) {
+      <h1>{{ p.nombre }}</h1>
+      <h3 class="subtitle">{{ p.titular }} | {{ p.especialidad }}</h3>
 
-    <div class="contact-links-inline">
-      <a href="https://github.com/1Zamuken1" target="_blank" class="contact-link">
-        <i class="pi pi-github"></i>
-        <span>GitHub</span>
-      </a>
-      <a href="https://www.linkedin.com/in/juan-barrios-a8a651274/" target="_blank" class="contact-link">
-        <i class="pi pi-linkedin"></i>
-        <span>LinkedIn</span>
-      </a>
-      <a href="mailto:juanbarrios072@gmail.com" class="contact-link">
-        <i class="pi pi-envelope"></i>
-        <span>Email</span>
-      </a>
-    </div>
+      <p>{{ p.formacion }}</p>
+
+      <p class="location-badge">
+        <i class="pi pi-map-marker"></i> {{ p.ubicacion }}
+      </p>
+
+      <div class="contact-links-inline">
+        <a [href]="p.github" target="_blank" class="contact-link">
+          <i class="pi pi-github"></i>
+          <span>GitHub</span>
+        </a>
+        <a [href]="p.linkedin" target="_blank" class="contact-link">
+          <i class="pi pi-linkedin"></i>
+          <span>LinkedIn</span>
+        </a>
+        <a [href]="'mailto:' + p.correo" class="contact-link">
+          <i class="pi pi-envelope"></i>
+          <span>Email</span>
+        </a>
+      </div>
+    }
 
     <!-- 2. Sobre mí -->
     <h2 id="sobre-mi">Sobre mí</h2>
-    <p>Soy Tecnólogo en Análisis y Desarrollo de Software orientado al desarrollo backend y a la construcción de aplicaciones web.</p>
-    <p>Mi principal interés está en Java y Spring Boot, especialmente en el desarrollo de APIs REST, lógica de negocio, autenticación, persistencia de datos y diseño de aplicaciones mantenibles.</p>
-    <p>También he trabajado con Python y Django, Angular y diferentes sistemas de bases de datos, lo que me permite comprender una aplicación desde el backend hasta su integración con el frontend.</p>
-    <p>En mis proyectos procuro aplicar buenas prácticas de desarrollo, arquitectura organizada, control de versiones y una separación clara de responsabilidades. Me interesa especialmente entender cómo funciona una solución completa y encontrar formas de hacerla más mantenible y fácil de evolucionar.</p>
+    <p>Soy Tecnólogo en Análisis y Desarrollo de Software del SENA, orientado al desarrollo de aplicaciones web y soluciones de software mantenibles.</p>
+    <p>Mi principal enfoque está en <strong>Java y Spring Boot</strong>, especialmente en el desarrollo de APIs REST, lógica de negocio, persistencia de datos y diseño de aplicaciones con responsabilidades bien separadas.</p>
+    <p>También cuento con experiencia desarrollando interfaces con <strong>Angular</strong>, aplicaciones con <strong>Python y Django</strong>, automatizaciones e integraciones con herramientas de IA, además de trabajar con bases de datos, Docker y control de versiones.</p>
+    <p>Actualmente desarrollo software en un entorno orientado a <strong>ciberseguridad y MDR</strong>, donde participo en el análisis de plataformas, contenedores y soluciones utilizadas por el equipo.</p>
+    <p>Me interesa especialmente entender cómo funciona una solución de extremo a extremo, identificar oportunidades de mejora y construir software que sea fácil de mantener y evolucionar.</p>
 
-    <!-- 3. Experiencia -->
-    <h2 id="experience">Experiencia</h2>
+    <!-- 3. Índice del resto del perfil.
+         Enlaces de verdad a los otros dos documentos: quien lee esto no tiene
+         por qué haber visto el explorador, y sin estos enlaces el perfil
+         parecería todo lo que hay. -->
+    <h2 id="indice">Más sobre mí</h2>
+    <ul class="doc-index">
+      <li>
+        <a routerLink="/about/trayectoria">
+          <i class="pi pi-calendar" aria-hidden="true"></i> trayectoria.md
+        </a>
+        — experiencia en SEK, desarrollo independiente y formación en el SENA.
+      </li>
+      <li>
+        <a routerLink="/about/stack">
+          <i class="pi pi-database" aria-hidden="true"></i> stack.md
+        </a>
+        — tecnologías y herramientas, por categoría.
+      </li>
+    </ul>
 
-    @for (exp of experience(); track exp.id) {
-      <div class="timeline-entry">
-        <h3>{{ exp.role }} · {{ exp.company }}</h3>
-        <p class="timeline-period">{{ exp.period }}</p>
-        <p>{{ exp.description }}</p>
-
-        @if (exp.achievements?.length) {
-          <ul>
-            @for (logro of exp.achievements; track logro) {
-              <li>{{ logro }}</li>
-            }
-          </ul>
-        }
-
-        @if (exp.technologies?.length) {
-          <p class="timeline-tech">
-            @for (tec of exp.technologies; track tec) {
-              <span class="tech-tag">{{ tec }}</span>
-            }
-          </p>
-        }
-      </div>
-    }
-
-    <!-- 4. Tecnologías y herramientas -->
-    <h2 id="stack">Tecnologías y herramientas</h2>
-    
-    @for (cat of categories(); track cat) {
-      <h3>{{ cat }}</h3>
-      <div class="tech-badges">
-        @for (skill of skillsByCategory()[cat]; track skill.id) {
-          <span
-            class="tech-badge"
-            [style.background]="skill.color"
-            [style.borderColor]="skill.color"
-          >
-            <i [class]="skill.icon"></i>
-            {{ skill.name | uppercase }}
-          </span>
-        }
-      </div>
-    }
-
-    <!-- 5. Proyectos destacados -->
+    <!-- 4. Proyectos: un índice corto. Cada uno tiene su propia ficha
+         completa, así que repetirla aquí solo alargaría el documento. -->
     <h2 id="proyectos">Proyectos destacados</h2>
-    
-    <div class="projects-list">
+
+    <ul class="doc-index">
       @for (project of projects(); track project.id) {
-        <div class="project-item">
-          <h3>
-            {{ project.name }}
-            @if (project.links?.github || project.githubUrl) {
-              <a [href]="project.links?.github || project.githubUrl" target="_blank" class="repo-link" title="Ver repositorio">
-                <i class="pi pi-github"></i>
-              </a>
-            }
-          </h3>
-          <p>{{ project.shortDescription }}</p>
-          
-          <ul class="project-features">
-            @for (feature of project.features; track feature) {
-              <li>{{ feature }}</li>
-            }
-          </ul>
-          
-          <div class="project-stack">
-            <strong>Stack:</strong>
-            @for (tech of project.techStack; track tech.name) {
-              <span class="tech-pill">{{ tech.name }}</span>
-              @if (!$last) {<span class="dot-separator">·</span>}
-            }
-          </div>
-        </div>
+        <li>
+          <a [routerLink]="['/projects', project.id]">
+            <i class="pi pi-folder" aria-hidden="true"></i> {{ project.name }}
+          </a>
+          — {{ project.shortDescription }}
+        </li>
       }
-    </div>
+    </ul>
 
-    <!-- 6. Actualmente -->
+    <!-- 5. Actualmente -->
     <h2 id="actualmente">Actualmente</h2>
-    <ul>
-      <li>Buscando una oportunidad de etapa productiva en desarrollo de software.</li>
-      <li>Enfocado principalmente en Java y Spring Boot.</li>
-      <li>Continuando mi formación en desarrollo backend, arquitectura y buenas prácticas de software.</li>
-    </ul>
+    <p>Desarrollo software en un entorno orientado a <strong>ciberseguridad y MDR</strong>, mientras continúo fortaleciendo mis conocimientos en backend, frontend, infraestructura y arquitectura de software.</p>
 
-    <!-- 7. Contacto -->
+    <!-- 6. Contacto -->
     <h2 id="contacto">Contacto</h2>
-    <p>Estoy disponible para oportunidades de etapa productiva y proyectos relacionados con desarrollo de software.</p>
-    <ul>
-      <li><a href="mailto:juanbarrios072@gmail.com">juanbarrios072@gmail.com</a></li>
-      <li>LinkedIn: <a href="https://www.linkedin.com/in/juan-barrios-a8a651274/" target="_blank">juan-barrios</a></li>
-      <li>GitHub: <a href="https://github.com/1Zamuken1" target="_blank">1Zamuken1</a></li>
-    </ul>
+    <p>Estoy disponible para proyectos y oportunidades relacionadas con el desarrollo de software.</p>
+    @if (perfil(); as p) {
+      <ul>
+        <li><a [href]="'mailto:' + p.correo">{{ p.correo }}</a></li>
+        <li>LinkedIn: <a [href]="p.linkedin" target="_blank">juan-barrios</a></li>
+        <li>GitHub: <a [href]="p.github" target="_blank">1Zamuken1</a></li>
+      </ul>
+    }
+
+    <!-- Continuidad entre los tres documentos del perfil. Es lo que hace
+         cualquier sitio de documentacion: encadena la lectura sin fingir que
+         los ficheros no son ficheros. -->
+    <nav class="doc-nav" aria-label="Otros documentos del perfil">
+      <span></span>
+      <a routerLink="/about/trayectoria" class="doc-nav-next">
+        <span class="doc-nav-label">Siguiente</span>
+        <span class="doc-nav-file">trayectoria.md <i class="pi pi-arrow-right" aria-hidden="true"></i></span>
+      </a>
+    </nav>
 
   </div>
 </div>

@@ -1,14 +1,26 @@
 <p-toast />
 <p-confirmDialog />
 
-<div class="admin-section-header">
-  <h2 class="font-code-lg">Habilidades</h2>
-  <button pButton label="+ Nueva Habilidad" class="p-button-sm" (click)="createNew()"></button>
-</div>
+<header class="pagina-cabecera">
+  <div>
+    <h2 class="pagina-titulo">
+      Stack
+      @if (!loading()) { <span class="pagina-cuenta">{{ skills().length }}</span> }
+    </h2>
+    <p class="pagina-descripcion">
+      Tecnologías y herramientas, agrupadas por categoría en el sitio público.
+      El icono es una clase de devicon y tiene que existir: una inventada no da
+      error, sencillamente no se dibuja.
+    </p>
+  </div>
+  <div class="pagina-acciones">
+    <button pButton icon="pi pi-plus" label="Nueva tecnología" class="p-button-sm" (click)="createNew()"></button>
+  </div>
+</header>
 
-<div *ngIf="loading()" class="loading-state" style="padding: 3rem; text-align: center;">
-  <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
-  <p style="margin-top: 1rem;">Cargando habilidades...</p>
+<div *ngIf="loading()" class="estado-cargando">
+  <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+  <p>Cargando el stack…</p>
 </div>
 
 <div *ngIf="!loading()">
@@ -17,7 +29,7 @@
     [paginator]="true"
     [rows]="15"
     [showCurrentPageReport]="true"
-    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} habilidades"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} tecnologías"
     styleClass="p-datatable-sm p-datatable-striped"
   >
     <ng-template pTemplate="header">
@@ -59,8 +71,12 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="7" style="text-align: center; padding: 2rem;">
-          <p>No hay habilidades. Haz clic en <strong>+ Nueva Habilidad</strong> para crear una.</p>
+        <td colspan="7">
+          <div class="estado-vacio">
+            <i class="pi pi-th-large" aria-hidden="true"></i>
+            <p>Todavía no hay tecnologías registradas.</p>
+            <span class="pista">Pulsa «Nueva tecnología» para añadir la primera.</span>
+          </div>
         </td>
       </tr>
     </ng-template>

@@ -1,0 +1,283 @@
+/* ================================================
+   ABOUT — IDE Markdown Document Style
+   Shades of Purple / Obsidian Synth palette
+   ================================================ */
+
+:host {
+  display: block;
+  height: 100%;
+  background: transparent;
+}
+
+/* ---- Layout ---- */
+.about-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--vscode-bg, #2D2B55);
+  color: var(--editor-text);
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+}
+
+/* ---- Tabs bar ---- */
+.doc-tab-bar {
+  display: flex;
+  gap: 0;
+  background: var(--vscode-sidebar-bg, #1E1E3F);
+  border-bottom: 1px solid var(--card-border);
+  flex-shrink: 0;
+}
+
+.doc-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.25rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--editor-text-muted);
+  border-right: 1px solid var(--card-border);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  border-top: 2px solid transparent;
+}
+
+.doc-tab:hover {
+  background: var(--card-bg);
+  color: var(--editor-text);
+}
+
+.doc-tab.active {
+  background: var(--vscode-bg, #2D2B55);
+  color: var(--syntax-link);
+  border-top-color: var(--syntax-bullet);
+}
+
+/* ---- Scrollable body ---- */
+.doc-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2.5rem 3rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--card-border-hover) transparent;
+}
+
+.doc-body::-webkit-scrollbar { width: 6px; }
+.doc-body::-webkit-scrollbar-thumb { background: var(--card-border-hover); border-radius: 3px; }
+
+/* Responsive adjustments for layout */
+@media (max-width: 768px) {
+  .doc-body {
+    padding: 1.5rem;
+  }
+}
+
+/* ── Experiencia ──
+   El dato ya se cargaba desde el principio; lo que faltaba era dibujarlo.
+   Sigue el mismo estilo de documento que el resto de la pagina, sin tarjetas:
+   es un readme, no un panel. */
+.timeline-entry {
+  padding-left: 1rem;
+  border-left: 2px solid var(--card-border);
+  margin: 1.25rem 0 1.75rem;
+}
+
+.timeline-period {
+  font-size: 0.8rem;
+  color: var(--md-text-muted);
+  margin: 0.15rem 0 0.6rem;
+}
+
+.timeline-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+}
+
+.timeline-tech .tech-tag {
+  font-size: 0.72rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.3rem;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  color: var(--md-text-soft);
+}
+
+/* ── Índice de documentos y proyectos ──
+   Enlaces a los otros ficheros del perfil. Se ven como entradas de lista, no
+   como botones: siguen siendo un documento. */
+.doc-intro {
+  color: var(--md-text-muted);
+  margin-top: -0.25rem;
+}
+
+.doc-index {
+  list-style: none;
+  padding-left: 0;
+}
+
+.doc-index li {
+  padding: 0.35rem 0;
+  color: var(--md-text-soft);
+}
+
+.doc-index a {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+
+.doc-index a i {
+  margin-right: 0.3rem;
+  font-size: 0.85em;
+}
+
+/* ── Trayectoria ── */
+.timeline-entry {
+  padding-left: 1rem;
+  border-left: 2px solid var(--card-border);
+  margin: 1.25rem 0 2rem;
+}
+
+.timeline-entry h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: none;
+  margin-bottom: 0.1rem;
+}
+
+.timeline-entry h2 i {
+  font-size: 0.8em;
+  color: var(--md-text-muted);
+}
+
+.timeline-company {
+  font-weight: 400;
+  color: var(--md-text-soft);
+}
+
+.timeline-period {
+  font-size: 0.8rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--md-text-muted);
+  margin: 0 0 0.7rem;
+}
+
+.timeline-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.7rem;
+}
+
+.timeline-tech .tech-tag {
+  font-size: 0.72rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.3rem;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  color: var(--md-text-soft);
+}
+
+/* ── Stack ──
+   Una rejilla de fichas en vez de una fila de insignias: cada tecnologia
+   lleva una linea de contexto, y apretujarlas las hacia ilegibles. */
+.stack-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.6rem;
+  margin: 0.75rem 0 1.5rem;
+}
+
+.stack-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--card-border);
+  border-radius: 0.4rem;
+  background: var(--card-bg);
+}
+
+.stack-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+}
+
+.stack-card-head i {
+  font-size: 1.05rem;
+}
+
+.stack-card-desc {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--md-text-muted);
+}
+
+@media (max-width: 600px) {
+  .stack-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Navegación entre documentos ──
+   El pie de cada documento del perfil. La alternativa que se planteó era
+   simular un scroll continuo entre los tres, pero eso volvería a fingir que
+   unos ficheros no son ficheros; esto encadena la lectura sin mentir. */
+.doc-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--md-code-border);
+}
+
+.doc-nav a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--card-border);
+  border-radius: 0.4rem;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.doc-nav a:hover {
+  border-color: var(--card-border-hover);
+  background: var(--card-bg);
+}
+
+.doc-nav-next {
+  text-align: right;
+  margin-left: auto;
+}
+
+.doc-nav-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--md-text-muted);
+}
+
+.doc-nav-file {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--md-link);
+}
+
+@media (max-width: 520px) {
+  .doc-nav {
+    flex-direction: column;
+  }
+  .doc-nav-next {
+    margin-left: 0;
+    text-align: left;
+  }
+}

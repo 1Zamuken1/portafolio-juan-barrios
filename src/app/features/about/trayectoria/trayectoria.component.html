@@ -1,0 +1,55 @@
+<div class="about-editor">
+
+  <div class="doc-tab-bar">
+    <div class="doc-tab active">
+      <i class="pi pi-calendar"></i>
+      <span>trayectoria.md</span>
+    </div>
+  </div>
+
+  <div class="doc-body markdown-body" #cuerpo>
+
+    <h1>Trayectoria</h1>
+    <p class="doc-intro">Experiencia profesional y formación, de lo más reciente a lo más antiguo.</p>
+
+    @for (entrada of entradas(); track entrada.id) {
+      <div class="timeline-entry" [id]="'entrada-' + entrada.id">
+        <h2>
+          <i [class]="icono(entrada)" aria-hidden="true"></i>
+          {{ entrada.role }}
+          @if (entrada.company) { <span class="timeline-company">· {{ entrada.company }}</span> }
+        </h2>
+        <p class="timeline-period">{{ entrada.period }}</p>
+        <p>{{ entrada.description }}</p>
+
+        @if (entrada.achievements?.length) {
+          <ul>
+            @for (logro of entrada.achievements; track logro) {
+              <li>{{ logro }}</li>
+            }
+          </ul>
+        }
+
+        @if (entrada.technologies?.length) {
+          <p class="timeline-tech">
+            @for (tec of entrada.technologies; track tec) {
+              <span class="tech-tag">{{ tec }}</span>
+            }
+          </p>
+        }
+      </div>
+    }
+
+    <nav class="doc-nav" aria-label="Otros documentos del perfil">
+      <a routerLink="/about" class="doc-nav-prev">
+        <span class="doc-nav-label">Anterior</span>
+        <span class="doc-nav-file"><i class="pi pi-arrow-left" aria-hidden="true"></i> profile.md</span>
+      </a>
+      <a routerLink="/about/stack" class="doc-nav-next">
+        <span class="doc-nav-label">Siguiente</span>
+        <span class="doc-nav-file">stack.md <i class="pi pi-arrow-right" aria-hidden="true"></i></span>
+      </a>
+    </nav>
+
+  </div>
+</div>

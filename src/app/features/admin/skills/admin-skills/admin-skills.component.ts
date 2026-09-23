@@ -19,7 +19,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
   imports: [CommonModule, TableModule, ButtonModule, TagModule, ConfirmDialogModule, ToastModule, TooltipModule],
   providers: [ConfirmationService, MessageService],
   templateUrl: './admin-skills.component.html',
-  styleUrl: './admin-skills.component.css'
+  styleUrls: ['../../admin.css', './admin-skills.component.css']
 })
 export class AdminSkillsComponent implements OnInit {
   skills = signal<AdminSkill[]>([]);
