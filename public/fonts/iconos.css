@@ -4,7 +4,7 @@
  * datos o en el codigo, vuelve a ejecutar el script o no se dibujara.
  * Lo vigila e2e/iconos.spec.ts.
  *
- * devicon: 42 clases, 41 glifos.
+ * devicon: 33 clases, 32 glifos.
  * font awesome: 15 iconos.
  */
 
@@ -18,40 +18,31 @@
 .devicon-css3-plain:before{content:""}
 .devicon-django-plain:before{content:""}
 .devicon-docker-plain:before{content:""}
-.devicon-docker-plain-wordmark:before{content:""}
 .devicon-electron-original:before{content:""}
 .devicon-git-plain:before{content:""}
-.devicon-git-plain-wordmark:before{content:""}
 .devicon-githubactions-plain:before{content:""}
 .devicon-google-plain:before{content:""}
 .devicon-html5-plain:before{content:""}
 .devicon-java-plain:before{content:""}
-.devicon-java-plain-wordmark:before{content:""}
 .devicon-javascript-plain:before{content:""}
 .devicon-json-plain:before{content:""}
 .devicon-markdown-original:before{content:""}
 .devicon-mysql-plain:before{content:""}
-.devicon-mysql-plain-wordmark:before{content:""}
 .devicon-nodejs-plain:before{content:""}
 .devicon-playwright-plain:before{content:""}
 .devicon-postgresql-plain:before{content:""}
-.devicon-postgresql-plain-wordmark:before{content:""}
 .devicon-primeng-plain:before{content:""}
 .devicon-python-plain:before{content:""}
-.devicon-python-plain-wordmark:before{content:""}
-.devicon-railway-plain:before{content:""}
 .devicon-react-original:before{content:""}
 .devicon-sonarqube-plain:before{content:""}
 .devicon-spring-original:before{content:""}
-.devicon-spring-original-wordmark:before{content:""}
 .devicon-spring-plain:before{content:""}
 .devicon-sqlite-plain:before{content:""}
-.devicon-swagger-plain:before{content:""}
 .devicon-tailwindcss-original:before{content:""}
 .devicon-thealgorithms-plain:before{content:""}
 .devicon-typescript-plain:before{content:""}
 .devicon-unifiedmodelinglanguage-plain:before{content:""}
-.devicon-vercel-plain:before{content:""}
+.devicon-vercel-original:before{content:""}
 .devicon-vitejs-plain:before{content:""}
 .devicon-vuejs-plain:before{content:""}
 
@@ -62,40 +53,31 @@
 .devicon-css3-plain.colored{color:#3d8fc6}
 .devicon-django-plain.colored{color:#092e20}
 .devicon-docker-plain.colored{color:#019bc6}
-.devicon-docker-plain-wordmark.colored{color:#019bc6}
 .devicon-electron-original.colored{color:#47848f}
 .devicon-git-plain.colored{color:#f34f29}
-.devicon-git-plain-wordmark.colored{color:#f34f29}
 .devicon-githubactions-plain.colored{color:#2088ff}
 .devicon-google-plain.colored{color:#587dbd}
 .devicon-html5-plain.colored{color:#e54d26}
 .devicon-java-plain.colored{color:#ea2d2e}
-.devicon-java-plain-wordmark.colored{color:#ea2d2e}
 .devicon-javascript-plain.colored{color:#f0db4f}
 .devicon-json-plain.colored{color:#505050}
 .devicon-markdown-original.colored{color:#000}
 .devicon-mysql-plain.colored{color:#00618a}
-.devicon-mysql-plain-wordmark.colored{color:#00618a}
 .devicon-nodejs-plain.colored{color:#5fa04e}
 .devicon-playwright-plain.colored{color:#2ead33}
 .devicon-postgresql-plain.colored{color:#336791}
-.devicon-postgresql-plain-wordmark.colored{color:#336791}
 .devicon-primeng-plain.colored{color:#000}
 .devicon-python-plain.colored{color:#ffd845}
-.devicon-python-plain-wordmark.colored{color:#ffd845}
-.devicon-railway-plain.colored{color:#fff}
 .devicon-react-original.colored{color:#61dafb}
 .devicon-sonarqube-plain.colored{color:#549dd0}
 .devicon-spring-original.colored{color:#5fb832}
-.devicon-spring-original-wordmark.colored{color:#5fb832}
 .devicon-spring-plain.colored{color:#5fb832}
 .devicon-sqlite-plain.colored{color:#0f80cc}
-.devicon-swagger-plain.colored{color:#85ea2d}
 .devicon-tailwindcss-original.colored{color:#38bdf8}
 .devicon-thealgorithms-plain.colored{color:#00bcb4}
 .devicon-typescript-plain.colored{color:#007acc}
 .devicon-unifiedmodelinglanguage-plain.colored{color:#452e7f}
-.devicon-vercel-plain.colored{color:#000}
+.devicon-vercel-original.colored{color:#000}
 .devicon-vitejs-plain.colored{color:#ffdd35}
 .devicon-vuejs-plain.colored{color:#41b883}
 

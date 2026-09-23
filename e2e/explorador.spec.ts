@@ -83,12 +83,35 @@ test.describe('explorador', () => {
 
   test('la experiencia que carga el componente llega a dibujarse', () => {
     // Estuvo cargada y ordenada, sin usarse, todo el tiempo que existio la
-    // carpeta `experience` en el explorador.
-    const ts = leer('features', 'about', 'about.component.ts');
-    const html = leer('features', 'about', 'about.component.html');
+    // carpeta `experience` en el explorador. Ahora vive en su propio
+    // documento, y la comprobacion se mueve con ella.
+    const ts = leer('features', 'about', 'trayectoria', 'trayectoria.component.ts');
+    const html = leer('features', 'about', 'trayectoria', 'trayectoria.component.html');
 
-    expect(ts, 'el componente ya no carga las experiencias').toContain('getStaticExperiences');
+    expect(ts, 'el documento ya no carga las experiencias').toContain('getStaticExperiences');
     expect(html, 'se cargan las experiencias pero la plantilla no las usa')
-      .toContain('experience()');
+      .toContain('entradas()');
+  });
+
+  test('cada enlace del explorador apunta a una ruta declarada', () => {
+    // Los documentos del perfil son rutas propias, no anclas. Un routerLink
+    // con una ruta que no existe no falla al compilar: lleva al comodin **,
+    // que redirige a la portada. El visitante pulsa un fichero y aterriza en
+    // el inicio sin saber por que.
+    const rutas = leer('app.routes.ts');
+    const declaradas = new Set(
+      [...rutas.matchAll(/path:\s*'([^']*)'/g)].map((m) => '/' + m[1]).filter((r) => r !== '/**'));
+
+    const html = leer('layout', 'vscode-layout', 'vscode-layout.component.html');
+    const enlaces = [...html.matchAll(/<a[^>]*>/gs)]
+      .map((e) => /routerLink="([^"]+)"/.exec(e[0])?.[1])
+      .filter((r): r is string => !!r && r !== '/');
+
+    const rotos = enlaces.filter((r) => !declaradas.has(r));
+    expect(rotos,
+      'Estos enlaces del explorador no corresponden a ninguna ruta declarada.\n' +
+      'No fallan al compilar: caen en el comodin ** y redirigen a la portada,\n' +
+      'asi que el visitante pulsa un fichero y aterriza en el inicio.\n\n' +
+      rotos.join('\n')).toEqual([]);
   });
 });
