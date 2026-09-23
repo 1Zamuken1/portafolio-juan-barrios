@@ -5,27 +5,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../../../core/services/data.service';
 import { Experience } from '../../../../shared/models/experience.model';
 
-// PrimeNG
-import { InputTextModule } from 'primeng/inputtext';
-import { TextareaModule } from 'primeng/textarea';
-import { ButtonModule } from 'primeng/button';
-import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { InputNumberModule } from 'primeng/inputnumber';
+import { PRIMENG_FORMULARIO } from '../../primeng';
 
 @Component({
   selector: 'app-admin-experience-form',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    InputTextModule,
-    TextareaModule,
-    ButtonModule,
-    ToastModule,
-    InputNumberModule
-  ],
-  providers: [MessageService],
+  imports: [CommonModule, ReactiveFormsModule, ...PRIMENG_FORMULARIO],
   templateUrl: './admin-experience-form.component.html',
   styleUrls: ['../../admin.css']
 })

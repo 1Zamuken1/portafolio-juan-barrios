@@ -18,10 +18,10 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--vidrio-borde, var(--border-default));
+  border-radius: 20px;
   background: var(--editor-bg);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--elev-3, var(--shadow-md));
   overflow: hidden;
   transition: border-color 0.4s ease, box-shadow 0.4s ease;
 }

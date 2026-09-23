@@ -1,106 +1,88 @@
-.login-container {
-  min-height: 100vh;
+/* El login es la primera superficie de vidrio del panel: una tarjeta sola
+   sobre las luces del fondo, con el mismo tema que lo que viene despues. */
+.login {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--bg-primary);
-  padding: 2rem;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 1.5rem;
 }
 
-.login-card {
-  width: 100%;
-  max-width: 440px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  padding: 2.5rem;
-  box-shadow: var(--shadow-lg);
-}
-
-.login-header {
-  text-align: center;
-  margin-bottom: 2.5rem;
-}
-
-.login-header h1 {
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-}
-
-.login-form {
+.tarjeta-login {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  align-items: center;
+  width: min(400px, 100%);
+  padding: 2.4rem 2rem 1.4rem;
+  border-radius: 28px;
+  border: 1px solid var(--vidrio-borde);
+  background: var(--vidrio);
+  -webkit-backdrop-filter: var(--desenfoque);
+  backdrop-filter: var(--desenfoque);
+  box-shadow: var(--elev-3);
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-group label {
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-.stitch-input {
-  width: 100%;
-  padding: 0.875rem 1rem;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-family: inherit;
-  transition: all var(--transition-fast);
-}
-
-.stitch-input:focus {
-  outline: none;
-  border-color: var(--text-accent);
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-}
-
-.stitch-button {
-  background: var(--text-primary);
-  color: var(--bg-primary);
-  padding: 0.875rem 1.5rem;
-  border: none;
-  border-radius: var(--radius-md);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.stitch-button:hover:not(:disabled) {
-  background: var(--text-secondary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.stitch-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.w-full {
-  width: 100%;
-}
-
-.error-message {
-  color: #ef4444;
-  font-size: 0.875rem;
-  padding: 0.75rem;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: var(--radius-md);
-  text-align: center;
-}
-
-.login-footer {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-subtle);
-  display: flex;
+.login__marca {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  margin-bottom: 1rem;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--liquido-1), var(--liquido-2));
+  color: #FFFFFF;
+  font-size: 1.3rem;
+  box-shadow: 0 10px 30px -8px color-mix(in srgb, var(--liquido-1) 80%, transparent);
+}
+
+.login__titulo {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 750;
+  color: var(--text-primary);
+}
+
+.login__lema {
+  margin: 0.25rem 0 1.8rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.login__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  width: 100%;
+}
+
+.login__error {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0.6rem 0.9rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--estado-fallo) 12%, transparent);
+  color: var(--estado-fallo);
+  font-size: 0.84rem;
+}
+
+:host ::ng-deep .login__entrar {
+  width: 100%;
+  min-height: 2.9rem;
+  margin-top: 0.4rem;
+}
+
+:host ::ng-deep .login__volver {
+  margin-top: 1.2rem;
+}
+
+/* El campo de contrasena de PrimeNG trae su propio envoltorio: que ocupe
+   el ancho, como el resto. */
+:host ::ng-deep .p-password,
+:host ::ng-deep .p-password input {
+  width: 100%;
 }

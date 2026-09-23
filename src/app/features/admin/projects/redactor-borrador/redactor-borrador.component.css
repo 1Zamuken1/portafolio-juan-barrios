@@ -2,10 +2,14 @@
    El redactor: de donde sale el readme, y como se escribe
    ================================================
 
-   El color de la IA es --estado-curso. Se usa para lo que hace la IA --el
-   boton que la lanza, lo que esta escribiendo-- y para nada mas: si tambien
-   pintara los bordes y los titulos, dejaria de decir "aqui trabaja el
-   modelo". */
+   Todo es vidrio sobre el fondo del panel, y hay pocos marcos a proposito:
+   la fuente es una superficie, la pipeline no lleva marco --sus estaciones
+   ya son de vidrio y un marco alrededor era un rectangulo mas-- y la vista
+   previa es una ventana. Rectangulos dentro de rectangulos se leian como un
+   formulario, no como una maquina trabajando.
+
+   El color de la IA es --estado-curso, y el del liquido --liquido-1/2. Solo
+   para lo que hace la IA. */
 
 :host {
   display: flex;
@@ -19,14 +23,16 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 1.35rem 1.5rem 1.1rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  padding: 1.4rem 1.5rem 1.1rem;
+  border-radius: 24px;
+  border: 1px solid var(--vidrio-borde);
   background:
     radial-gradient(120% 140% at 0% 0%,
-      color-mix(in srgb, var(--estado-curso) 9%, transparent) 0%, transparent 55%),
-    var(--bg-secondary);
-  overflow: hidden;
+      color-mix(in srgb, var(--liquido-1) 14%, transparent) 0%, transparent 55%),
+    var(--vidrio);
+  -webkit-backdrop-filter: var(--desenfoque);
+  backdrop-filter: var(--desenfoque);
+  box-shadow: var(--elev-2);
 }
 
 .fuente__cabeza {
@@ -40,18 +46,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 0.75rem;
-  background: color-mix(in srgb, var(--estado-curso) 16%, var(--bg-secondary));
-  border: 1px solid color-mix(in srgb, var(--estado-curso) 40%, transparent);
-  color: var(--estado-curso);
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--liquido-1), color-mix(in srgb, var(--liquido-1) 50%, var(--liquido-2)));
+  color: #FFFFFF;
   font-size: 1.05rem;
+  box-shadow: 0 8px 24px -8px color-mix(in srgb, var(--liquido-1) 80%, transparent);
 }
 
 .fuente__titulo {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -91,46 +97,17 @@
 }
 
 .via-repo {
-  display: flex;
-  align-items: center;
   flex: 1;
   min-width: 260px;
-  padding-left: 0.8rem;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  background: var(--bg-primary);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.via-repo:focus-within {
-  border-color: var(--estado-curso);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--estado-curso) 18%, transparent);
-}
-
-.via-repo__icono {
-  color: var(--text-tertiary);
-  font-size: 0.95rem;
-}
-
-/* El campo va sin marco propio: el marco es el del grupo, para que el enlace
-   y su boton se lean como una sola cosa. */
-.via-repo input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  background: transparent;
-  box-shadow: none;
+:host ::ng-deep .via-repo .p-inputtext {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
 }
 
-.via-repo input:focus {
-  box-shadow: none;
-  outline: none;
-}
-
-.via-repo__boton {
-  flex-shrink: 0;
+:host ::ng-deep .via-repo__traer {
+  padding: 0 0.25rem;
 }
 
 .vias__o {
@@ -138,79 +115,65 @@
   color: var(--text-tertiary);
 }
 
-/* El input de fichero nativo no se puede estilar, asi que se esconde dentro de
-   su etiqueta y lo que se ve es la etiqueta. El input sigue ahi: el foco por
-   teclado y el espacio funcionan como en cualquier campo. */
-.via-subir {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.6rem 0.95rem;
-  border: 1px dashed var(--border-default);
-  border-radius: var(--radius-md);
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
+/* p-fileupload en modo basico: solo su boton de elegir, con trazo
+   discontinuo, que es como se dice "suelta aqui un fichero". */
+:host ::ng-deep .via-subir .p-button {
+  border-style: dashed;
 }
 
-.via-subir:hover {
-  border-color: var(--estado-curso);
-  color: var(--text-primary);
+/* El modo basico pone al lado el nombre del fichero elegido ("No file
+   chosen" mientras no hay ninguno). Aqui sobra: el fichero se lee al
+   momento y su nombre sale en la barra del editor. */
+:host ::ng-deep .via-subir .p-fileupload-basic-content > span {
+  display: none;
 }
 
-.via-subir:focus-within {
-  outline: 2px solid var(--estado-curso);
-  outline-offset: 2px;
-}
-
-.via-subir input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* El boton que lanza al modelo lleva el color del modelo. */
 .redactar {
   margin-left: auto;
-  background: var(--estado-curso);
-  border-color: var(--estado-curso);
-  color: var(--bg-secondary);
-  font-weight: 600;
-  box-shadow: 0 6px 20px -6px color-mix(in srgb, var(--estado-curso) 70%, transparent);
-}
-
-.redactar:not(:disabled):hover {
-  background: color-mix(in srgb, var(--estado-curso) 85%, var(--text-primary));
-  border-color: color-mix(in srgb, var(--estado-curso) 85%, var(--text-primary));
-  color: var(--bg-secondary);
 }
 
 /* ---- El editor ---- */
 .editor {
+  border-radius: 16px;
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
   background: var(--bg-primary);
   overflow: hidden;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+.editor:focus-within {
+  border-color: color-mix(in srgb, var(--estado-curso) 55%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--estado-curso) 12%, transparent);
+}
+
 .editor--arrastrando {
   border-color: var(--estado-curso);
   border-style: dashed;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--estado-curso) 18%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--estado-curso) 18%, transparent);
 }
 
-.editor__barra {
+/* Las dos barras plegables son p-button de texto a todo el ancho, con su
+   contenido propio: sin la pastilla de los botones y alineadas a la izquierda. */
+:host ::ng-deep p-button:has(> .editor__barra),
+:host ::ng-deep p-button:has(> .salida__cabecera) {
+  display: block;
+}
+
+:host ::ng-deep .editor__barra,
+:host ::ng-deep .salida__cabecera {
+  justify-content: flex-start;
+  border-radius: 0;
+}
+
+:host ::ng-deep .editor__barra {
   display: flex;
   align-items: center;
   gap: 0.6rem;
   width: 100%;
-  padding: 0.5rem 0.8rem;
+  padding: 0.55rem 0.9rem;
   border: none;
-  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
   color: var(--text-secondary);
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.74rem;
@@ -218,8 +181,8 @@
   cursor: pointer;
 }
 
-.editor__barra:hover {
-  background: var(--bg-tertiary);
+:host ::ng-deep .editor__barra:hover {
+  background: var(--capa-hover);
 }
 
 .editor__icono {
@@ -257,37 +220,14 @@
   color: var(--text-tertiary);
 }
 
-.editor textarea {
-  display: block;
-  width: 100%;
-  min-height: 10rem;
-  margin: 0;
-  padding: 0.85rem 1rem;
-  border: none;
-  border-top: 1px solid var(--border-subtle);
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
-  line-height: 1.6;
-  resize: vertical;
-}
-
-.editor textarea:focus {
-  box-shadow: none;
-  outline: none;
-}
-
 /* ---- El escenario ----
    Mide lo que la ventana, y cada columna se desplaza por su cuenta: asi la
-   pipeline y la ficha se ven a la vez de principio a fin, que es la gracia de
-   ponerlas juntas. */
+   pipeline y la ficha se ven a la vez de principio a fin. */
 .escenario {
   display: grid;
-  grid-template-columns: minmax(270px, 330px) minmax(0, 1fr);
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) auto;
-  gap: 1rem;
+  gap: 1rem 1.25rem;
   height: clamp(560px, calc(100dvh - 4rem), 1000px);
   scroll-margin-top: 1rem;
 }
@@ -299,22 +239,14 @@
   flex-direction: column;
 }
 
-.columna--pipeline {
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--bg-secondary);
-  overflow: hidden;
-}
-
 .columna__cabeza {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.7rem 1rem;
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 0.2rem 0.4rem 0.7rem;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -336,7 +268,9 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 1.1rem 1rem 1rem;
+  /* Hueco a los lados para que la sombra y el brillo de las estaciones no
+     se corten contra el borde de la columna. */
+  padding: 0.3rem 0.4rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -355,18 +289,20 @@
 /* ---- La respuesta en crudo ---- */
 .salida {
   margin-top: auto;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: var(--bg-primary);
+  border-radius: 16px;
+  border: 1px solid var(--vidrio-borde);
+  background: var(--vidrio);
+  -webkit-backdrop-filter: var(--desenfoque);
+  backdrop-filter: var(--desenfoque);
   overflow: hidden;
 }
 
-.salida__cabecera {
+:host ::ng-deep .salida__cabecera {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  padding: 0.5rem 0.7rem;
+  padding: 0.6rem 0.8rem;
   border: none;
   background: transparent;
   color: var(--text-secondary);
@@ -376,11 +312,11 @@
   cursor: pointer;
 }
 
-.salida__cabecera:hover {
-  background: var(--bg-tertiary);
+:host ::ng-deep .salida__cabecera:hover {
+  background: var(--capa-hover);
 }
 
-.salida__cabecera i {
+:host ::ng-deep .salida__cabecera i {
   font-size: 0.7rem;
   color: var(--text-tertiary);
 }
@@ -427,14 +363,17 @@
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
-  min-height: 3.5rem;
-  padding: 0.55rem 0.65rem 0.55rem 1.1rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--bg-secondary);
-  transition: border-color 0.3s ease;
+  min-height: 3.6rem;
+  padding: 0.55rem 0.6rem 0.55rem 1.3rem;
+  border-radius: 999px;
+  border: 1px solid var(--vidrio-borde);
+  background: var(--vidrio);
+  -webkit-backdrop-filter: var(--desenfoque);
+  backdrop-filter: var(--desenfoque);
+  box-shadow: var(--elev-2);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .acciones__estado {
@@ -442,36 +381,39 @@
   align-items: center;
   gap: 0.55rem;
   margin-right: auto;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   line-height: 1.45;
   color: var(--text-tertiary);
 }
 
-.acciones[data-modo='redactando'] { border-color: color-mix(in srgb, var(--estado-curso) 45%, var(--border-subtle)); }
+.acciones[data-modo='redactando'] {
+  border-color: color-mix(in srgb, var(--estado-curso) 45%, var(--vidrio-borde));
+  box-shadow: var(--elev-2), 0 0 30px -10px var(--liquido-1);
+}
 .acciones[data-modo='redactando'] .acciones__estado { color: var(--text-secondary); }
 
 .acciones[data-modo='lista'],
-.acciones[data-modo='aplicada'] { border-color: color-mix(in srgb, var(--estado-ok) 45%, var(--border-subtle)); }
+.acciones[data-modo='aplicada'] { border-color: color-mix(in srgb, var(--estado-ok) 45%, var(--vidrio-borde)); }
 .acciones[data-modo='lista'] .acciones__estado,
 .acciones[data-modo='aplicada'] .acciones__estado { color: var(--text-secondary); }
 .acciones[data-modo='lista'] .acciones__estado i,
 .acciones[data-modo='aplicada'] .acciones__estado i { color: var(--estado-ok); }
 
-.acciones[data-modo='fallo'] { border-color: color-mix(in srgb, var(--estado-fallo) 45%, var(--border-subtle)); }
+.acciones[data-modo='fallo'] { border-color: color-mix(in srgb, var(--estado-fallo) 45%, var(--vidrio-borde)); }
 .acciones[data-modo='fallo'] .acciones__estado { color: var(--estado-fallo); }
 
 .acciones__latido {
   flex-shrink: 0;
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.55rem;
+  height: 0.55rem;
   border-radius: 50%;
-  background: var(--estado-curso);
-  box-shadow: 0 0 0 0 color-mix(in srgb, var(--estado-curso) 60%, transparent);
+  background: linear-gradient(135deg, var(--liquido-1), var(--liquido-2));
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--liquido-1) 60%, transparent);
   animation: onda 1.4s ease-out infinite;
 }
 
 @keyframes onda {
-  to { box-shadow: 0 0 0 8px transparent; }
+  to { box-shadow: 0 0 0 9px transparent; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -502,6 +444,10 @@
   .columna--vista {
     height: 75vh;
     min-height: 480px;
+  }
+
+  .acciones {
+    border-radius: 24px;
   }
 
   .redactar {

@@ -196,27 +196,3 @@ button {
   border-width: 0;
 }
 
-/* ================================================
-   Anchos de los campos de PrimeNG en el panel
-   ================================================
-
-   Vive aqui, y no en admin.css con el resto del formulario, por una razon
-   concreta: el <input> lo dibuja PrimeNG dentro de su propio envoltorio, asi
-   que no lleva el atributo de encapsulacion del componente que lo usa y una
-   regla escrita en el CSS de ese componente nunca lo alcanza. No falla, no
-   avisa: simplemente no se aplica. Es la misma trampa que una vez dejo el tema
-   claro del blueprint sin pintar.
-
-   Sin esto, «Equipo» y «Orden» --que van en grupos de 110 y 120px-- dibujaban
-   dentro un campo de 241px que se salia del hueco y se montaba sobre el de al
-   lado.
-
-   Acotado a .form-group para no tocar los campos de PrimeNG de ningun otro
-   sitio. */
-.form-group p-inputnumber,
-.form-group .p-inputnumber,
-.form-group .p-inputnumber input,
-.form-group p-select,
-.form-group .p-select {
-  width: 100%;
-}

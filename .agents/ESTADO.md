@@ -36,7 +36,7 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayecto
 
 ### Tests
 
-**Frontend**, 152 tests en 20 ficheros (`pnpm run e2e`):
+**Frontend**, 156 tests en 21 ficheros (`pnpm run e2e`):
 
 | Suite | Qué protege |
 |---|---|
@@ -58,6 +58,7 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayecto
 | `jwt-interceptor.spec.ts` | a qué peticiones se les pega el token; casi todas son destinos que **no** deben llevarlo |
 | `panel-admin.spec.ts` | el armazón del panel: la barra que se quedaba atrás, la de guardado, los dos pasos, el interruptor de tema y el índice de la ficha |
 | `pipeline-borrador.spec.ts` | la pipeline entera con el NDJSON simulado: que la ficha se llene con el JSON a medias, que un campo se dé por escrito al cerrarse y no por el orden, que un flujo sin final no se quede escribiendo, y que el borrador no entre solo en el formulario |
+| `ui-admin.spec.ts` | los controles de PrimeNG tal como se usan en el panel: el teclado del desplegable, que el número no acepte letras ni se salga de sus límites, que un área crezca con su texto, y que el diálogo de borrar tenga el foco en Cancelar y no borre si se cancela |
 | `reproductor.spec.ts` | el ritmo de la redacción con un reloj falso: que nunca enseñe lo que no ha llegado, que un paso espere a su texto, que un error no espere, y el tope de retraso |
 | `json-parcial.spec.ts` | el lector del JSON a medias, cortando en cada posición posible: dentro de una clave, de un escape, tras los dos puntos |
 
@@ -133,6 +134,8 @@ Cinco causas encadenadas costaron una sesión entera. Cada una tapaba a la sigui
 | `marcarFallo` pintaba en rojo todos los nodos en curso | al cortarse la redaccion salian dos burbujas diciendo cada una «aqui es donde se corto» | un solo nodo se lleva el fallo; el resto pasa a «no se llego» |
 | Hijos de una columna flex con desplazamiento, que se encogen antes de que salga la barra | en una ventana baja, la caja de la respuesta en crudo medía 2px: se veía el borde y el botón quedaba debajo, sin poder pulsarse | `flex-shrink: 0` en los hijos; lo destapó un test que no podía hacer clic |
 | Tope de retraso calculado sobre el total pendiente | «pendiente ÷ 5 s» recalculado en cada latido frena exponencialmente: la vista nunca se ponía al día con un bloque grande | el tope se mide por trozo, con la hora a la que llegó; lo cazó `reproductor.spec.ts` |
+| `placeholder` dentro de `p-floatlabel` | PrimeNG sube la etiqueta si el campo tiene ejemplo: un slug vacío parecía escrito con «gastu-django» | sin `placeholder` en esos campos; el formato va en la ayuda |
+| Tokens del panel declarados solo dentro de `.admin-app` | el preset de PrimeNG los referencia desde `:root`, donde no existían: sus componentes se habrían quedado sin color | los `--admin-*` se declaran en la raíz |
 | `grid-template-columns: 1fr` en móvil | `1fr` no baja del ancho mínimo de su contenido, y la dirección de la vista previa no se parte: la columna se salía de la pantalla | `minmax(0, 1fr)` y `min-width: 0` en las columnas |
 
 Y dos pérdidas de datos desde el panel de administración, ambas recuperadas con `mirror:push` desde el JSON del repositorio.
@@ -149,6 +152,7 @@ Y dos pérdidas de datos desde el panel de administración, ambas recuperadas co
 - **Un arreglo que no se mira no está comprobado.** El primer intento de fijar la barra lateral fue `position: sticky`, y no funcionó. No se vio leyendo el CSS —ahí parecía correcto— sino midiendo la cadena de ancestros en el navegador: la causa estaba en `body`, tres niveles por encima y en otro fichero.
 - **Angular no avisa cuando una regla CSS no alcanza a su objetivo.** La encapsulación añade un atributo a cada selector, y si el elemento lo dibuja una librería no lo lleva: la regla no falla, no se queja, simplemente no se aplica. Ya pasó con el tema claro del blueprint y volvió a pasar con los campos de PrimeNG.
 - **Una prueba intermitente es una prueba mal escrita hasta que se demuestre lo contrario.** Una del panel falló dos veces y las dos se achacó a arrastre de la tanda; era un `count()` sin reintento preguntando antes de que el formulario se repintara.
+- **Una petición de estilo no es una petición de dependencias.** «Material design» se pidió como filosofía de diseño y se leyó como «quitar PrimeNG»: se rehizo el panel entero con componentes propios que hubo que deshacer. Ante un cambio que borra una dependencia o reescribe muchas vistas, se confirma el alcance antes de empezar, no después.
 - **`ng serve` puede quedarse con una versión vieja de un componente.** Tras cambiar a la vez la plantilla de un padre y las entradas de un hijo, el servidor de desarrollo sirvió la plantilla nueva contra la clase antigua: `ASSERTION ERROR: ... does not have an input with a public name of "texto"` en la consola, la vista del hijo congelada y nada más. Los tests pasaban porque Playwright arranca su propio servidor. Si algo se ve roto en `ng serve` y los tests pasan, primero la consola, y después reiniciar el servidor.
 - **Si dos cosas pueden estar trabajando a la vez, hay que decidir cuál falla.** Marcar todas las que estuvieran en curso hacía que el diagrama dijera dos veces «aquí se cortó», que es la contradicción que la declaración única de estados existe para impedir.
 

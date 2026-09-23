@@ -1,0 +1,172 @@
+/* ================================================
+   El tema del panel de administracion
+   ================================================
+
+   Dos bloques por tema, y la separacion importa:
+
+   1. En la RAIZ ([data-theme], que es el <html>), los tokens propios del
+      panel: --admin-*, --vidrio*, --liquido-*, --elev-*... Tienen nombres
+      que el sitio no usa, asi que declararlos ahi no le afecta. Tienen que
+      estar en la raiz porque el preset de PrimeNG (app.config.ts) los lee:
+      PrimeNG declara sus --p-* en :root, y una variable que referencia a otra
+      se resuelve donde se declara. Si estos tokens vivieran solo dentro de
+      .admin-app, en :root no existirian y PrimeNG se quedaria sin color.
+
+   2. Dentro de .admin-app, los tokens COMPARTIDOS con el sitio (--bg-*,
+      --text-*, --border-*, --estado-*) redefinidos para el panel. Ahi si hay
+      que acotarlos: en la raiz cambiarian el portafolio publico.
+
+   En oscuro es Shades of Purple --la misma paleta que el editor del sitio--
+   y todo es de vidrio: superficies translucidas sobre tres luces difusas. */
+
+/* ---- Oscuro: Shades of Purple ---- */
+[data-theme='dark'] {
+  --admin-fondo: #191830;
+  --admin-luz-1: rgba(179, 98, 255, 0.28);
+  --admin-luz-2: rgba(158, 255, 255, 0.12);
+  --admin-luz-3: rgba(250, 208, 0, 0.08);
+
+  --admin-texto: #FFFFFF;
+  --admin-texto-suave: #D6D1F7;
+  --admin-texto-tenue: #A599E9;
+  --admin-borde: rgba(165, 153, 233, 0.22);
+  --admin-borde-hover: rgba(165, 153, 233, 0.4);
+
+  /* Campos: vidrio oscuro. Superficies: vidrio. Capas que flotan (lista de
+     un desplegable, dialogo): opacas, porque van encima de otro vidrio y un
+     desenfoque dentro de otro no desenfoca nada. */
+  --admin-campo: rgba(19, 19, 39, 0.55);
+  --admin-campo-off: rgba(19, 19, 39, 0.3);
+  --admin-superficie: rgba(45, 43, 85, 0.38);
+  --admin-superficie-hover: rgba(165, 153, 233, 0.1);
+  --admin-flotante: #221F45;
+  --admin-velo: rgba(12, 11, 30, 0.6);
+
+  /* El acento es el violeta de la IA; el principal, el amarillo de Shades of
+     Purple, que es el de las acciones que cierran una tarea. */
+  --admin-acento: #C39BFF;
+  --admin-primario: #FAD000;
+  --admin-primario-hover: #FFE24D;
+  --admin-sobre-primario: #1E1E3F;
+  --admin-resalte: rgba(195, 155, 255, 0.18);
+  --admin-resalte-foco: rgba(195, 155, 255, 0.28);
+  --admin-ok: #A5FF90;
+  --admin-fallo: #FF628C;
+  --admin-aviso: #FAD000;
+
+  --vidrio: rgba(40, 38, 82, 0.42);
+  --vidrio-fuerte: rgba(30, 30, 63, 0.82);
+  --vidrio-borde: rgba(196, 181, 253, 0.16);
+  --desenfoque: blur(22px) saturate(160%);
+
+  --elev-1: 0 1px 2px rgba(5, 4, 20, 0.5), 0 1px 3px rgba(5, 4, 20, 0.3);
+  --elev-2: 0 6px 18px -4px rgba(5, 4, 20, 0.55), 0 2px 6px rgba(5, 4, 20, 0.3);
+  --elev-3: 0 18px 50px -12px rgba(5, 4, 20, 0.75), 0 4px 12px rgba(5, 4, 20, 0.35);
+
+  --liquido-1: #B362FF;
+  --liquido-2: #9EFFFF;
+  --capa-hover: rgba(255, 255, 255, 0.06);
+  --capa-press: rgba(255, 255, 255, 0.12);
+}
+
+/* ---- Claro ---- */
+[data-theme='light'] {
+  --admin-fondo: #EEEDF7;
+  --admin-luz-1: rgba(124, 92, 255, 0.2);
+  --admin-luz-2: rgba(25, 181, 199, 0.14);
+  --admin-luz-3: rgba(255, 170, 120, 0.14);
+
+  --admin-texto: #1E1B3A;
+  --admin-texto-suave: #3F3A66;
+  --admin-texto-tenue: #5E5890;
+  --admin-borde: rgba(91, 80, 165, 0.22);
+  --admin-borde-hover: rgba(91, 80, 165, 0.4);
+
+  --admin-campo: rgba(255, 255, 255, 0.6);
+  --admin-campo-off: rgba(255, 255, 255, 0.35);
+  --admin-superficie: rgba(255, 255, 255, 0.58);
+  --admin-superficie-hover: rgba(91, 80, 165, 0.07);
+  --admin-flotante: #FFFFFF;
+  --admin-velo: rgba(40, 32, 90, 0.25);
+
+  --admin-acento: #5B50A5;
+  --admin-primario: #5B50A5;
+  --admin-primario-hover: #4A4090;
+  --admin-sobre-primario: #FFFFFF;
+  --admin-resalte: rgba(91, 80, 165, 0.12);
+  --admin-resalte-foco: rgba(91, 80, 165, 0.2);
+  --admin-ok: #2F7D32;
+  --admin-fallo: #C62828;
+  --admin-aviso: #87671D;
+
+  --vidrio: rgba(255, 255, 255, 0.5);
+  --vidrio-fuerte: rgba(255, 255, 255, 0.88);
+  --vidrio-borde: rgba(255, 255, 255, 0.75);
+  --desenfoque: blur(22px) saturate(170%);
+
+  --elev-1: 0 1px 2px rgba(40, 32, 90, 0.08), 0 1px 3px rgba(40, 32, 90, 0.06);
+  --elev-2: 0 8px 22px -6px rgba(40, 32, 90, 0.18), 0 2px 6px rgba(40, 32, 90, 0.06);
+  --elev-3: 0 22px 50px -14px rgba(40, 32, 90, 0.3), 0 4px 12px rgba(40, 32, 90, 0.08);
+
+  --liquido-1: #7C5CFF;
+  --liquido-2: #19B5C7;
+  --capa-hover: rgba(91, 80, 165, 0.06);
+  --capa-press: rgba(91, 80, 165, 0.12);
+}
+
+/* ---- Lo compartido con el sitio, solo dentro del panel ---- */
+.admin-app {
+  --fondo-app: var(--admin-fondo);
+
+  --bg-primary: var(--admin-campo);
+  --bg-secondary: var(--admin-superficie);
+  --bg-tertiary: var(--admin-superficie-hover);
+  --bg-elevated: var(--admin-flotante);
+
+  --text-primary: var(--admin-texto);
+  --text-secondary: var(--admin-texto-suave);
+  --text-tertiary: var(--admin-texto-tenue);
+  --text-accent: var(--admin-primario);
+
+  --border-subtle: color-mix(in srgb, var(--admin-borde) 65%, transparent);
+  --border-default: var(--admin-borde);
+  --border-strong: var(--admin-borde-hover);
+
+  --estado-ok: var(--admin-ok);
+  --estado-fallo: var(--admin-fallo);
+  --estado-curso: var(--admin-acento);
+
+  --primario: var(--admin-primario);
+  --sobre-primario: var(--admin-sobre-primario);
+  --glass-bg: var(--vidrio-fuerte);
+}
+
+/* ---- El lienzo ----
+   Tres luces difusas fijas detras de todo. Son lo que el vidrio deja ver: sin
+   ellas un panel translucido sobre un fondo plano es solo un panel gris. */
+.admin-app {
+  position: relative;
+  isolation: isolate;
+  background: var(--admin-fondo);
+  color: var(--admin-texto);
+}
+
+.admin-app::before {
+  content: '';
+  position: fixed;
+  inset: -10vmax;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(38vmax 32vmax at 12% 18%, var(--admin-luz-1), transparent 70%),
+    radial-gradient(34vmax 30vmax at 88% 12%, var(--admin-luz-2), transparent 70%),
+    radial-gradient(40vmax 34vmax at 70% 92%, var(--admin-luz-3), transparent 70%);
+  filter: blur(20px);
+}
+
+.admin-app ::-webkit-scrollbar { width: 8px; height: 8px; }
+.admin-app ::-webkit-scrollbar-track { background: transparent; }
+.admin-app ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--liquido-1) 30%, transparent);
+  border-radius: 999px;
+}

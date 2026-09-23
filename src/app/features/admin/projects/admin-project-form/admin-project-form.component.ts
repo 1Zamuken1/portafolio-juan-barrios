@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import {
   FormArray,
   FormBuilder,
@@ -87,30 +87,14 @@ const PARTES_CASO = [
   { clave: 'learnings', titulo: 'Aprendizajes', id: 'rmLearnings' }
 ];
 
-// PrimeNG
-import { InputTextModule } from 'primeng/inputtext';
-import { TextareaModule } from 'primeng/textarea';
-import { ButtonModule } from 'primeng/button';
-import { SelectModule } from 'primeng/select';
-import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { InputNumberModule } from 'primeng/inputnumber';
+import { TabsModule } from 'primeng/tabs';
+import { PRIMENG_FORMULARIO } from '../../primeng';
 
 @Component({
   selector: 'app-admin-project-form',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    InputTextModule,
-    TextareaModule,
-    ButtonModule,
-    SelectModule,
-    ToastModule,
-    InputNumberModule,
-    RedactorBorradorComponent
-  ],
-  providers: [MessageService],
+  imports: [CommonModule, ReactiveFormsModule, NgTemplateOutlet, ...PRIMENG_FORMULARIO, TabsModule, RedactorBorradorComponent],
   templateUrl: './admin-project-form.component.html',
   styleUrls: ['../../admin.css', './admin-project-form.component.css']
 })
@@ -241,6 +225,11 @@ export class AdminProjectFormComponent implements OnInit {
       } : null);
     }
     this.cambiarDePaso(paso);
+  }
+
+  /** Lo que emiten las pestanas de PrimeNG: el valor de la elegida. */
+  alCambiarPaso(valor: unknown): void {
+    this.irA(valor === 2 ? 2 : 1);
   }
 
   /**

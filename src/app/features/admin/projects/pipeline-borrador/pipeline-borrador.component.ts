@@ -8,6 +8,7 @@ import {
   signal
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
 import { EstadoNodo, LECTURA_ESTADO, NodoPipeline } from './estado-nodo';
 
 /** Cuantas barras tiene el espectro del modelo. */
@@ -43,7 +44,7 @@ const CLAVES_JSON: ReadonlyArray<{ clave: string; salida: string }> = [
 @Component({
   selector: 'app-pipeline-borrador',
   standalone: true,
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, ButtonModule],
   templateUrl: './pipeline-borrador.component.html',
   styleUrl: './pipeline-borrador.component.css'
 })
@@ -110,6 +111,32 @@ export class PipelineBorradorComponent implements OnDestroy {
     if (hasta.estado === 'hecho') return 'recorrido';
     if (desde.estado === 'hecho' && hasta.estado === 'curso') return 'activo';
     return 'pendiente';
+  }
+
+  /**
+   * Cuanto liquido tiene una estacion, de 0 a 1.
+   *
+   * El liquido es la metafora de toda la pipeline: sale del readme, baja por
+   * los tubos y va llenando cada estacion segun trabaja. Una estacion llena es
+   * una estacion terminada. El modelo se llena al ritmo de lo que lleva
+   * escrito --la media de sus salidas--, que es lo unico de la pipeline que
+   * avanza poco a poco; el resto sube a la mitad mientras trabaja y se llena
+   * al acabar. Una que falla se vacia: el liquido se sale por la grieta.
+   */
+  protected nivel(nodo?: NodoPipeline): number {
+    if (!nodo) return 0;
+    switch (nodo.estado) {
+      case 'hecho': return 1;
+      case 'fallo': return 0.06;
+      case 'espera':
+      case 'no-alcanzado': return 0;
+      case 'curso': {
+        if (nodo.clave !== 'modelo') return 0.5;
+        const salidas = this.salidas();
+        const media = salidas.reduce((t, s) => t + (s.estado === 'hecho' ? 1 : s.progreso ?? 0), 0) / (salidas.length || 1);
+        return 0.1 + 0.85 * media;
+      }
+    }
   }
 
   /** El tiempo al lado del estado: el que lleva, o el que tardo. */

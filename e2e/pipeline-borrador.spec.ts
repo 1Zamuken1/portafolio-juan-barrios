@@ -196,11 +196,12 @@ test('los campos que escribio la IA quedan marcados hasta que los tocas', async 
   // Una cuenta exacta y no un "más de cero": count() no reintenta, así que
   // preguntar a pelo justo después de aplicar llegaba a veces antes de que el
   // formulario se repintara. toHaveCount sí espera.
-  const marcas = page.locator('.form-group label .marca-ia');
-  await expect(marcas).toHaveCount(8);
+  // Ocho campos de prosa mas el titulo de cada uno de los dos desafios.
+  const marcas = page.locator('#panel-completar label .marca-ia');
+  await expect(marcas).toHaveCount(10);
 
   await page.locator('#name').fill('Otro nombre');
-  await expect(marcas).toHaveCount(7);
+  await expect(marcas).toHaveCount(9);
 });
 
 test('descartar deja el formulario intacto y la vista como al principio', async ({ page }) => {

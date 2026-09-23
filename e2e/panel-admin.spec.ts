@@ -102,9 +102,11 @@ test('el panel tiene su propio interruptor de tema, y se recuerda', async ({ pag
   // El del sitio vive en la barra de actividad del layout tipo editor, que el
   // panel no tiene: sin este, en el panel no habia forma de cambiarlo.
   await page.goto('/admin/dashboard/projects/new');
-  await page.getByRole('radio', { name: /Claro/ }).click();
+  // Es un p-selectbutton: cada opcion es un boton que dice si esta pulsado.
+  const claro = page.locator('.tema').getByRole('button', { name: /Claro/ });
+  await claro.click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-  await expect(page.getByRole('radio', { name: /Claro/ })).toHaveAttribute('aria-checked', 'true');
+  await expect(claro).toHaveAttribute('aria-pressed', 'true');
 
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');

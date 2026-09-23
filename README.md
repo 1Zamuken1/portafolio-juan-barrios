@@ -26,7 +26,7 @@ Detras hay un backend propio en Spring Boot con arquitectura hexagonal, que da s
 - **Framework**: Angular 22
 - **Lenguaje**: TypeScript
 - **Estilos**: CSS3 Puro (Variables, Flexbox, Grid, Animaciones 3D)
-- **Componentes UI**: PrimeNG 21
+- **Componentes UI**: PrimeNG 21 con un preset propio (Material sobre vidrio, Shades of Purple en oscuro)
 - **Motor de Animaciones**: GSAP
 - **Iconos**: Devicon y PrimeIcons, servidos como fuente recortada desde el propio sitio
 - **Backend**: Spring Boot 3 con arquitectura hexagonal, en `/backend`

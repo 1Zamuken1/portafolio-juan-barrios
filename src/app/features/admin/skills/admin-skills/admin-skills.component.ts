@@ -1,23 +1,16 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DataService } from '../../../../core/services/data.service';
 import { AdminSkill } from '../../../../shared/models/skill.model';
 
-// PrimeNG
-import { TableModule } from 'primeng/table';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ToastModule } from 'primeng/toast';
-import { TooltipModule } from 'primeng/tooltip';
-import { ConfirmationService, MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-admin-skills',
   standalone: true,
-  imports: [CommonModule, TableModule, ButtonModule, TagModule, ConfirmDialogModule, ToastModule, TooltipModule],
-  providers: [ConfirmationService, MessageService],
+  imports: [ButtonModule, TagModule],
   templateUrl: './admin-skills.component.html',
   styleUrls: ['../../admin.css', './admin-skills.component.css']
 })
@@ -27,8 +20,8 @@ export class AdminSkillsComponent implements OnInit {
 
   private dataService = inject(DataService);
   private router = inject(Router);
-  private confirmationService = inject(ConfirmationService);
-  private messageService = inject(MessageService);
+  private confirmar = inject(ConfirmationService);
+  private avisos = inject(MessageService);
 
   ngOnInit(): void {
     this.loadSkills();
@@ -43,7 +36,7 @@ export class AdminSkillsComponent implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load skills' });
+        this.avisos.add({ severity: 'error', summary: 'Error', detail: 'Failed to load skills' });
       }
     });
   }
@@ -56,22 +49,43 @@ export class AdminSkillsComponent implements OnInit {
     this.router.navigate(['/admin/dashboard/skills/edit', skill.id]);
   }
 
-  confirmDelete(skill: AdminSkill): void {
-    this.confirmationService.confirm({
-      message: `¿Seguro que deseas eliminar "${skill.name}"?`,
-      header: 'Confirmar Eliminación',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.dataService.deleteSkill(skill.id).subscribe({
-          next: () => {
-            this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: `${skill.name} ha sido eliminado` });
-            this.loadSkills();
-          },
-          error: () => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar' });
-          }
-        });
+  async confirmDelete(skill: AdminSkill): Promise<void> {
+    const si = await this.preguntar({
+      titulo: `¿Eliminar «${skill.name}»?`,
+      mensaje: 'Se borra de la base de datos. El sitio público no cambia hasta que se publique.',
+      confirmar: 'Eliminar',
+      peligro: true
+    });
+    if (!si) return;
+
+    this.dataService.deleteSkill(skill.id).subscribe({
+      next: () => {
+        this.avisos.add({ severity: 'success', summary: 'Eliminado', detail: `${skill.name} se ha eliminado.` });
+        this.loadSkills();
+      },
+      error: () => {
+        this.avisos.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar.' });
       }
     });
+  }
+
+  /**
+   * La confirmacion de PrimeNG, como promesa: se lee "si confirma, borra" de
+   * arriba abajo en vez de con la accion metida dentro de la pregunta. El foco
+   * va a Cancelar, para que un Enter por inercia no borre nada.
+   */
+  private preguntar(p: { titulo: string; mensaje: string; confirmar: string; peligro?: boolean }): Promise<boolean> {
+    return new Promise((resolver) => this.confirmar.confirm({
+      header: p.titulo,
+      message: p.mensaje,
+      icon: p.peligro ? 'pi pi-trash' : 'pi pi-question-circle',
+      defaultFocus: 'reject',
+      closeOnEscape: true,
+      dismissableMask: true,
+      acceptButtonProps: { label: p.confirmar, severity: p.peligro ? 'danger' : 'primary' },
+      rejectButtonProps: { label: 'Cancelar', text: true, severity: 'secondary' },
+      accept: () => resolver(true),
+      reject: () => resolver(false)
+    }));
   }
 }

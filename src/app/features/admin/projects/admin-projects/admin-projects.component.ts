@@ -1,23 +1,15 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DataService } from '../../../../core/services/data.service';
 import { Project } from '../../../../shared/models/project.model';
-
-// PrimeNG
-import { TableModule } from 'primeng/table';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ToastModule } from 'primeng/toast';
-import { TooltipModule } from 'primeng/tooltip';
-import { ConfirmationService, MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-admin-projects',
   standalone: true,
-  imports: [CommonModule, TableModule, ButtonModule, TagModule, ConfirmDialogModule, ToastModule, TooltipModule],
-  providers: [ConfirmationService, MessageService],
+  imports: [ButtonModule, TagModule],
   templateUrl: './admin-projects.component.html',
   styleUrls: ['../../admin.css', './admin-projects.component.css']
 })
@@ -27,8 +19,8 @@ export class AdminProjectsComponent implements OnInit {
 
   private dataService = inject(DataService);
   private router = inject(Router);
-  private confirmationService = inject(ConfirmationService);
-  private messageService = inject(MessageService);
+  private confirmar = inject(ConfirmationService);
+  private avisos = inject(MessageService);
 
   ngOnInit(): void {
     this.loadProjects();
@@ -43,7 +35,7 @@ export class AdminProjectsComponent implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load projects' });
+        this.avisos.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los proyectos.' });
       }
     });
   }
@@ -56,31 +48,52 @@ export class AdminProjectsComponent implements OnInit {
     this.router.navigate(['/admin/dashboard/projects/edit', project.id]);
   }
 
-  confirmDelete(project: Project): void {
-    this.confirmationService.confirm({
-      message: `Are you sure you want to delete "${project.name}"?`,
-      header: 'Confirm Delete',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.dataService.deleteProject(project.id).subscribe({
-          next: () => {
-            this.messageService.add({ severity: 'success', summary: 'Deleted', detail: `${project.name} has been deleted` });
-            this.loadProjects();
-          },
-          error: () => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete project' });
-          }
-        });
+  async confirmDelete(project: Project): Promise<void> {
+    const si = await this.preguntar({
+      titulo: `¿Eliminar «${project.name}»?`,
+      mensaje: 'Se borra de la base de datos. El sitio público no cambia hasta que se publique, y el JSON del repositorio sigue teniéndolo.',
+      confirmar: 'Eliminar',
+      peligro: true
+    });
+    if (!si) return;
+
+    this.dataService.deleteProject(project.id).subscribe({
+      next: () => {
+        this.avisos.add({ severity: 'success', summary: 'Eliminado', detail: `${project.name} se ha eliminado.` });
+        this.loadProjects();
+      },
+      error: () => {
+        this.avisos.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el proyecto.' });
       }
     });
   }
 
-  getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | undefined {
+  tonoEstado(status: string): 'success' | 'info' | 'warn' | 'secondary' {
     switch (status) {
       case 'Production': return 'success';
       case 'Published': return 'info';
       case 'Active Development': return 'warn';
       default: return 'secondary';
     }
+  }
+
+  /**
+   * La confirmacion de PrimeNG, como promesa: se lee "si confirma, borra" de
+   * arriba abajo en vez de con la accion metida dentro de la pregunta. El foco
+   * va a Cancelar, para que un Enter por inercia no borre nada.
+   */
+  private preguntar(p: { titulo: string; mensaje: string; confirmar: string; peligro?: boolean }): Promise<boolean> {
+    return new Promise((resolver) => this.confirmar.confirm({
+      header: p.titulo,
+      message: p.mensaje,
+      icon: p.peligro ? 'pi pi-trash' : 'pi pi-question-circle',
+      defaultFocus: 'reject',
+      closeOnEscape: true,
+      dismissableMask: true,
+      acceptButtonProps: { label: p.confirmar, severity: p.peligro ? 'danger' : 'primary' },
+      rejectButtonProps: { label: 'Cancelar', text: true, severity: 'secondary' },
+      accept: () => resolver(true),
+      reject: () => resolver(false)
+    }));
   }
 }
