@@ -220,13 +220,8 @@
   gap: 0.25rem;
 }
 
-/* PrimeNG dibuja el campo numerico dentro de un envoltorio propio que no
-   hereda el ancho del grupo. Sin esto, «Equipo» y «Orden» --que van en grupos
-   de 110 y 120px-- se salen de su hueco y se montan sobre el de al lado. */
-.form-group p-inputnumber,
-.form-group .p-inputnumber,
-.form-group .p-inputnumber input,
-.form-group p-select,
-.form-group .p-select {
-  width: 100%;
-}
+/* Los campos de PrimeNG que no heredan el ancho de su grupo se ajustan en
+   global.css y no aqui. No es capricho: el <input> de verdad lo dibuja PrimeNG,
+   asi que no lleva el atributo de este componente y una regla encapsulada no
+   llega a el. Es la misma trampa que dejo sin pintar el tema claro del
+   blueprint. */

@@ -1,0 +1,84 @@
+<div class="lienzo">
+
+  <svg class="diagrama" [attr.viewBox]="'0 0 600 ' + alto()"
+       role="img" aria-label="Diagrama de la redacción">
+
+    <!-- Los caminos van debajo de las burbujas, para que el trazo no se vea
+         cruzando por encima de un icono. -->
+    <g class="caminos">
+      @for (c of caminos(); track c.desde + c.hasta) {
+        <path [attr.d]="c.d"
+              class="camino"
+              [class.camino--activo]="c.activo"
+              [class.camino--recorrido]="c.recorrido" />
+      }
+    </g>
+
+    @for (nodo of nodos(); track nodo.clave) {
+      @let p = posicion(nodo.clave);
+      @let l = lectura(nodo.estado);
+
+      <g class="nodo"
+         [attr.data-estado]="nodo.estado"
+         [class.nodo--elegido]="esElegido(nodo.clave)"
+         [attr.transform]="'translate(' + p.x + ',' + p.y + ')'"
+         (click)="elegir(nodo.clave)"
+         (keydown.enter)="elegir(nodo.clave)"
+         (keydown.space)="elegir(nodo.clave)"
+         tabindex="0"
+         role="button"
+         [attr.aria-label]="nodo.titulo + ': ' + l.etiqueta">
+
+        <!-- El halo solo existe mientras el nodo trabaja. Un halo latiendo
+             sobre algo que ya termino diria que sigue pasando algo. -->
+        @if (l.corriendo) {
+          <circle class="halo" [attr.r]="RADIO + 8" />
+        }
+
+        <circle class="burbuja" [attr.r]="RADIO" />
+
+        <!-- foreignObject para poder usar los mismos iconos que el resto del
+             panel; un <text> con la fuente de iconos no hereda bien el tamaño. -->
+        <foreignObject [attr.x]="-RADIO" [attr.y]="-RADIO"
+                       [attr.width]="RADIO * 2" [attr.height]="RADIO * 2">
+          <div class="glifo">
+            <i [class]="nodo.estado === 'espera' ? nodo.icono : l.icono" aria-hidden="true"></i>
+          </div>
+        </foreignObject>
+
+        <text class="rotulo" [attr.y]="RADIO + 18">{{ nodo.titulo }}</text>
+
+        @if (l.corriendo && nodo.desde) {
+          <text class="cronometro" [attr.y]="RADIO + 31">{{ llevaCorriendo(nodo) }}</text>
+        }
+      </g>
+    }
+  </svg>
+
+  <!-- El panel de al lado. Sigue al nodo que trabaja mientras no elijas uno,
+       que es lo que hace que los resultados aparezcan solos segun caen. -->
+  @if (activo(); as nodo) {
+    @let l = lectura(nodo.estado);
+    <aside class="detalle" aria-live="polite">
+      <header class="detalle__cabecera">
+        <span class="detalle__titulo">{{ nodo.titulo }}</span>
+        <span class="detalle__estado" [style.color]="l.color">
+          <i [class]="l.icono" aria-hidden="true"></i> {{ l.etiqueta }}
+          @if (l.corriendo && nodo.desde) { · {{ llevaCorriendo(nodo) }} }
+        </span>
+      </header>
+
+      @if (l.glosa) {
+        <p class="detalle__glosa">{{ l.glosa }}</p>
+      }
+
+      @if (nodo.detalle) {
+        <p class="detalle__linea">{{ nodo.detalle }}</p>
+      }
+
+      @if (nodo.contenido) {
+        <pre class="detalle__contenido">{{ nodo.contenido }}</pre>
+      }
+    </aside>
+  }
+</div>

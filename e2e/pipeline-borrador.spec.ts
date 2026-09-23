@@ -61,15 +61,29 @@ async function prepararRedaccion(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Redactar borrador' }).click();
 }
 
-test('la pipeline va marcando los pasos que el backend cuenta', async ({ page }) => {
+test('el diagrama enciende todas las burbujas que el backend cuenta', async ({ page }) => {
   await simularStream(page, FLUJO_COMPLETO);
   await prepararRedaccion(page);
 
-  // Los seis pasos se pintan desde el principio: una lista que crece no
-  // distingue "va por el tercero" de "se quedó en el tercero".
-  await expect(page.locator('.pipeline__paso')).toHaveCount(6);
-  await expect(page.locator('.pipeline__paso[data-estado="hecho"]')).toHaveCount(6);
-  await expect(page.locator('.pipeline')).toContainText('openai/gpt-oss-120b');
+  // Las ocho se dibujan desde el principio, también las que no han ocurrido:
+  // un diagrama que crece no distingue "va por la tercera" de "se quedó en la
+  // tercera".
+  await expect(page.locator('.nodo')).toHaveCount(8);
+  await expect(page.locator('.nodo[data-estado="hecho"]')).toHaveCount(8);
+});
+
+test('el panel lateral cuenta lo de la burbuja que se elige', async ({ page }) => {
+  await simularStream(page, FLUJO_COMPLETO);
+  await prepararRedaccion(page);
+
+  // El dato que sólo se conoce en ese momento: qué modelo respondió y cuánto
+  // tardó. Es la razón de que el panel exista.
+  await page.locator('.nodo[aria-label^="Modelo"]').click();
+  await expect(page.locator('.detalle')).toContainText('openai/gpt-oss-120b');
+
+  // Y las burbujas de salida llevan el texto que de verdad se redactó.
+  await page.locator('.nodo[aria-label^="Nombre"]').click();
+  await expect(page.locator('.detalle__contenido')).toHaveText('Tsuki Translator');
 });
 
 test('el texto del modelo se acumula segun llega', async ({ page }) => {
@@ -135,7 +149,13 @@ test('un fallo a mitad se ve donde paro, aunque el estado HTTP sea 200', async (
   ]);
   await prepararRedaccion(page);
 
-  await expect(page.locator('.pipeline__paso[data-estado="fallo"]')).toHaveCount(1);
-  await expect(page.locator('.pipeline__paso[data-estado="fallo"]')).toContainText('Groq no responde');
+  await expect(page.locator('.nodo[data-estado="fallo"]')).toHaveCount(1);
+  await expect(page.locator('.detalle')).toContainText('Groq no responde');
+
+  // Lo que venía detrás queda como "no se llegó", que no es lo mismo que "sin
+  // empezar": uno todavía podía ocurrir y el otro ya no. Sin esa diferencia,
+  // un diagrama parado se lee igual que uno que no ha arrancado.
+  await expect(page.locator('.nodo[data-estado="no-alcanzado"]')).not.toHaveCount(0);
+  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(0);
   await expect(page.locator('.propuesta')).toHaveCount(0);
 });

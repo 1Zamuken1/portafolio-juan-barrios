@@ -15,6 +15,8 @@ import {
   BorradorStreamService,
   LineaPipeline
 } from '../../../../core/services/borrador-stream.service';
+import { PipelineBorradorComponent } from '../pipeline-borrador/pipeline-borrador.component';
+import { EstadoNodo, NodoPipeline } from '../pipeline-borrador/estado-nodo';
 import { Project, ProjectDraft } from '../../../../shared/models/project.model';
 import { limpiarVacios } from '../../../../shared/utils/limpiar-vacios';
 
@@ -40,34 +42,45 @@ const README_MINIMO = 200;
  *  mega ya no es un readme, y leerlo entero en memoria no tiene sentido. */
 const MARKDOWN_MAXIMO = 512 * 1024;
 
-/** En que estado esta un paso de la pipeline. */
-type EstadoPaso = 'espera' | 'curso' | 'hecho' | 'fallo';
-
-interface PasoPipeline {
-  clave: string;
-  titulo: string;
-  estado: EstadoPaso;
-  /** Lo que conto el backend al pasar por aqui. Vacio hasta que pase. */
-  detalle: string;
-}
+/**
+ * Las burbujas del diagrama, en orden.
+ *
+ * Las cuatro primeras son la cadena: lo que pasa, por donde pasa. Las cuatro
+ * ultimas son lo que sale, y cuelgan de la validacion porque es cuando de
+ * verdad se sabe que un campo sirve.
+ *
+ * Se pintan todas desde el principio, tambien las que no han ocurrido. Una
+ * lista que crece no distingue "va por la tercera" de "se quedo en la
+ * tercera", y lo segundo es justo lo que hay que poder ver.
+ */
+const NODOS: ReadonlyArray<{ clave: string; titulo: string; icono: string }> = [
+  { clave: 'readme', titulo: 'Readme', icono: 'pi pi-file' },
+  { clave: 'modelo', titulo: 'Modelo', icono: 'pi pi-sparkles' },
+  { clave: 'parseo', titulo: 'JSON', icono: 'pi pi-code' },
+  { clave: 'validacion', titulo: 'Cotas', icono: 'pi pi-check-square' },
+  { clave: 'nombre', titulo: 'Nombre', icono: 'pi pi-tag' },
+  { clave: 'descripciones', titulo: 'Descripciones', icono: 'pi pi-align-left' },
+  { clave: 'caso', titulo: 'Caso de estudio', icono: 'pi pi-book' },
+  { clave: 'desafios', titulo: 'Desafios', icono: 'pi pi-flag' }
+];
 
 /**
- * Los pasos, en orden, y con nombre antes de que ocurran.
+ * Cuando se da por cerrado cada campo de la salida.
  *
- * Se pintan todos desde el principio y no segun van llegando: asi se ve cuanto
- * queda, y sobre todo se ve donde se paro cuando algo falla. Una lista que
- * crece no distingue "va por el tercero" de "se quedo en el tercero".
+ * El modelo escribe el JSON en el orden en que se le pidio, asi que ver
+ * aparecer la clave siguiente significa que la anterior ya se cerro. Eso deja
+ * que las burbujas de salida se enciendan repartidas por los ocho segundos de
+ * la llamada, en vez de las cuatro de golpe al final.
  *
- * Las claves son las que manda el backend. El titulo es lo que se espera que
- * pase; el detalle, que llega despues, es lo que paso de verdad.
+ * Es la unica suposicion de todo el diagrama, y esta acotada a proposito: si
+ * algun dia el modelo escribiera los campos en otro orden, lo peor que pasa es
+ * que una burbuja se encienda tarde. Los datos no salen de aqui, salen del JSON
+ * completo cuando termina.
  */
-const PASOS: ReadonlyArray<{ clave: string; titulo: string }> = [
-  { clave: 'entrada', titulo: 'Leyendo el readme' },
-  { clave: 'modelo', titulo: 'Consultando al modelo' },
-  { clave: 'respuesta', titulo: 'Recibiendo la redaccion' },
-  { clave: 'parseo', titulo: 'Interpretando el JSON' },
-  { clave: 'validacion', titulo: 'Comprobando las cotas' },
-  { clave: 'propuesta', titulo: 'Preparando la propuesta' }
+const CIERRA_CON: ReadonlyArray<{ clave: string; marca: string }> = [
+  { clave: 'nombre', marca: '"shortDescription"' },
+  { clave: 'descripciones', marca: '"readmeMarkdown"' },
+  { clave: 'caso', marca: '"challenges"' }
 ];
 
 // PrimeNG
@@ -90,7 +103,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
     ButtonModule,
     SelectModule,
     ToastModule,
-    InputNumberModule
+    InputNumberModule,
+    PipelineBorradorComponent
   ],
   providers: [MessageService],
   templateUrl: './admin-project-form.component.html',
@@ -133,7 +147,7 @@ export class AdminProjectFormComponent implements OnInit {
    * dato que solo se conoce ahi --que modelo respondio, si hubo que bajar al de
    * reserva, cuanto tardo--.
    */
-  pasos = signal<PasoPipeline[]>([]);
+  nodos = signal<NodoPipeline[]>([]);
 
   /**
    * El texto del borrador segun lo escribe el modelo.
@@ -401,12 +415,13 @@ export class AdminProjectFormComponent implements OnInit {
     this.textoModelo.set('');
 
     this.redactando.set(true);
-    this.pasos.set(PASOS.map((p, i) => ({
-      ...p,
+    this.nodos.set(NODOS.map((n, i) => ({
+      ...n,
       // El primero arranca en curso: el backend no manda un aviso de "he
       // empezado", manda uno por cada paso terminado.
       estado: i === 0 ? 'curso' : 'espera',
-      detalle: ''
+      detalle: '',
+      desde: i === 0 ? Date.now() : undefined
     })));
 
     this.borradorStream.redactar(nombre, readme).subscribe({
@@ -436,7 +451,7 @@ export class AdminProjectFormComponent implements OnInit {
   private avanzar(linea: LineaPipeline): void {
     switch (linea.etapa) {
       case 'entrada':
-        this.cerrar('entrada', linea.detalle);
+        this.cerrar('readme', linea.detalle);
         this.abrir('modelo');
         break;
 
@@ -449,11 +464,14 @@ export class AdminProjectFormComponent implements OnInit {
         // enseina tal cual: es texto para mirar, no datos para usar. Nada de
         // esto toca el formulario, ni podria: un JSON a medias no se valida.
         this.textoModelo.update((t) => t + (linea.detalle ?? ''));
+        this.revisarSalidas();
         break;
 
       case 'respuesta':
-        this.cerrar('modelo');
-        this.cerrar('respuesta', linea.detalle);
+        this.cerrar('modelo', linea.detalle);
+        // El modelo dejo de escribir, asi que lo ultimo que quedaba abierto ya
+        // esta cerrado tambien.
+        this.cerrar('desafios');
         this.abrir('parseo');
         break;
 
@@ -464,7 +482,6 @@ export class AdminProjectFormComponent implements OnInit {
 
       case 'validacion':
         this.cerrar('validacion', linea.detalle);
-        this.abrir('propuesta');
         break;
 
       case 'fin':
@@ -490,6 +507,44 @@ export class AdminProjectFormComponent implements OnInit {
   }
 
   /**
+   * Enciende las burbujas de salida segun el modelo va cerrando cada campo.
+   *
+   * Escribe el JSON en el orden en que se le pidio, asi que ver aparecer la
+   * clave siguiente significa que la anterior se cerro. Es la unica suposicion
+   * del diagrama y esta acotada: si el modelo cambiara el orden, lo peor es que
+   * una burbuja se encienda tarde. El contenido de verdad llega al final, con
+   * el JSON entero.
+   */
+  private revisarSalidas(): void {
+    const texto = this.textoModelo();
+
+    // En cuanto hay una letra, el modelo esta escribiendo el primer campo.
+    this.abrirSiEspera('nombre');
+
+    for (let i = 0; i < CIERRA_CON.length; i++) {
+      if (!texto.includes(CIERRA_CON[i].marca)) break;
+
+      this.cerrar(CIERRA_CON[i].clave);
+      // Ver la clave siguiente significa que la anterior se cerro y que esta
+      // acaba de empezar. El ultimo de la cadena no tiene ninguna detras: lo
+      // cierra el final del flujo, en 'respuesta'.
+      this.abrirSiEspera(CIERRA_CON[i + 1]?.clave ?? 'desafios');
+    }
+  }
+
+  /**
+   * Abre un nodo solo si todavia no habia pasado por el.
+   *
+   * Se llama en cada trozo de texto que llega, y sin esta guarda un nodo ya
+   * terminado volveria a ponerse en marcha con cada letra posterior.
+   */
+  private abrirSiEspera(clave: string): void {
+    if (this.nodos().find((n) => n.clave === clave)?.estado === 'espera') {
+      this.abrir(clave);
+    }
+  }
+
+  /**
    * Deja el borrador como propuesta. El formulario no se toca todavia.
    *
    * Antes se volcaba solo. Eso estaba bien mientras redactar era algo que se
@@ -505,8 +560,28 @@ export class AdminProjectFormComponent implements OnInit {
     }
 
     this.propuesta.set(borrador);
-    const campos = 8 + (borrador.challenges ?? []).length * 2;
-    this.cerrar('propuesta', `${campos} campos listos para revisar`);
+
+    // Ahora que esta el JSON entero, cada burbuja de salida puede ensenar lo
+    // que de verdad le toco. Hasta aqui solo se sabia que ya estaba escrito,
+    // no que decia: un objeto a medias no se puede leer.
+    const r = borrador.readmeMarkdown;
+    const parrafos = (partes: string[]) => partes.join('\n\n');
+
+    this.cerrar('nombre', 'El nombre del proyecto', borrador.name);
+
+    this.cerrar('descripciones', 'La de la tarjeta y la de la ficha',
+      parrafos([borrador.shortDescription, borrador.fullDescription]));
+
+    this.cerrar('caso', 'Las cinco secciones del readme', parrafos([
+      `Objetivo\n${r.objective}`,
+      `Arquitectura\n${r.architecture}`,
+      `Funcionalidades\n${r.mainFeatures}`,
+      `Tecnologias\n${r.technologies}`,
+      `Aprendizajes\n${r.learnings}`
+    ]));
+
+    this.cerrar('desafios', `${borrador.challenges.length} problemas tecnicos`,
+      parrafos(borrador.challenges.map((c) => `${c.title}\n${c.description}`)));
   }
 
   /**
@@ -551,7 +626,7 @@ export class AdminProjectFormComponent implements OnInit {
   descartarPropuesta(): void {
     this.propuesta.set(null);
     this.textoModelo.set('');
-    this.pasos.set([]);
+    this.nodos.set([]);
   }
 
   /** Si un campo lo escribio el borrador y todavia no se ha tocado. */
@@ -573,21 +648,47 @@ export class AdminProjectFormComponent implements OnInit {
     this.cambiar(clave, 'curso', detalle);
   }
 
-  private cerrar(clave: string, detalle?: string): void {
-    this.cambiar(clave, 'hecho', detalle);
+  private cerrar(clave: string, detalle?: string, contenido?: string): void {
+    this.cambiar(clave, 'hecho', detalle, contenido);
   }
 
-  /** El paso que estuviera en curso se queda marcado: ahi fue donde se paro. */
+  /**
+   * El nodo que estuviera trabajando se queda marcado: ahi fue donde se paro.
+   *
+   * Y lo que venia detras pasa a "no se llego", que no es lo mismo que "sin
+   * empezar": uno todavia podia ocurrir y el otro ya no. Sin esa diferencia, un
+   * diagrama parado se lee igual que uno que no ha arrancado.
+   */
   private marcarFallo(detalle: string): void {
-    this.pasos.update((pasos) => pasos.map((p) =>
-      p.estado === 'curso' ? { ...p, estado: 'fallo' as EstadoPaso, detalle } : p));
+    this.nodos.update((nodos) => {
+      let roto = false;
+      return nodos.map((n) => {
+        if (n.estado === 'curso') {
+          roto = true;
+          return { ...n, estado: 'fallo' as EstadoNodo, detalle, desde: undefined };
+        }
+        if (roto && n.estado === 'espera') {
+          return { ...n, estado: 'no-alcanzado' as EstadoNodo };
+        }
+        return n;
+      });
+    });
   }
 
-  private cambiar(clave: string, estado: EstadoPaso, detalle?: string): void {
-    this.pasos.update((pasos) => pasos.map((p) =>
-      p.clave === clave
-        ? { ...p, estado, detalle: detalle ?? p.detalle }
-        : p));
+  private cambiar(clave: string, estado: EstadoNodo, detalle?: string, contenido?: string): void {
+    this.nodos.update((nodos) => nodos.map((n) =>
+      n.clave === clave
+        ? {
+            ...n,
+            estado,
+            detalle: detalle ?? n.detalle,
+            contenido: contenido ?? n.contenido,
+            // El cronometro arranca al entrar y desaparece al salir: un
+            // contador subiendo al lado de algo terminado diria que sigue
+            // trabajando.
+            desde: estado === 'curso' ? (n.desde ?? Date.now()) : undefined
+          }
+        : n));
   }
 
   private avisar(detalle: string): void {
