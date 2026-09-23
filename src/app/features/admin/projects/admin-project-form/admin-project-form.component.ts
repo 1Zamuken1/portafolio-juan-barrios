@@ -10,6 +10,7 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../../../core/services/data.service';
+import { ReadmeGithubService } from '../../../../core/services/readme-github.service';
 import { Project } from '../../../../shared/models/project.model';
 import { limpiarVacios } from '../../../../shared/utils/limpiar-vacios';
 
@@ -30,6 +31,10 @@ const aLista = (texto?: string): string[] =>
 /** Longitud minima de readme que el backend acepta. Se comprueba aqui para no
  *  gastar una llamada de pago en un texto que ya se sabe que va a rechazar. */
 const README_MINIMO = 200;
+
+/** Tope para el fichero que se sube. Un readme largo ronda los 20 kB; medio
+ *  mega ya no es un readme, y leerlo entero en memoria no tiene sentido. */
+const MARKDOWN_MAXIMO = 512 * 1024;
 
 // PrimeNG
 import { InputTextModule } from 'primeng/inputtext';
@@ -73,6 +78,17 @@ export class AdminProjectFormComponent implements OnInit {
   redactando = signal(false);
   panelBorradorAbierto = signal(false);
 
+  /**
+   * El enlace del repositorio del que traer el readme.
+   *
+   * Es una comodidad, no una tercera via: lo que se trae aterriza en
+   * readmeFuente y desde ahi sigue el mismo camino que el texto pegado a mano.
+   * Asi solo hay un sitio donde mirar lo que se le va a mandar al modelo, y se
+   * puede corregir antes de gastar la llamada.
+   */
+  enlaceRepo = new FormControl('');
+  trayendo = signal(false);
+
   statusOptions = [
     { label: 'Draft', value: 'Draft' },
     { label: 'Active Development', value: 'Active Development' },
@@ -86,6 +102,7 @@ export class AdminProjectFormComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private messageService = inject(MessageService);
+  private readmeGithub = inject(ReadmeGithubService);
 
   ngOnInit(): void {
     this.initForm();
@@ -203,6 +220,75 @@ export class AdminProjectFormComponent implements OnInit {
    * en los campos de prosa, y por eso el boton avisa antes cuando se esta
    * editando un proyecto que ya tiene contenido.
    */
+  /** Trae el readme del repositorio y lo deja en el area de texto. */
+  traerDeGithub(): void {
+    const enlace = (this.enlaceRepo.value ?? '').trim();
+    if (!enlace) {
+      this.avisar('Pega la URL del repositorio, o escribe usuario/repo.');
+      return;
+    }
+
+    this.trayendo.set(true);
+    this.readmeGithub.traerReadme(enlace).subscribe({
+      next: (texto) => {
+        this.trayendo.set(false);
+        this.readmeFuente.setValue(texto);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Readme traido',
+          detail: `${texto.length} caracteres. Revisalo; todavia no se ha redactado nada.`,
+          life: 6000
+        });
+      },
+      error: (e: Error) => {
+        this.trayendo.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'No se pudo traer el readme',
+          detail: e.message,
+          life: 12000
+        });
+      }
+    });
+  }
+
+  /**
+   * Carga un .md del disco en el area de texto.
+   *
+   * Se lee en el navegador y no se sube a ningun sitio: el fichero nunca sale
+   * del equipo, solo su contenido, y solo cuando se pulse Redactar.
+   */
+  subirMarkdown(evento: Event): void {
+    const input = evento.target as HTMLInputElement;
+    const fichero = input.files?.[0];
+    // Se limpia siempre, y antes de cualquier return: si no, elegir dos veces
+    // el mismo fichero no dispara el evento y parece que la segunda no hizo
+    // nada.
+    input.value = '';
+    if (!fichero) return;
+
+    if (fichero.size > MARKDOWN_MAXIMO) {
+      this.avisar(
+        `El fichero pesa ${Math.round(fichero.size / 1024)} kB y el limite son ` +
+        `${MARKDOWN_MAXIMO / 1024} kB. Un readme no llega a eso; revisa si es el fichero que querias.`);
+      return;
+    }
+
+    const lector = new FileReader();
+    lector.onload = () => {
+      const texto = String(lector.result ?? '');
+      this.readmeFuente.setValue(texto);
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Fichero cargado',
+        detail: `${fichero.name}, ${texto.length} caracteres. Revisalo antes de redactar.`,
+        life: 6000
+      });
+    };
+    lector.onerror = () => this.avisar(`No se pudo leer ${fichero.name}.`);
+    lector.readAsText(fichero);
+  }
+
   redactarBorrador(): void {
     const nombre = (this.form.get('name')?.value ?? '').trim();
     const readme = (this.readmeFuente.value ?? '').trim();

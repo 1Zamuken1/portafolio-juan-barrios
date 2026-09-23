@@ -32,6 +32,34 @@
       y las metricas no se tocan.
     </p>
 
+    <!-- Traer el readme sin pegarlo a mano. Las dos vias dejan el texto en el
+         area de abajo, que sigue siendo lo unico que se le manda al modelo. -->
+    <div class="fuentes">
+      <div class="fuentes__repo">
+        <input pInputText type="text" [formControl]="enlaceRepo"
+               placeholder="https://github.com/usuario/repo"
+               (keydown.enter)="traerDeGithub()" aria-label="Enlace del repositorio" />
+        <button pButton type="button" label="Traer readme" icon="pi pi-github"
+                class="p-button-outlined" [loading]="trayendo()"
+                (click)="traerDeGithub()"></button>
+      </div>
+
+      <span class="fuentes__o">o</span>
+
+      <label class="fuentes__subir">
+        <i class="pi pi-upload" aria-hidden="true"></i>
+        Subir un .md
+        <input type="file" accept=".md,.markdown,text/markdown,text/plain"
+               (change)="subirMarkdown($event)" />
+      </label>
+    </div>
+
+    <p class="panel-borrador__ayuda">
+      Solo repositorios publicos: no se manda ningun token. El fichero que
+      subes se lee en el navegador y no viaja a ningun sitio; lo unico que sale
+      de aqui es el texto de abajo, y solo al pulsar Redactar.
+    </p>
+
     <textarea pTextarea id="readmeFuente" [formControl]="readmeFuente" rows="10"
               placeholder="# Mi proyecto&#10;&#10;Pega aqui el readme completo..."></textarea>
 
