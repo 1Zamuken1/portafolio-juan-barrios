@@ -46,9 +46,9 @@ Este repositorio contiene el portafolio personal de Juan Barrios, un Backend Dev
   - *Fase Dinámica (Admin)*: El panel `/admin` hace requests reales a la API REST del backend en Render para CRUD completo.
 - **Layout principal (VSCode)**: La UI pública emula un editor tipo VSCode. `VscodeLayoutComponent` (`src/app/layout/vscode-layout/`) es el shell: activity bar, explorer de archivos y **pestañas de editor sintetizadas desde la ruta**. `getTabDetails(path, fragment)` traduce ruta + fragment a un "archivo" (`/` → `README.md`, `/about#experience` → `timeline.json`, `/projects/:id#architecture` → `architecture.drawio`). `syncExplorerFolders()` abre la carpeta del proyecto navegado y colapsa las hermanas. Las rutas públicas son solo tres: `''` (welcome), `projects/:id` y `about`.
 - **Componente About**: Es un documento markdown estático (`about.component.html`) con perfil, stack agrupado por categoría y proyectos destacados. Lee de `getStaticExperiences()`, `getStaticProjects()` y `getStaticSkillsFlat()`.
-- **Ring 3D de skills — INACTIVO**: `LegacyRingComponent` (`src/app/features/about/legacy-ring/`) y su hijo `KnowledgePillarsComponent` contienen el anillo 3D de planetas rotando con las tecnologías: `requestAnimationFrame` en `startLoop()` con momentum y fricción, drag handlers, `hoveredSkill()` signal para la tarjeta al hacer hover, e iconos devicon **monochrome** (sin clase `colored`) para que se vean en ambos temas.
+- **Anillo 3D del stack**: `AnilloStackComponent` (`src/app/features/about/stack/anillo-stack/`) dibuja las tecnologias girando en orbita. Vive en `/about/stack` como conmutador junto a la lista, y **la lista es lo principal**: es la que se prerenderiza, la que lee un buscador y la unica de las dos que se puede recorrer con teclado o lector de pantalla. La eleccion no se recuerda a proposito; si se guardara, la pagina apareceria a veces en la forma que no se puede leer sin que quedara claro por que. `e2e/anillo-stack.spec.ts` sujeta eso.
 
-  > **Estado: no se renderiza.** Ningún template incluye `<app-legacy-ring>` desde que `about` pasó a ser un documento markdown. El código se conserva deliberadamente, intacto y compilando, para poder reintegrarlo. **No borrar sin acuerdo previo.** Para reactivarlo basta con añadir `<app-legacy-ring>` al template de `about` e importar el componente.
+  Salio de `legacy-ring`, que se borro. Recibe las skills ya cargadas del documento en vez de buscarlas: si cada vista fuera a por ellas por su cuenta podrian acabar ensenando cosas distintas. Toda la geometria cuelga de un solo numero, el radio, que sale del ancho del contenedor con una container query —el documento vive en una columna mas estrecha que la ventana, y con un radio fijo las tecnologias de los extremos quedaban cortadas—. Respeta `prefers-reduced-motion`: no gira solo, pero se sigue pudiendo arrastrar.
 - **skills.json**: Es un **array** de `SkillCategory[]` (no objeto con claves), con 18 skills en 4 categorías. Cada skill tiene: `id`, `name`, `icon` (clase devicon sin `colored`), `brandColor`, `brandColorLight`, `description`.
 - **BlueprintViewer**: `src/app/shared/components/blueprint-viewer/` renderiza los diagramas de arquitectura SVG de cada caso de estudio a partir de `architectureNodes`, `architectureEdges` y `architectureLayout` de `projects.json`. Es el componente más complejo del frontend y está descompuesto en cuatro servicios:
   - `blueprint-layout.service` — valida y normaliza dimensiones de cada nodo.
@@ -63,7 +63,13 @@ Este repositorio contiene el portafolio personal de Juan Barrios, un Backend Dev
   El único color es el `accent` por grupo, en la banda lateral de 3px y en el icono de cada tarjeta. La sigla del grupo aparece en la esquina superior derecha del nodo. Los grupos válidos están en `BLUEPRINT_COLOR_PALETTE.accents`; uno no declarado cae en `default` (tinta blanca).
 
   **Anclaje y trazado de conectores.** Los extremos se anclan siempre al borde del nodo, nunca al centro: `computedConnectors` resuelve primero el lado de cada arista, cuenta cuántas comparten ese lado y reparte los anclajes con `BlueprintPositioningService.portPosition()`. El trazado recibe los nodos intermedios como obstáculos y elige la primera ruta candidata sin cruces. Si hace falta forzar un recorrido concreto, `bendPoints` en la arista del JSON tiene prioridad sobre el cálculo automático.
-- **Tema**: `ThemeService` (`core/services/theme.service.ts`) es la **única fuente de verdad**. Su constructor aplica el atributo `data-theme` en `<html>` y lo persiste en `localStorage` bajo la clave `jeb-theme`. `AppComponent` solo lo inyecta para instanciarlo. Ningún componente debe fijar `data-theme` por su cuenta ni leer `prefers-color-scheme`. Nota: hoy no hay ningún control de UI que llame a `toggleTheme()` — se fue con el navbar —, así que en la práctica la app queda en el tema persistido (dark por defecto).
+- **Tema**: `ThemeService` (`core/services/theme.service.ts`) es la **única fuente de verdad**. Su constructor aplica el atributo `data-theme` en `<html>` y lo persiste en `localStorage` bajo la clave `jeb-theme`. `AppComponent` solo lo inyecta para instanciarlo. Ningún componente debe fijar `data-theme` por su cuenta ni leer `prefers-color-scheme`. El interruptor vive en la barra de actividad del layout tipo VSCode. `e2e/tema.spec.ts` comprueba que cambia y que se recuerda, y ademas que en claro ningun texto de la interfaz baja de AA y que los acentos se quedan dentro de una banda comoda: en el tema claro el problema no fue el contraste minimo sino la saturacion, que pasaba la metrica y se leia peor.
+- **Panel de administración**: `features/admin/`. `admin.css` es el fichero compartido —cabecera de página, estados de carga y vacío, secciones de formulario, barra de guardado— y cada vista lo carga **antes** que el suyo: `styleUrls: ['../../admin.css', './x.component.css']`. Antes ese bloque estaba copiado en las tres fichas y ya había empezado a separarse entre copias.
+
+  **El armazón es su propio contenedor de desplazamiento** (`height: 100dvh; overflow: hidden` en `.dashboard-layout`, y el scroll en `.dashboard-content`). No es una preferencia: `body` lleva `overflow-x: hidden`, eso le fuerza un `overflow-y` computado y lo convierte en contenedor de desplazamiento, con lo que `position: sticky` deja de tener contra qué pegarse. Con el scroll dentro del panel, la barra lateral se queda quieta y la barra de guardado de los formularios —también sticky— pasa a tener un contenedor real. `e2e/panel-admin.spec.ts` sujeta las dos cosas, porque la causa no se ve leyendo el CSS del panel.
+
+  **Los anchos de los campos de PrimeNG se ajustan en `styles/global.css`, no en `admin.css`.** El `<input>` lo dibuja PrimeNG dentro de su propio envoltorio, así que no lleva el atributo de encapsulación del componente y una regla escrita en el CSS de ese componente nunca lo alcanza: no falla, no avisa, simplemente no se aplica.
+
 - **Despliegue**: Vercel (desde raíz del repo). URL producción: `https://portafolio-juan-barrios.vercel.app` (alias de `https://portafolio-juan-barrios-8en5oeoug-1zamuken1.vercel.app`).
 
 ## 3. Backend (Spring Boot 3 - Arquitectura Hexagonal)
@@ -80,24 +86,71 @@ Este repositorio contiene el portafolio personal de Juan Barrios, un Backend Dev
 
 ### Redactor de borradores (Groq)
 
-`POST /api/projects/draft` recibe `{ name, readme }` y devuelve prosa redactada: `shortDescription`, `fullDescription`, las cinco secciones de `readmeMarkdown` y los `challenges`. El panel lo llama desde el formulario de proyecto y vuelca el resultado en los campos.
+Dos endpoints, el mismo caso de uso detrás:
+
+| Ruta | Qué devuelve | Quién la usa |
+|---|---|---|
+| `POST /api/projects/draft` | el borrador entero, de una vez | el contrato simple; `scripts/draft.mjs` y los tests |
+| `POST /api/projects/draft/stream` | NDJSON: una línea por paso mientras ocurre | el panel |
+
+Ambos reciben `{ name, readme }` y devuelven `name`, `shortDescription`, `fullDescription`, las cinco secciones de `readmeMarkdown` y los `challenges`.
+
+**`name` lo redacta el modelo.** Antes había que escribirlo a mano *antes* de poder pedir el borrador, que es un paso manual puesto delante del automático para pedir un dato que casi siempre está en el readme. Ahora, si viene escrito manda el escrito —alguien decidió cómo se llama el proyecto— y si no, sale del texto. El prompt sabe además convertir un identificador de repositorio en un nombre legible: `tsuki-translator` → `Tsuki Translator`.
 
 Cuatro decisiones que conviene no deshacer sin entenderlas:
 
-- **Nunca persiste.** Devuelve un borrador que rellena el formulario; guardar sigue siendo el `POST` o el `PUT` de siempre. Así una respuesta de un modelo no puede entrar sola en la base de datos.
-- **Requiere autenticación**, y no por privacidad del contenido sino porque cada llamada gasta cuota de pago. Dejarlo abierto no sería una fuga, sería una factura.
+- **Nunca persiste.** Devuelve un borrador; guardar sigue siendo el `POST` o el `PUT` de siempre. Así una respuesta de un modelo no puede entrar sola en la base de datos.
+- **Requiere autenticación**, y no por privacidad del contenido sino porque cada llamada gasta cuota de pago. Dejarlo abierto no sería una fuga, sería una factura. Las dos rutas, no solo la primera: tener dos puertas y proteger una es la forma habitual de que la nueva se quede abierta.
 - **Solo genera prosa.** No toca `techStack`, `structuredStack`, `structuredFeatures` ni `rawMetrics`. Las claves de esos campos ya son inconsistentes entre los cuatro proyectos —conviven `Arquitectura` y `Architecture`, `IA` y `Artificial Intelligence`, y tres variantes de «Formatos de exportación»— y un modelo generándolas libremente añadiría una cuarta cada vez. Los iconos son peor: son clases devicon concretas, que no se adivinan, solo se aciertan por casualidad. Tampoco toca los diagramas: colocar nodos sin solapamientos es un problema de layout, no de redacción.
 - **La salida se valida en el caso de uso, no en el adaptador.** Que una descripción corta de 900 caracteres no sirve es una regla del portafolio, no del proveedor. Las cotas salen de medir los cuatro proyectos reales.
 
 Hace falta validar porque el modo objeto JSON garantiza JSON bien formado, no que venga completo. El modo de esquema estricto sí lo garantizaría y los `gpt-oss` lo soportan, pero no se usa: `GROQ_MODEL` es configurable y atar el adaptador a una capacidad que el modelo configurado puede no tener cambiaría un fallo claro por uno raro.
 
-**Groq retira modelos cada pocos meses y el síntoma es un 404 seco.** Ya pasó: el primer defecto fue `llama-3.3-70b-versatile`, retirado el 16 de agosto de 2026 para los planes gratuito y developer. Nadie sigue las notas de versión de Groq, así que esto se descubre cuando se rompe. Tres medidas, en orden de cuánto ahorran:
+#### De dónde sale el readme
+
+Tres vías, y las tres acaban en la misma caja de texto para que haya un único sitio donde mirar lo que se le va a mandar al modelo:
+
+1. Pegado a mano.
+2. **Desde un enlace de GitHub.** La petición sale **del navegador**, no del backend: el readme no es secreto, la API de GitHub manda CORS abierto, y el límite de 60 peticiones por hora es por IP —desde Render lo compartiríamos con lo que haya al lado—. Solo repositorios públicos, sin token; uno privado responde 404 igual que uno inexistente, y el mensaje lo dice junto con la salida.
+3. **Subiendo un `.md`.** Se lee con `FileReader`; el fichero no viaja a ningún sitio.
+
+El parser del enlace vive aparte, en `shared/utils/repo-github.ts`, y **no es una comodidad: es lo que decide a qué host se le pide el readme.** Acepta `github.com` y nada más, compara el origen ya parseado y no la cadena, y devuelve `owner` y `repo` por separado para que la URL de la API se construya en el servicio y no con lo que se haya pegado. Ocho pruebas, la mitad de destinos que no deben pasar.
+
+#### El streaming y la pipeline
+
+`draft/stream` responde **NDJSON**, un objeto JSON por línea, y no SSE: `EventSource` solo hace `GET` y el readme va en el cuerpo, así que meterlo en la URL sería mandar miles de caracteres por el query. El cliente lo lee con `fetch` y un `ReadableStream`.
+
+Las claves de `etapa` son estables porque la interfaz decide por ellas: `entrada`, `modelo`, `texto`, `respuesta`, `parseo`, `validacion`, `fin`, `error`.
+
+**A Groq se le pide la respuesta en streaming** y cada trozo sale como una línea `texto` en cuanto llega. Redactar tarda unos ocho segundos y casi todos son la llamada al modelo: con una sola respuesta al final no hay forma de distinguir «está pensando» de «se colgó». El JSON se sigue parseando **al final y entero** —un objeto a medias no se valida— así que lo que se enseña mientras llega es texto para mirar, no datos para usar.
+
+**El fallo viaja dentro del cuerpo, no en el código de estado.** Para cuando algo falla ya se mandaron los 200 y las cabeceras. La línea de `error` lleva `tipo`, que mantiene la distinción que el 422 y el 503 hacen en el otro endpoint: `invalido` se reintenta revisando la entrada, `nodisponible` solo se espera.
+
+**Si Groq no manda un flujo, se lee de una pieza.** Pedir `stream: true` no obliga a nadie a mandarlo, y el lector de SSE recorrería una respuesta normal entera sin reconocer una línea, acabando en «respondió sin contenido generado» —el mismo tipo de mensaje que ya costó una hora el día que retiraron un modelo—. Se mira la primera línea: si empieza por `data:` es un flujo, y si no, se lee como la respuesta de siempre. Queda un `WARN` en el log, porque que funcione no quita que el streaming esté roto.
+
+#### Lo que ve quien usa el panel
+
+El formulario de proyecto **entra por el redactor** cuando el proyecto es nuevo: son treinta campos en blanco y casi todos los de prosa salen del borrador. Al editar uno que ya existe el panel arranca cerrado.
+
+La pipeline se dibuja como un diagrama: cuatro burbujas en cadena —readme, modelo, JSON, cotas— y colgando de la última las cuatro cosas que salen: nombre, descripciones, caso de estudio y desafíos. Al lado, un panel que cuenta lo del nodo que se esté mirando y que sigue solo al que trabaja mientras no se elija otro.
+
+Tres cosas que sostienen que esto no sea una animación decorativa:
+
+- **Cada cambio viene de una línea que mandó el backend.** No hay temporizadores simulando progreso.
+- **Las burbujas de salida se encienden repartidas por los ocho segundos**, no de golpe al final. El modelo escribe el JSON en el orden en que se le pidió, así que ver aparecer la clave siguiente significa que la anterior se cerró. Es la única suposición del diagrama y está acotada: si el modelo cambiara el orden, lo peor es que una burbuja se encienda tarde; el contenido sale del JSON completo.
+- **Un solo nodo se lleva el fallo.** Puede haber dos trabajando a la vez —el del modelo y el del campo que está saliendo— y marcar los dos pintaba dos burbujas diciendo cada una «aquí es donde se cortó».
+
+`estado-nodo.ts` declara **una sola vez** qué significa cada estado: nombre, glifo, color, glosa y si sigue corriendo. Lo leen tanto la burbuja como el panel, para que no acaben llamando dos cosas distintas al mismo estado, y el mapa es exhaustivo para que un estado nuevo no se pueda añadir sin decidir cómo se lee. De ahí sale también la diferencia entre `espera` y `no-alcanzado`: uno todavía puede ocurrir y el otro ya no, y sin esa distinción un diagrama parado se lee igual que uno que no ha arrancado.
+
+**El borrador no entra solo en el formulario**: queda como propuesta, se ve campo por campo y hay que aceptarla. Antes se volcaba directo, lo cual estaba bien mientras se redactaba sobre un formulario vacío, pero al redactar sobre un proyecto con contenido lo pisaba sin haberlo visto. Al aceptarla, cada campo que escribió la IA queda marcado hasta que lo tocas.
+
+#### Cuando Groq retira un modelo
+
+**Pasa cada pocos meses y el síntoma es un 404 seco.** Ya pasó: el primer defecto fue `llama-3.3-70b-versatile`, retirado el 16 de agosto de 2026 para los planes gratuito y developer. Nadie sigue las notas de versión de Groq, así que esto se descubre cuando se rompe. Tres medidas, en orden de cuánto ahorran:
 
 1. **`GROQ_MODEL` admite una lista separada por comas**, en orden de preferencia. Si el primero está retirado se pasa al siguiente y el botón sigue funcionando; queda un `WARN` en los logs diciendo cuál cayó.
 2. **Si caen todos, el error trae la lista viva.** El adaptador consulta `GET /models` y la incluye en el mensaje, así que no hay que buscar el nombre correcto en ninguna parte.
 3. **El cuerpo del error de Groq siempre viaja en el mensaje.** Ocultarlo —que es lo que hacía al principio— dejaba el 404 indistinguible de una URL mal puesta, y se buscó la causa en la clave y en el despliegue antes que en el modelo. Mismo fallo que el 403 vacío de `/error`. La lista vigente está en https://console.groq.com/docs/deprecations.
-
-Dos fallos distintos, porque la acción de quien usa el panel es distinta: **422** si el borrador no sirve (revisar y reintentar) y **503** si el proveedor no responde (no hay nada que revisar). Si ambos salieran igual el mensaje mentiría, que es justo lo que pasaba cuando todo salía como 403 vacío.
 
 ## 4. Estructura Monorepo
 El repositorio funciona como un monorepo no estricto:
@@ -106,7 +159,7 @@ El repositorio funciona como un monorepo no estricto:
 - Al realizar commits, tener precaución de no romper el build de Vercel (Vercel ignora los cambios en la carpeta `/backend` si se configura correctamente o al detectar que el build script no depende de ella).
 
 ## 5. Reglas de Modificación para Agentes (Guidelines)
-- **Aesthetic First**: Las interfaces deben mantenerse modernas, con paletas oscuras/espaciales, desenfoques de cristal (glassmorphism) y animaciones sutiles.
+- **Aesthetic First**: interfaces modernas, con desenfoques de cristal (glassmorphism) y animaciones sutiles. **Los colores salen siempre de las variables de `styles/theme.css`, nunca escritos a mano**: hay dos temas y un hex suelto solo funciona en uno de los dos. Si hace falta un color que no existe —«salió bien», «salió mal»— se añade el token a los dos bloques del tema antes de usarlo.
 - **No uses placehoders**: Si se necesitan imágenes de prueba, genéralas.
 - Al modificar CSS o componentes de UI, asegúrate de mantener el soporte para interacciones táctiles en móviles y no romper el layout responsivo.
 - En el backend, **NUNCA** mezcles lógica de negocio (dominio) dentro de los controladores o entidades de JPA. Respeta la separación de capas (Hexagonal).
@@ -478,7 +531,11 @@ El backend modela los 28 campos, no solo los 11 de antes. Los que tienen forma d
 pnpm run e2e
 ```
 
-`playwright.config.ts` levanta `ng serve` en el puerto 4212 automáticamente (`reuseExistingServer: true`). Hay tres suites: `e2e/blueprint.spec.ts` (encuadre, solapamientos, carriles y cruces del visor), `e2e/seo.spec.ts` (metadatos por ruta, sobre la app viva) y `e2e/prerender.spec.ts` (el HTML generado por el build, que es lo que ven los rastreadores; se omite si no hay build). Los casos se derivan de `src/assets/data/projects.json`: cualquier proyecto que no sea `Draft` y tenga `architectureNodes` genera un test que comprueba que se renderiza un `.svg-node` por nodo del JSON. No hay ids hardcodeados.
+`playwright.config.ts` levanta `ng serve` en el puerto 4212 automáticamente (`reuseExistingServer: true`). **`ng test` no tiene target en `angular.json`**, así que `e2e/` es también donde viven los tests unitarios del frontend: las funciones puras se importan y se prueban sin navegador, y ese es el patrón a seguir mientras no se monte Karma.
+
+Los casos del visor se derivan de `src/assets/data/projects.json`: cualquier proyecto que no sea `Draft` y tenga `architectureNodes` genera un test que comprueba que se renderiza un `.svg-node` por nodo del JSON. No hay ids hardcodeados.
+
+Las suites del panel (`panel-admin`, `pipeline-borrador`) entran poniendo un token en `localStorage`: el guard solo mira que exista, y esas vistas no piden datos al arrancar, así que se prueban sin backend. `pipeline-borrador` además **simula el NDJSON** del endpoint de redacción con `page.route`, lo que permite comprobar la pipeline entera —incluido el camino de fallo— sin gastar cuota de Groq.
 
 La primera vez hace falta descargar el navegador: `npx playwright install chromium`.
 
@@ -486,14 +543,20 @@ La primera vez hace falta descargar el navegador: `npx playwright install chromi
 
 Se eliminaron `contact`, `navbar`, `footer`, `home`, `hero`, `project-card` y `project-modal`, huérfanos desde el rediseño del layout. Con `contact` se fueron `ConfigService`, la dependencia `@emailjs/browser` y el bloque `emailjs` de los environments — **el formulario de contacto ya no existe**; el contacto son enlaces directos en `about`. `public/config.json` quedó inerte (sigue en `.gitignore`).
 
-`legacy-ring` y `knowledge-pillars` **se conservan** pese a estar huérfanos: ver la nota en la sección 2.
+**`legacy-ring` se borró.** Era la página de «about» entera antes de partirla en tres documentos, y llevaba meses sin ruta. De ella solo se salvó el anillo 3D, que vive ahora en `features/about/stack/anillo-stack/` y se ofrece como conmutador junto a la lista en `/about/stack`. Lo demás eran textos escritos a mano que ya están en `profile.md` y `trayectoria.md`, contadores fijos que llevaban meses sin cuadrar con los datos («20+ Tecnologías», «5 Proyectos») e iconos de Font Awesome, que este sitio ya no carga.
+
+**`knowledge-pillars` sigue huérfano y a propósito.** Solo lo usaba `legacy-ring`. Tiene contenido —«lo que aplico hoy» frente a «lo que estoy incorporando»— que no está en ningún otro sitio, así que merece una decisión y no un borrado de paso. Angular no lo incluye en el bundle al no estar referenciado.
 
 ### Iconos
 
-`devicon` y FontAwesome se cargan por **CDN desde `src/index.html`**, no desde `styles` en `angular.json` (lo que dice el session log de la sección 10 ya no aplica). El paquete npm `devicon` sigue instalado pero no se referencia desde el build.
+**Ya no se cargan por CDN** (lo que dice el session log de la sección 10 no aplica). `scripts/subset-iconos.mjs` recorre los datos **y el código** —hay clases escritas a mano en componentes— y genera una fuente recortada con solo los glifos que se usan; se sirve desde `fonts/iconos.css`, referenciado en `src/index.html`. Las fuentes resultantes se commitean, así que ni CI ni Vercel necesitan Python.
+
+Devicon entero pesaba 777 kB, el 70 % de la portada, para dibujar unas decenas de glifos. `iconos.spec.ts` comprueba que ninguna clase inventada llegue a producción y que la fuente recortada cubra las que se usan.
+
+**Font Awesome no se carga.** Las clases `fa-` que queden en el código son restos; la trayectoria traduce `briefcase`, `code` y `graduation-cap` a PrimeIcons y cualquier otro valor cae al icono por defecto.
 
 ### Deuda técnica conocida
 
 - **`ProjectsComponent`, coreografía scroll ↔ URL**: `isProgrammaticScroll` e `ignoreFragmentUpdate` coordinan con timeouts de 1s el scroll disparado por el fragment y el fragment disparado por ScrollTrigger. Funciona, pero es frágil y depende de temporizadores. Candidato a refactor.
-- **Sin toggle de tema en la UI**: `ThemeService.toggleTheme()` no tiene quien lo llame desde que se borró el navbar.
-- **`environment.useStaticData` no se consulta**: los componentes públicos llaman a `getStatic*()` incondicionalmente, así que en desarrollo tampoco se ve el backend. El flag solo lo usa `legacy-ring`, que está inactivo.
+- **`environment.useStaticData` no se consulta en ningún sitio.** Los componentes públicos llaman a `getStatic*()` incondicionalmente. El único que lo leía era `legacy-ring`, que ya no existe: hoy es configuración muerta y conviene borrarla o darle uso.
+- **`knowledge-pillars` huérfano**, pendiente de decidir (ver arriba).
