@@ -310,28 +310,109 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
 
         long arranque = System.nanoTime();
         boolean[] primero = {true};
-        String completo;
+
+        Consumer<String> porTrozo = trozo -> {
+            if (primero[0]) {
+                primero[0] = false;
+                // El primer token es el dato que separa "el modelo esta
+                // pensando" de "la peticion no ha salido". Sin el, los dos se
+                // ven igual: una pantalla quieta.
+                aviso.avisar("modelo", modelo + " empezo a responder a los "
+                        + segundos((System.nanoTime() - arranque) / 1_000_000));
+            }
+            aviso.avisar("texto", trozo);
+        };
 
         try (BufferedReader lector = new BufferedReader(
                 new InputStreamReader(respuesta.getBody(), StandardCharsets.UTF_8))) {
 
-            completo = ensamblarSse(lector, json, trozo -> {
-                if (primero[0]) {
-                    primero[0] = false;
-                    // El primer token es el dato que separa "el modelo esta
-                    // pensando" de "la peticion no ha salido". Sin el, los dos
-                    // se ven igual: una pantalla quieta.
-                    aviso.avisar("modelo", modelo + " empezo a responder a los "
-                            + segundos((System.nanoTime() - arranque) / 1_000_000));
-                }
-                aviso.avisar("texto", trozo);
-            });
-        }
+            String primera = primeraLineaUtil(lector);
+            if (primera == null) {
+                throw new DrafterNoDisponibleException(
+                        "Groq respondio 200 con el cuerpo vacio. No hay nada que redactar "
+                                + "ni motivo que dar: reintenta, y si se repite mira el estado "
+                                + "del servicio en https://groqstatus.com.");
+            }
 
-        if (completo.isEmpty()) {
-            throw new DrafterNoDisponibleException("Groq respondio sin contenido generado.");
+            // Se mira lo que de verdad llego en vez de dar por hecho que es un
+            // flujo. Pedir stream:true no obliga a nadie a mandarlo: si la
+            // respuesta viene de una pieza, el lector de SSE la recorreria
+            // entera sin reconocer una sola linea y diria "sin contenido
+            // generado", que es exactamente el tipo de mensaje que ya costo una
+            // hora con el modelo retirado.
+            if (primera.startsWith("data:")) {
+                String completo = ensamblarSse(primera, lector, json, porTrozo);
+                if (completo.isEmpty()) {
+                    throw new DrafterNoDisponibleException(
+                            "Groq mando un flujo sin texto dentro: ninguna linea traia "
+                                    + "choices[0].delta.content. La primera fue:\n  "
+                                    + recortar(primera));
+                }
+                return completo;
+            }
+
+            // No era un flujo. Se lee como la respuesta de siempre, que es
+            // formato conocido, y el texto sale de golpe en vez de letra a
+            // letra: peor de ver, pero el borrador se redacta igual. Que el
+            // dibujo sea mas pobre no es motivo para no dar un resultado.
+            log.warn("Groq no respondio en streaming pese a pedirselo; se lee de una pieza. "
+                    + "Primera linea: {}", recortar(primera));
+            return contenidoDeUnaPieza(primera + "\n" + leerResto(lector), json, porTrozo);
         }
-        return completo;
+    }
+
+    /** La primera linea con algo dentro, o null si el cuerpo no traia ninguna. */
+    private static String primeraLineaUtil(BufferedReader lector) throws IOException {
+        String linea;
+        while ((linea = lector.readLine()) != null) {
+            if (!linea.isBlank()) return linea;
+        }
+        return null;
+    }
+
+    private static String leerResto(BufferedReader lector) throws IOException {
+        StringBuilder resto = new StringBuilder();
+        String linea;
+        while ((linea = lector.readLine()) != null) {
+            resto.append(linea).append('\n');
+        }
+        return resto.toString();
+    }
+
+    /**
+     * Saca el texto de una respuesta normal, la que no viene por trozos.
+     *
+     * Lo entrega entero de una vez por el mismo canal que los trozos, para que
+     * quien mira vea aparecer el texto igual --de golpe, eso si-- y el resto del
+     * camino no tenga que enterarse de por donde vino.
+     */
+    static String contenidoDeUnaPieza(String cuerpo, ObjectMapper json, Consumer<String> porTrozo) {
+        try {
+            JsonNode texto = json.readTree(cuerpo)
+                    .path("choices").path(0).path("message").path("content");
+
+            if (texto.isMissingNode() || texto.asText().isBlank()) {
+                throw new DrafterNoDisponibleException(
+                        "La respuesta de Groq no traia texto en choices[0].message.content. "
+                                + "Llego esto:\n  " + recortar(cuerpo));
+            }
+
+            porTrozo.accept(texto.asText());
+            return texto.asText();
+
+        } catch (DrafterNoDisponibleException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new DrafterNoDisponibleException(
+                    "La respuesta de Groq no se pudo leer ni como flujo ni como respuesta "
+                            + "normal. Llego esto:\n  " + recortar(cuerpo), e);
+        }
+    }
+
+    /** Un trozo de texto que quepa en un mensaje de error sin llenar el log. */
+    private static String recortar(String texto) {
+        String limpio = texto == null ? "" : texto.strip();
+        return limpio.length() > 400 ? limpio.substring(0, 400) + "..." : limpio;
     }
 
     /**
@@ -347,13 +428,16 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
      * trozo cada una, separadas por lineas vacias, y una ultima
      * {@code data: [DONE]}.
      */
-    static String ensamblarSse(BufferedReader lector, ObjectMapper json, Consumer<String> porTrozo)
-            throws IOException {
+    static String ensamblarSse(String primeraLinea, BufferedReader lector, ObjectMapper json,
+                               Consumer<String> porTrozo) throws IOException {
 
         StringBuilder completo = new StringBuilder();
-        String linea;
 
-        while ((linea = lector.readLine()) != null) {
+        // La primera linea la lee quien llama, para poder mirar si esto era de
+        // verdad un flujo antes de recorrerlo como tal. Entra aqui igual que las
+        // demas en vez de descartarse: en un flujo corto puede ser la unica que
+        // traiga texto.
+        for (String linea = primeraLinea; linea != null; linea = lector.readLine()) {
             // Lo que no sea data: son lineas en blanco, comentarios de
             // mantenimiento de la conexion y cabeceras de evento. Ninguna trae
             // texto, y tratarlas como si lo trajeran reventaria el parseo.
@@ -366,8 +450,10 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
             String trozo = json.readTree(dato)
                     .path("choices").path(0).path("delta").path("content").asText("");
 
-            // El primer trozo solo trae el rol, y el ultimo solo el motivo de
-            // parada: los dos llegan sin contenido y no son texto.
+            // El primer fragmento solo trae el rol y el ultimo solo el motivo de
+            // parada: los dos llegan sin contenido y no son texto. Los modelos
+            // que razonan mandan ademas fragmentos con el razonamiento en otra
+            // clave, que tampoco es la ficha.
             if (trozo.isEmpty()) continue;
 
             completo.append(trozo);
