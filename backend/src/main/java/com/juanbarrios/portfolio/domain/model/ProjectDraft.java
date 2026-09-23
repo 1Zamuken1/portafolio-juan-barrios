@@ -20,8 +20,15 @@ import java.util.List;
  * concretas que el modelo no puede adivinar, solo acertar por casualidad.
  * Los diagramas tambien quedan fuera: colocar nodos sin solapamientos es un
  * problema de layout, no de redaccion.
+ *
+ * <p>El nombre si entra, aunque no sea prosa. Antes habia que escribirlo a mano
+ * <b>antes</b> de poder redactar, y eso ponia un paso manual delante del
+ * automatico justo cuando el dato ya estaba en el readme. Ademas el titulo de
+ * un repositorio suele venir como identificador --"tsuki-translator"-- y
+ * convertirlo en algo legible es precisamente redactar.
  */
 public record ProjectDraft(
+        String name,
         String shortDescription,
         String fullDescription,
         ReadmeMarkdown readmeMarkdown,

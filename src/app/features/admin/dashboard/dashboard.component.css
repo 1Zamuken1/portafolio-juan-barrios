@@ -1,16 +1,41 @@
 /* ================================================
    Armazón del panel de administración
    ================================================ */
+/* El panel es su propia ventana: ocupa la pantalla y lo que se desplaza es el
+   area de contenido, no el documento.
+
+   Esto no es una preferencia, es la unica forma que funciona aqui. La primera
+   version dejaba correr el documento y pegaba la barra con position: sticky,
+   pero body lleva overflow-x: hidden --que obliga a un overflow-y computado--
+   y eso convierte a body en contenedor de desplazamiento: sticky deja de tener
+   contra que pegarse y la barra se va con la pagina.
+
+   Con el scroll dentro del panel no hace falta pegar nada, y de paso la barra
+   de guardado de los formularios, que tambien es sticky, pasa a tener un
+   contenedor real contra el que quedarse. */
 .dashboard-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   background-color: var(--bg-primary);
 }
 
-/* ---- Barra lateral ---- */
+/* ---- Barra lateral ----
+
+   Se queda quieta, y eso era el problema a resolver. Antes se estiraba con el
+   alto del documento: en la lista de proyectos no se notaba, pero la ficha de
+   un proyecto mide varios miles de pixeles y, como .sidebar-nav lleva flex:1,
+   el aviso de publicar y el boton de salir se iban al fondo de ese documento.
+   La barra parecia otra en cada vista.
+
+   Ahora mide lo que la ventana y tiene su propio desplazamiento, asi que se ve
+   igual en todas: los enlaces arriba y el pie abajo del todo de la pantalla. */
 .sidebar {
   width: 260px;
   flex-shrink: 0;
+  height: 100%;
+  overflow-y: auto;
   background-color: var(--bg-secondary);
   border-right: 1px solid var(--border-subtle);
   display: flex;
@@ -157,11 +182,18 @@
 }
 
 @media (max-width: 860px) {
+  /* Apilada arriba, la pantalla vuelve a ser del documento: dos barras de
+     desplazamiento en un movil son una de mas. */
   .dashboard-layout {
     flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
   }
   .sidebar {
     width: 100%;
+    height: auto;
+    overflow-y: visible;
   }
   .sidebar-nav {
     flex-direction: row;
@@ -172,6 +204,7 @@
     display: none;
   }
   .dashboard-content {
+    overflow-y: visible;
     padding: 1.25rem;
   }
 }

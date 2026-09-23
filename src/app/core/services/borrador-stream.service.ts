@@ -8,6 +8,8 @@ import { ProjectDraft } from '../../shared/models/project.model';
 export type EtapaClave =
   | 'entrada'
   | 'modelo'
+  /** Un trozo del texto que esta escribiendo el modelo, tal cual llega. */
+  | 'texto'
   | 'respuesta'
   | 'parseo'
   | 'validacion'

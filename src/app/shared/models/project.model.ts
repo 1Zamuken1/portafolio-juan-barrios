@@ -59,6 +59,10 @@ export interface Project {
  * Un borrador nunca se guarda solo: rellena el formulario y la persona decide.
  */
 export interface ProjectDraft {
+  /** Lo redacta la IA. Antes habia que escribirlo a mano antes de poder pedir
+   *  el borrador, y era un paso manual delante del automatico para un dato que
+   *  casi siempre esta ya en el readme. */
+  name: string;
   shortDescription: string;
   fullDescription: string;
   readmeMarkdown: {

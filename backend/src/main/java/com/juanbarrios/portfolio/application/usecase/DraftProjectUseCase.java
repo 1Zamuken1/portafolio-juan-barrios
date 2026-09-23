@@ -31,6 +31,11 @@ public class DraftProjectUseCase {
      * formato: una frase suelta donde iba un parrafo, o un ensayo donde iba una
      * linea de tarjeta.
      */
+    /** Cabe en la tarjeta y en el titulo de la ficha. Los cuatro que hay miden
+     *  entre 5 y 14 caracteres; esto deja sitio de sobra sin admitir una frase
+     *  entera donde va un nombre. */
+    private static final int NOMBRE_MAX = 80;
+
     private static final int SHORT_MAX = 200;
     private static final int FULL_MIN = 80;
     private static final int FULL_MAX = 800;
@@ -69,9 +74,11 @@ public class DraftProjectUseCase {
         String nombreLimpio = nombre == null ? "" : nombre.trim();
         String readmeLimpio = readme == null ? "" : readme.trim();
 
-        if (nombreLimpio.isEmpty()) {
-            throw new BorradorInvalidoException("Falta el nombre del proyecto.");
-        }
+        // El nombre ya no se exige a la entrada. Era un paso manual puesto
+        // delante del automatico para pedir un dato que casi siempre esta en el
+        // readme; ahora, si no viene, lo redacta el borrador y se valida a la
+        // salida como cualquier otro campo. Si viene, manda: alguien decidio
+        // como se llama el proyecto.
         if (readmeLimpio.length() < README_MIN) {
             throw new BorradorInvalidoException(
                     "El texto de entrada es demasiado corto (" + readmeLimpio.length()
@@ -84,8 +91,10 @@ public class DraftProjectUseCase {
                             + " caracteres, maximo " + README_MAX + "). Pega solo el readme.");
         }
 
-        aviso.avisar("entrada", "Readme de " + readmeLimpio.length()
-                + " caracteres para \"" + nombreLimpio + "\"");
+        aviso.avisar("entrada", "Readme de " + readmeLimpio.length() + " caracteres"
+                + (nombreLimpio.isEmpty()
+                        ? ", sin nombre: lo saca del texto"
+                        : " para \"" + nombreLimpio + "\""));
 
         ProjectDraft borrador = drafter.draft(nombreLimpio, readmeLimpio, aviso);
 
@@ -104,8 +113,9 @@ public class DraftProjectUseCase {
      * portada.
      */
     private int camposValidados(ProjectDraft b) {
-        // shortDescription, fullDescription y las cinco secciones del readme.
-        return 7 + b.challenges().size() * 2;
+        // name, shortDescription, fullDescription y las cinco secciones del
+        // readme; cada challenge son dos mas.
+        return 8 + b.challenges().size() * 2;
     }
 
     private void validar(ProjectDraft b) {
@@ -113,6 +123,10 @@ public class DraftProjectUseCase {
             throw new BorradorInvalidoException("El redactor no devolvio ningun borrador.");
         }
 
+        // El nombre se comprueba aqui porque desde que dejo de ser obligatorio a
+        // la entrada, este es el unico sitio donde se mira. Un borrador sin
+        // nombre llegaria al formulario con el campo requerido en blanco.
+        exigirTexto(b.name(), "name", 1, NOMBRE_MAX);
         exigirTexto(b.shortDescription(), "shortDescription", 1, SHORT_MAX);
         exigirTexto(b.fullDescription(), "fullDescription", FULL_MIN, FULL_MAX);
 

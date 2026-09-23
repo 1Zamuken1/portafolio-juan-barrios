@@ -57,6 +57,7 @@ class DraftControllerTest {
 
     private static ProjectDraft borradorValido() {
         return new ProjectDraft(
+                "Gastu",
                 "Gestor de finanzas personales construido con Django.",
                 "Una aplicacion que centraliza ingresos, gastos y presupuestos, "
                         + "con informes mensuales y exportacion a varios formatos. "
@@ -109,7 +110,7 @@ class DraftControllerTest {
         // del servidor: quien usa el panel tiene que poder distinguirlo.
         ProjectDraft v = borradorValido();
         given(drafter.draft(anyString(), anyString(), any())).willReturn(new ProjectDraft(
-                v.shortDescription(), v.fullDescription(),
+                v.name(), v.shortDescription(), v.fullDescription(),
                 new ReadmeMarkdown(v.readmeMarkdown().objective(),
                         v.readmeMarkdown().architecture(),
                         v.readmeMarkdown().mainFeatures(),

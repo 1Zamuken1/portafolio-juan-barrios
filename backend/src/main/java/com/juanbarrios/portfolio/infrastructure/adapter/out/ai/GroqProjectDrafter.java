@@ -11,16 +11,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientResponseException;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Adaptador de salida: pide el borrador a Groq.
@@ -138,7 +143,7 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
                         : "Probando " + modelo + ", que es el siguiente de la lista");
 
                 long arranque = System.nanoTime();
-                String contenido = pedirRespuesta(modelo, nombre, readme);
+                String contenido = pedirRespuesta(modelo, nombre, readme, aviso);
                 long tardo = (System.nanoTime() - arranque) / 1_000_000;
 
                 aviso.avisar("respuesta", modelo + " respondio " + contenido.length()
@@ -224,34 +229,70 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
         return ids;
     }
 
-    /** Hace la llamada y devuelve el texto que genero el modelo. */
-    private String pedirRespuesta(String modelo, String nombre, String readme) {
+    /**
+     * Hace la llamada y devuelve el texto que genero el modelo, contandolo
+     * segun llega.
+     *
+     * <p><b>Se pide en streaming.</b> El resultado es el mismo texto que antes;
+     * lo que cambia es que en vez de esperar ocho segundos callados, cada trozo
+     * que manda el modelo sale por {@code aviso} en cuanto llega. Ese es todo
+     * el motivo: ocho segundos sin nada en pantalla no se distinguen de una
+     * conexion colgada.
+     *
+     * <p>El JSON sigue parseandose <b>al final y entero</b>. Un objeto a medias
+     * no se puede validar, asi que lo que se enseina mientras llega es texto
+     * para mirar, no datos para usar. La diferencia importa: nada del
+     * formulario se toca hasta que el borrador completo pasa las cotas.
+     */
+    private String pedirRespuesta(String modelo, String nombre, String readme, AvisoDeEtapa aviso) {
         Map<String, Object> peticion = Map.of(
                 "model", modelo,
                 // Cero temperatura: esto no es escritura creativa, es extraer
                 // lo que ya dice el readme. Cuanto menos invente, mejor.
                 "temperature", 0.2,
                 "response_format", Map.of("type", "json_object"),
+                "stream", true,
                 "messages", java.util.List.of(
                         Map.of("role", "system", "content", DraftPrompt.SISTEMA),
                         Map.of("role", "user", "content", DraftPrompt.usuario(nombre, readme))));
 
-        String cuerpo;
         try {
-            cuerpo = http.post()
+            // exchange() y no retrieve(): hace falta el cuerpo como flujo para
+            // leerlo mientras entra. A cambio, exchange no lanza por si solo
+            // ante un estado de error, asi que el estado se comprueba a mano
+            // dentro --y ese chequeo es el que mantiene viva la deteccion de
+            // modelo retirado--.
+            return http.post()
                     .uri("/chat/completions")
                     .header("Authorization", "Bearer " + apiKey)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(peticion)
-                    .retrieve()
-                    .body(String.class);
-        } catch (RestClientResponseException e) {
-            String respuesta = e.getResponseBodyAsString();
+                    .exchange((peticionHttp, respuesta) -> leerFlujo(modelo, respuesta, aviso));
 
-            // Un modelo retirado no es un fallo del que haya que rendirse:
-            // hay mas en la lista. Se marca para que draft() pruebe el
-            // siguiente.
-            if (esModeloRetirado(e.getStatusCode().value(), respuesta)) {
+        } catch (ModeloRetirado | DrafterNoDisponibleException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new DrafterNoDisponibleException(
+                    "No se pudo contactar con Groq: " + e.getClass().getSimpleName(), e);
+        }
+    }
+
+    /**
+     * Lee la respuesta en streaming de Groq y devuelve el texto completo.
+     *
+     * El formato es el de SSE: lineas {@code data: {...}} con un trozo de texto
+     * cada una, y una ultima {@code data: [DONE]}.
+     */
+    private String leerFlujo(String modelo, ClientHttpResponse respuesta, AvisoDeEtapa aviso)
+            throws IOException {
+
+        int estado = respuesta.getStatusCode().value();
+        if (estado != 200) {
+            String cuerpo = new String(respuesta.getBody().readAllBytes(), StandardCharsets.UTF_8);
+
+            // Un modelo retirado no es un fallo del que haya que rendirse: hay
+            // mas en la lista. Se marca para que draft() pruebe el siguiente.
+            if (esModeloRetirado(estado, cuerpo)) {
                 throw new ModeloRetirado(modelo);
             }
 
@@ -264,27 +305,76 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
             // fallo que el 403 vacio de /error: esconder el motivo hace que
             // cualquier causa se vea igual.
             throw new DrafterNoDisponibleException(
-                    "Groq respondio " + e.getStatusCode().value() + ": "
-                            + pista(e.getStatusCode().value(), respuesta), e);
-        } catch (Exception e) {
-            throw new DrafterNoDisponibleException(
-                    "No se pudo contactar con Groq: " + e.getClass().getSimpleName(), e);
+                    "Groq respondio " + estado + ": " + pista(estado, cuerpo));
         }
 
-        try {
-            JsonNode raiz = json.readTree(cuerpo);
-            JsonNode texto = raiz.path("choices").path(0).path("message").path("content");
-            if (texto.isMissingNode() || texto.asText().isBlank()) {
-                throw new DrafterNoDisponibleException(
-                        "Groq respondio sin contenido generado.");
-            }
-            return texto.asText();
-        } catch (DrafterNoDisponibleException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new DrafterNoDisponibleException(
-                    "La respuesta de Groq no tenia el formato esperado.", e);
+        long arranque = System.nanoTime();
+        boolean[] primero = {true};
+        String completo;
+
+        try (BufferedReader lector = new BufferedReader(
+                new InputStreamReader(respuesta.getBody(), StandardCharsets.UTF_8))) {
+
+            completo = ensamblarSse(lector, json, trozo -> {
+                if (primero[0]) {
+                    primero[0] = false;
+                    // El primer token es el dato que separa "el modelo esta
+                    // pensando" de "la peticion no ha salido". Sin el, los dos
+                    // se ven igual: una pantalla quieta.
+                    aviso.avisar("modelo", modelo + " empezo a responder a los "
+                            + segundos((System.nanoTime() - arranque) / 1_000_000));
+                }
+                aviso.avisar("texto", trozo);
+            });
         }
+
+        if (completo.isEmpty()) {
+            throw new DrafterNoDisponibleException("Groq respondio sin contenido generado.");
+        }
+        return completo;
+    }
+
+    /**
+     * Junta el texto de un flujo SSE y va entregando cada trozo segun aparece.
+     *
+     * <p>Vive aparte, y recibe un lector en vez de una respuesta HTTP, para
+     * poder probarlo con un flujo escrito a mano. Es la pieza nueva y la mas
+     * quisquillosa de todo el adaptador --prefijos, lineas en blanco, el
+     * centinela final, trozos sin contenido-- y la unica forma de comprobarla
+     * sin llamar a Groq de verdad es esta.
+     *
+     * <p>El formato de OpenAI, que Groq copia: lineas {@code data: {...}} con un
+     * trozo cada una, separadas por lineas vacias, y una ultima
+     * {@code data: [DONE]}.
+     */
+    static String ensamblarSse(BufferedReader lector, ObjectMapper json, Consumer<String> porTrozo)
+            throws IOException {
+
+        StringBuilder completo = new StringBuilder();
+        String linea;
+
+        while ((linea = lector.readLine()) != null) {
+            // Lo que no sea data: son lineas en blanco, comentarios de
+            // mantenimiento de la conexion y cabeceras de evento. Ninguna trae
+            // texto, y tratarlas como si lo trajeran reventaria el parseo.
+            if (!linea.startsWith("data:")) continue;
+
+            String dato = linea.substring("data:".length()).trim();
+            if (dato.isEmpty()) continue;
+            if ("[DONE]".equals(dato)) break;
+
+            String trozo = json.readTree(dato)
+                    .path("choices").path(0).path("delta").path("content").asText("");
+
+            // El primer trozo solo trae el rol, y el ultimo solo el motivo de
+            // parada: los dos llegan sin contenido y no son texto.
+            if (trozo.isEmpty()) continue;
+
+            completo.append(trozo);
+            porTrozo.accept(trozo);
+        }
+
+        return completo.toString();
     }
 
     /** Convierte el texto generado en un borrador. */

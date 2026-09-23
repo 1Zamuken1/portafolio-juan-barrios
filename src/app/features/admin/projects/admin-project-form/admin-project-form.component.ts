@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, ElementRef, effect, inject, OnInit, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormArray,
@@ -67,7 +67,7 @@ const PASOS: ReadonlyArray<{ clave: string; titulo: string }> = [
   { clave: 'respuesta', titulo: 'Recibiendo la redaccion' },
   { clave: 'parseo', titulo: 'Interpretando el JSON' },
   { clave: 'validacion', titulo: 'Comprobando las cotas' },
-  { clave: 'volcado', titulo: 'Rellenando el formulario' }
+  { clave: 'propuesta', titulo: 'Preparando la propuesta' }
 ];
 
 // PrimeNG
@@ -135,6 +135,29 @@ export class AdminProjectFormComponent implements OnInit {
    */
   pasos = signal<PasoPipeline[]>([]);
 
+  /**
+   * El texto del borrador segun lo escribe el modelo.
+   *
+   * Es lo unico que de verdad llena los ocho segundos de espera. Los pasos
+   * dicen en que fase va; esto ensenia que hay algo saliendo.
+   */
+  textoModelo = signal('');
+
+  /** Si se ensenia el texto en crudo. Abierto mientras escribe, que es cuando
+   *  sirve de algo; despues se puede plegar porque ya estan los campos. */
+  salidaAbierta = signal(true);
+
+  /**
+   * El borrador terminado, esperando a que lo aceptes.
+   *
+   * No entra en el formulario por su cuenta: al redactar sobre un proyecto que
+   * ya tiene contenido, lo que habia se perdia sin haberlo visto.
+   */
+  propuesta = signal<ProjectDraft | null>(null);
+
+  /** Los campos que escribio el borrador y todavia no has tocado. */
+  rellenados = signal<Set<string>>(new Set());
+
   statusOptions = [
     { label: 'Draft', value: 'Draft' },
     { label: 'Active Development', value: 'Active Development' },
@@ -151,6 +174,19 @@ export class AdminProjectFormComponent implements OnInit {
   private readmeGithub = inject(ReadmeGithubService);
   private borradorStream = inject(BorradorStreamService);
 
+  private salidaCuerpo = viewChild<ElementRef<HTMLElement>>('salidaCuerpo');
+
+  constructor() {
+    // El texto crece por abajo y la caja mide 260px: sin esto se ve el
+    // principio quieto mientras lo interesante --lo que se esta escribiendo
+    // ahora-- pasa fuera de la vista.
+    effect(() => {
+      this.textoModelo();
+      const caja = this.salidaCuerpo()?.nativeElement;
+      if (caja) caja.scrollTop = caja.scrollHeight;
+    });
+  }
+
   ngOnInit(): void {
     this.initForm();
 
@@ -160,6 +196,13 @@ export class AdminProjectFormComponent implements OnInit {
       this.projectId = +id;
       this.loadProject(this.projectId);
     }
+
+    // En un proyecto nuevo, lo primero es el readme. El formulario son treinta
+    // campos en blanco y casi todos los de prosa salen del borrador: empezar
+    // por ahi es empezar por donde hay trabajo hecho. En uno que ya existe el
+    // panel arranca cerrado, porque ahi el contenido ya esta y redactar es la
+    // excepcion.
+    this.panelBorradorAbierto.set(!this.isEditMode);
   }
 
   private initForm(): void {
@@ -337,25 +380,25 @@ export class AdminProjectFormComponent implements OnInit {
   }
 
   redactarBorrador(): void {
+    // El nombre ya no hace falta para empezar. Si esta escrito se manda como
+    // pista y manda sobre lo que diga el readme; si no, el borrador lo redacta.
+    // Exigirlo era poner un paso manual delante del automatico para pedir un
+    // dato que casi siempre esta en el texto de entrada.
     const nombre = (this.form.get('name')?.value ?? '').trim();
     const readme = (this.readmeFuente.value ?? '').trim();
 
-    if (!nombre) {
-      this.avisar('Escribe primero el nombre del proyecto: orienta la redaccion.');
-      return;
-    }
     if (readme.length < README_MINIMO) {
       this.avisar(
         `El readme es muy corto (${readme.length} caracteres, minimo ${README_MINIMO}). ` +
         'Con menos que eso el borrador se lo inventaria casi todo.');
       return;
     }
-    if (this.isEditMode && !confirm(
-      'Esto reemplaza las descripciones, las cinco secciones del readme y los ' +
-      'challenges por lo que redacte el borrador. Los demas campos no se tocan. ' +
-      'Nada se guarda hasta que pulses Guardar. Continuar?')) {
-      return;
-    }
+
+    // Ya no hay confirmacion antes de redactar sobre un proyecto que tiene
+    // contenido: lo que sale no entra solo en el formulario, queda como
+    // propuesta y hay que aceptarla. Preguntar dos veces por lo mismo sobra.
+    this.propuesta.set(null);
+    this.textoModelo.set('');
 
     this.redactando.set(true);
     this.pasos.set(PASOS.map((p, i) => ({
@@ -401,6 +444,13 @@ export class AdminProjectFormComponent implements OnInit {
         this.abrir('modelo', linea.detalle);
         break;
 
+      case 'texto':
+        // Llega letra a letra segun lo escribe el modelo. Se acumula y se
+        // enseina tal cual: es texto para mirar, no datos para usar. Nada de
+        // esto toca el formulario, ni podria: un JSON a medias no se valida.
+        this.textoModelo.update((t) => t + (linea.detalle ?? ''));
+        break;
+
       case 'respuesta':
         this.cerrar('modelo');
         this.cerrar('respuesta', linea.detalle);
@@ -414,11 +464,11 @@ export class AdminProjectFormComponent implements OnInit {
 
       case 'validacion':
         this.cerrar('validacion', linea.detalle);
-        this.abrir('volcado');
+        this.abrir('propuesta');
         break;
 
       case 'fin':
-        this.volcar(linea.borrador);
+        this.proponer(linea.borrador);
         break;
 
       case 'error':
@@ -439,15 +489,38 @@ export class AdminProjectFormComponent implements OnInit {
     }
   }
 
-  /** Vuelca el borrador en el formulario. Sigue sin guardarse nada. */
-  private volcar(borrador?: ProjectDraft): void {
+  /**
+   * Deja el borrador como propuesta. El formulario no se toca todavia.
+   *
+   * Antes se volcaba solo. Eso estaba bien mientras redactar era algo que se
+   * hacia sobre un formulario vacio, pero al redactar sobre un proyecto que ya
+   * tiene contenido, lo que habia se perdia sin haberlo visto. Ahora se ve
+   * primero campo por campo y hay que aceptarlo.
+   */
+  private proponer(borrador?: ProjectDraft): void {
     this.redactando.set(false);
     if (!borrador) {
       this.marcarFallo('El backend termino sin mandar el borrador.');
       return;
     }
 
+    this.propuesta.set(borrador);
+    const campos = 8 + (borrador.challenges ?? []).length * 2;
+    this.cerrar('propuesta', `${campos} campos listos para revisar`);
+  }
+
+  /**
+   * Pasa la propuesta al formulario. Sigue sin guardarse nada.
+   *
+   * Los campos que escribe quedan marcados hasta que los toques o guardes, para
+   * poder distinguir de un vistazo lo redactado de lo que ya habia.
+   */
+  aplicarPropuesta(): void {
+    const borrador = this.propuesta();
+    if (!borrador) return;
+
     this.form.patchValue({
+      name: borrador.name,
       shortDescription: borrador.shortDescription,
       fullDescription: borrador.fullDescription,
       readmeMarkdown: borrador.readmeMarkdown
@@ -457,14 +530,42 @@ export class AdminProjectFormComponent implements OnInit {
     (borrador.challenges ?? []).forEach((c) =>
       this.agregarChallenge(c.title, c.description));
 
-    const campos = 7 + this.challenges.length * 2;
-    this.cerrar('volcado', `${campos} campos rellenados`);
+    this.rellenados.set(new Set([
+      'name', 'shortDescription', 'fullDescription',
+      'objective', 'architecture', 'mainFeatures', 'technologies', 'learnings',
+      'challenges'
+    ]));
+
+    this.propuesta.set(null);
+    this.panelBorradorAbierto.set(false);
 
     this.messageService.add({
       severity: 'success',
-      summary: 'Borrador listo',
-      detail: 'Revisalo antes de guardar. Todavia no se ha guardado nada.',
+      summary: 'Campos rellenados',
+      detail: 'Revisalos y completa el resto. Todavia no se ha guardado nada.',
       life: 6000
+    });
+  }
+
+  /** Tira la propuesta sin tocar el formulario. */
+  descartarPropuesta(): void {
+    this.propuesta.set(null);
+    this.textoModelo.set('');
+    this.pasos.set([]);
+  }
+
+  /** Si un campo lo escribio el borrador y todavia no se ha tocado. */
+  loRellenoLaIa(campo: string): boolean {
+    return this.rellenados().has(campo);
+  }
+
+  /** Al editar un campo deja de ser de la IA: ya es tuyo. */
+  marcarComoMio(campo: string): void {
+    if (!this.rellenados().has(campo)) return;
+    this.rellenados.update((s) => {
+      const copia = new Set(s);
+      copia.delete(campo);
+      return copia;
     });
   }
 
