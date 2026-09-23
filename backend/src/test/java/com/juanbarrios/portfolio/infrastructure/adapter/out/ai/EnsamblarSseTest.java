@@ -27,8 +27,14 @@ class EnsamblarSseTest {
     /** Ejecuta el ensamblado sobre un cuerpo literal y recoge los trozos. */
     private static Resultado ensamblar(String cuerpo) throws Exception {
         List<String> trozos = new ArrayList<>();
-        String texto = GroqProjectDrafter.ensamblarSse(
-                new BufferedReader(new StringReader(cuerpo)), JSON, trozos::add);
+        BufferedReader lector = new BufferedReader(new StringReader(cuerpo));
+
+        // La primera linea la lee quien llama, para mirar si esto era un flujo
+        // antes de recorrerlo como tal; aqui se hace lo mismo.
+        String primera = lector.readLine();
+        while (primera != null && primera.isBlank()) primera = lector.readLine();
+
+        String texto = GroqProjectDrafter.ensamblarSse(primera, lector, JSON, trozos::add);
         return new Resultado(texto, trozos);
     }
 
