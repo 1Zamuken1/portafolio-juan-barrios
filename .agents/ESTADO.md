@@ -2,7 +2,7 @@
 
 > **Qué es este documento.** `AGENTS.md` describe *cómo funciona* el proyecto: arquitectura, convenciones, reglas. Este describe *dónde está* y *qué falta*: el estado de cada pieza, las decisiones tomadas y por qué, lo pendiente y las propuestas aún sin construir.
 >
-> Última actualización: 22 de septiembre de 2026.
+> Última actualización: 23 de septiembre de 2026.
 
 ---
 
@@ -16,39 +16,52 @@
 | Backend | Funcionando | `portafolio-juan-barrios.onrender.com` |
 | Base de datos | **Neon**, sembrada | externa a Render |
 | CI | Verde en cada push y PR | GitHub Actions |
+| Redactor con IA | Funcionando, en streaming | Groq, `openai/gpt-oss-120b` |
 
 ### Ramas
 
-Todo lo publicado pasa por `master` mediante pull request. **Estas ramas ya están fusionadas y se pueden borrar:**
+Todo lo publicado pasa por `master` mediante pull request. Las seis ramas fusionadas que listaba la versión anterior de este documento ya se podaron; hoy quedan tres:
 
 ```
-feat/ai-drafter        feat/enlace-descarga     fix/formulario-grupos-vacios
-fix/iconos-en-codigo   perf/iconos-subconjunto  perf/sin-zonejs
+master   develop   feat/admin-diseno
 ```
 
-`develop` se queda; conviene adelantarla a `master` cuando se descuelgue.
+`develop` sigue descolgada de `master` y conviene adelantarla con `git merge --ff-only master`.
 
 ### Contenido
 
-Los datos viven en `src/assets/data/*.json`: 4 proyectos, 1 experiencia, 18 skills. **Esa es la única copia completa del contenido** — la base de datos es un espejo, no la fuente de verdad. Si la base desaparece, se repuebla con `pnpm run mirror:push`; si el JSON se pierde, no hay de dónde recuperarlo salvo del historial de git.
+Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayectoria, 22 skills en 5 categorías, más `perfil.json` con la cabecera (nombre, titular, especialidad, formación, ubicación, estado laboral y contacto). **Esa es la única copia completa del contenido** — la base de datos es un espejo, no la fuente de verdad. Si la base desaparece, se repuebla con `pnpm run mirror:push`; si el JSON se pierde, no hay de dónde recuperarlo salvo del historial de git.
+
+`perfil.json` no pasa por el backend, a diferencia del resto: son unas pocas cadenas que cambian una vez al año, y montarles modelo, tabla y formulario costaría más que editarlas ahí. `e2e/perfil.spec.ts` comprueba que ninguna de ellas esté además copiada a mano en una plantilla, que es lo que hacía que cambiar el JSON dejara la interfaz diciendo dos cosas distintas.
 
 ### Tests
 
-**Frontend**, 44 tests en siete suites (`pnpm run e2e`):
+**Frontend**, 124 tests en 18 ficheros (`pnpm run e2e`):
 
 | Suite | Qué protege |
 |---|---|
 | `blueprint.spec.ts` | encuadre, solapamientos, carriles y cruces del visor |
+| `blueprint-router.spec.ts` | las reglas del trazado, no solo el resultado |
 | `seo.spec.ts` | metadatos por ruta, sobre la aplicación viva |
 | `prerender.spec.ts` | el HTML generado, que es lo que ven los rastreadores |
+| `sitemap.spec.ts` | que el sitemap salga de los datos y no de una lista a mano |
 | `iconos.spec.ts` | que ninguna clase devicon inventada llegue a producción, y que la fuente recortada cubra las que se usan |
 | `enlaces.spec.ts` | que la ficha ofrezca despliegue o descarga, nunca las dos |
 | `limpiar-vacios.spec.ts` | que el panel no envíe campos vacíos que borren contenido |
 | `zoneless.spec.ts` | que Zone.js no vuelva a colarse en el bundle |
+| `tema.spec.ts` | que el tema claro se recuerde, y que en claro nada baje de AA ni se salga de la banda cómoda |
+| `explorador.spec.ts` | que los enlaces del explorador abran lo que dicen |
+| `perfil.spec.ts` | que los datos de perfil no estén copiados a mano en ninguna plantilla |
+| `coordinador-scroll.spec.ts` | la coordinación entre scroll y URL |
+| `anillo-stack.spec.ts` | que la lista siga siendo lo principal y el anillo un extra que se pide |
+| `repo-github.spec.ts` | a qué host se le pide un readme; la mitad son destinos que **no** deben pasar |
+| `jwt-interceptor.spec.ts` | a qué peticiones se les pega el token; casi todas son destinos que **no** deben llevarlo |
+| `panel-admin.spec.ts` | el armazón del panel: la barra que se quedaba atrás y la de guardado |
+| `pipeline-borrador.spec.ts` | la pipeline entera con el NDJSON simulado, y que el borrador no entre solo en el formulario |
 
-Las cuatro últimas no necesitan navegador: son funciones puras y comprobaciones sobre ficheros. **`ng test` no tiene target en `angular.json`**, así que `e2e/` es también donde viven los tests unitarios del frontend. Funciona bien y es el patrón a seguir mientras no se monte Karma.
+**`ng test` no tiene target en `angular.json`**, así que `e2e/` es también donde viven los tests unitarios del frontend: las funciones puras se importan y se prueban sin navegador. Es el patrón a seguir mientras no se monte Karma. Las suites del panel entran poniendo un token en `localStorage` —el guard solo mira que exista— y `pipeline-borrador` simula el NDJSON con `page.route`, así que se prueban sin backend y sin gastar cuota de Groq.
 
-**Backend**, 11 clases de test (`./mvnw test`):
+**Backend**, 15 clases de test (`./mvnw test`):
 
 | Test | Qué protege |
 |---|---|
@@ -60,11 +73,15 @@ Las cuatro últimas no necesitan navegador: son funciones puras y comprobaciones
 | `DialectoNoFijadoTest` | que cada perfil declare su dialecto |
 | `ErroresVisiblesTest` | que un fallo no salga como 403 |
 | `HealthControllerTest` | que la comprobación de salud no dependa de la base |
-| `DraftProjectUseCaseTest` | que un borrador incompleto no llegue al formulario |
-| `DraftControllerTest` | que no se pueda gastar cuota de Groq sin autenticar |
+| `DraftProjectUseCaseTest` | que un borrador incompleto no llegue al formulario, y que sin nombre se redacte igual |
+| `DraftControllerTest` | que no se pueda gastar cuota de Groq sin autenticar, por **ninguna** de las dos rutas |
 | `GroqProjectDrafterTest` | que una clave sin definir se distinga de un fallo de red |
+| `EnsamblarSseTest` | el lector del flujo: prefijos, líneas de mantenimiento, trozos sin contenido, centinela |
+| `RespuestaDeUnaPiezaTest` | que si Groq no manda un flujo, se lea igual y el error diga qué llegó |
 
 Casi todos nacieron de un fallo real, no de una previsión. Están descritos en el apartado 3.
+
+> ⚠️ **No hay JDK en la máquina donde se ha trabajado la última sesión.** Los cambios de Java se han escrito sin poder compilarlos ni ejecutar sus tests en local: se verifican en CI y, si pasan, en Render. Eso ya costó un despliegue roto (ver apartado 3). Instalar un JDK es la mejora de flujo con mejor relación esfuerzo/beneficio ahora mismo.
 
 ---
 
@@ -81,6 +98,12 @@ Casi todos nacieron de un fallo real, no de una previsión. Están descritos en 
 **La actualización es parcial.** Lo que no llega en la petición se conserva. Protege frente a cualquier cliente incompleto en vez de depender de que cada formulario recuerde enviarlo todo.
 
 **Los iconos se sirven recortados desde el propio sitio, no desde un CDN.** `scripts/subset-iconos.mjs` recorre los datos **y el código** —hay iconos escritos a mano en componentes— y genera una fuente con solo los que se usan. Las fuentes resultantes se commitean, así que ni CI ni Vercel necesitan Python: solo se regenera aquí. Depender de `devicon@latest` significaba que cualquier cambio que publicaran entraba en el sitio sin tocar nada, que es el mismo mecanismo que retiró el modelo de Groq de debajo del redactor.
+
+**El redactor propone, no rellena.** Lo que sale del modelo queda como propuesta y hay que aceptarla campo por campo. Mientras se redactaba sobre formularios vacíos volcarlo directo estaba bien; al redactar sobre un proyecto que ya tiene contenido, lo que había se perdía sin haberlo visto.
+
+**El nombre del proyecto lo redacta el modelo.** Exigirlo a la entrada era un paso manual puesto delante del automático para pedir un dato que casi siempre está en el readme. Si se escribe, manda el escrito.
+
+**A Groq se le pide la respuesta en streaming.** No es adorno: redactar tarda unos ocho segundos y casi todos son la llamada al modelo. Con una sola respuesta al final no hay forma de distinguir «está pensando» de «se colgó», que es exactamente lo que se vio la primera vez que falló.
 
 **`master` solo se actualiza por pull request**, y el PR lo crea y revisa una persona. Cada publicación pasa por un diff revisable, y eso es lo que permitió recuperar el contenido las dos veces que el panel lo borró.
 
@@ -100,6 +123,12 @@ Cinco causas encadenadas costaron una sesión entera. Cada una tapaba a la sigui
 | Modelo de Groq retirado sin aviso | el redactor devolvía 404 y el motivo quedaba oculto | lista de modelos de reserva; el error trae los vivos |
 | La limpieza del formulario solo miraba el primer nivel | se guardó `"live": ""` donde no existía ese campo | `limpiarVacios()` es recursiva |
 | Clases devicon inventadas | huecos en la ficha, sin error en consola | `iconos.spec.ts`, sobre datos **y** código |
+| Un `'
+'` que perdio la barra invertida al generarse el fichero desde un script | el build de Java se paro entero: "illegal line end in character literal". Ninguna prueba del backend llego a correr, asi que no salio como un test rojo sino como el despliegue caido | los literales delicados no se escriben desde un heredoc; hay un verificador de literales sin cerrar en el scratchpad |
+| `body` con `overflow-x: hidden`, que le fuerza un `overflow-y` computado | `position: sticky` deja de tener contra que pegarse: la barra lateral del panel se iba con la pagina, y la de guardado tampoco funcionaba | el panel es su propio contenedor de desplazamiento; `panel-admin.spec.ts` |
+| El `<input>` de PrimeNG no lleva el atributo de encapsulacion del componente que lo usa | «Equipo» y «Orden» dibujaban un campo de 241px en un hueco de 110 y se montaban sobre el de al lado | la regla vive en `styles/global.css`, que si lo alcanza |
+| El lector de SSE daba por hecho que la respuesta seria un flujo | una respuesta de una pieza se recorria entera sin reconocer una linea y salia como «respondio sin contenido generado» | se mira la primera linea y se decide; `RespuestaDeUnaPiezaTest` |
+| `marcarFallo` pintaba en rojo todos los nodos en curso | al cortarse la redaccion salian dos burbujas diciendo cada una «aqui es donde se corto» | un solo nodo se lleva el fallo; el resto pasa a «no se llego» |
 
 Y dos pérdidas de datos desde el panel de administración, ambas recuperadas con `mirror:push` desde el JSON del repositorio.
 
@@ -111,6 +140,11 @@ Y dos pérdidas de datos desde el panel de administración, ambas recuperadas co
 - **Un aviso que nadie lee no protege.** `NG0914` avisaba en cada arranque de que Zone.js sobraba, y llevaba meses ahí entre el ruido del build: 36 kB por visita. Lo que no falla, no se arregla.
 - **Ocultar el detalle de un error lo vuelve indistinguible.** El 404 de un modelo retirado salía como `NotFound` a secas porque el cuerpo se descartaba por precaución. Costó buscar la causa en la clave y en el despliegue antes que en el modelo — el mismo fallo que el 403 vacío de `/error`, repetido en el mismo repositorio que lo documenta.
 - **Un test escrito mirando dónde apareció el fallo hereda ese punto ciego.** El de iconos solo recorría los JSON porque ahí estaban los rotos que se encontraron; el siguiente apareció escrito a mano en un componente.
+- **Sin compilador, lo que se escribe es una hipótesis.** Los cambios de Java de la última sesión salieron sin compilar en local porque no hay JDK en la máquina, y uno tumbó el despliegue por una barra invertida perdida. El verificador de literales que se montó después ayuda, pero no sustituye a `javac`: cubre una clase de error, no todas.
+- **Un arreglo que no se mira no está comprobado.** El primer intento de fijar la barra lateral fue `position: sticky`, y no funcionó. No se vio leyendo el CSS —ahí parecía correcto— sino midiendo la cadena de ancestros en el navegador: la causa estaba en `body`, tres niveles por encima y en otro fichero.
+- **Angular no avisa cuando una regla CSS no alcanza a su objetivo.** La encapsulación añade un atributo a cada selector, y si el elemento lo dibuja una librería no lo lleva: la regla no falla, no se queja, simplemente no se aplica. Ya pasó con el tema claro del blueprint y volvió a pasar con los campos de PrimeNG.
+- **Una prueba intermitente es una prueba mal escrita hasta que se demuestre lo contrario.** Una del panel falló dos veces y las dos se achacó a arrastre de la tanda; era un `count()` sin reintento preguntando antes de que el formulario se repintara.
+- **Si dos cosas pueden estar trabajando a la vez, hay que decidir cuál falla.** Marcar todas las que estuvieran en curso hacía que el diagrama dijera dos veces «aquí se cortó», que es la contradicción que la declaración única de estados existe para impedir.
 
 ---
 
@@ -118,15 +152,18 @@ Y dos pérdidas de datos desde el panel de administración, ambas recuperadas co
 
 ### Inmediato
 
-- **Borrar las seis ramas ya fusionadas** (listadas en el apartado 1).
+- **Instalar un JDK en la máquina de desarrollo.** Sin él, cada cambio del backend sale sin compilar y se verifica en CI o, peor, en Render. Ya costó un despliegue.
+- **Adelantar `develop` a `master`** con `git merge --ff-only master`.
+- **Comprobar si el `.exe` de SGVA Assistant sigue apuntando a `/releases/latest`** después de la próxima publicación.
 
 ### Deuda conocida
 
-- **Tests unitarios del router del visor.** La lógica creció mucho —esquiva obstáculos, reparte carriles, ordena puertos— y solo la cubren tests e2e, que prueban el resultado y no las reglas. `blueprint-path-calculator.spec.ts` lleva meses muerto porque `ng test` no tiene target. **Ya no está bloqueado**: las funciones puras se prueban desde `e2e/` sin navegador, como hacen cuatro suites. Es la deuda más valiosa que queda.
+- **Tests unitarios del router del visor.** La lógica creció mucho —esquiva obstáculos, reparte carriles, ordena puertos—. `blueprint-router.spec.ts` ya cubre parte de las reglas desde `e2e/`, sin navegador; queda el resto.
 - **Coreografía scroll ↔ URL en `ProjectsComponent`.** Dos banderas y temporizadores de 1 s coordinando el scroll y el fragmento. Funciona, pero es el punto más frágil del frontend.
-- **El tema claro solo afecta al visor.** El layout tipo VSCode no tiene variante clara, y `ThemeService.toggleTheme()` no tiene quien lo llame desde que se borró el navbar.
-- **El sitemap se genera a mano.** Al añadir un proyecto hay que acordarse; podría salir de `projects.json`.
-- **El ring 3D sigue inactivo**, conservado por decisión explícita y documentado en `AGENTS.md`. Sus iconos entran en la fuente recortada igual que los demás, para que reactivarlo no exija acordarse de nada.
+- **`knowledge-pillars` está huérfano.** Solo lo usaba `legacy-ring`, que se borró. Tiene contenido —«lo que aplico hoy» frente a «lo que estoy incorporando»— que no está en ningún otro sitio: o vuelve a `profile.md` o se borra, pero merece una decisión.
+- **`environment.useStaticData` no se consulta en ningún sitio.** Su único lector era `legacy-ring`. Hoy es configuración muerta.
+- **El botón de redactar se queda con el foco.** Pulsar Espacio o Enter después vuelve a lanzar la redacción, y cada lanzamiento gasta cuota de Groq. Es comportamiento normal de un botón, pero aquí tiene precio.
+- **La barra de guardado sólo está en las fichas.** Las listas no la necesitan, pero conviene no olvidar que el patrón existe si se añade otra vista con formulario largo.
 
 ### Rendimiento
 
@@ -151,7 +188,10 @@ Lo que queda por mirar, en orden de peso:
 Lo que en su día se discutió aquí y hoy funciona:
 
 - **Publicar desde el panel con menos pasos** — `node scripts/mirror.mjs publish` encadena volcado, commit y push, y muestra el diff pidiendo confirmación antes de commitear. El pull request se mantiene manual a propósito: es el diff que ha salvado el contenido dos veces.
-- **Pipeline de IA para redactar contenido** — construido y en uso. Descrito en `AGENTS.md`, apartado 3.
+- **Pipeline de IA para redactar contenido** — construido y en uso. Descrito en `AGENTS.md`, apartado 3. Hoy además: el readme se trae de un enlace de GitHub o se sube como `.md`, el nombre lo redacta el modelo, la respuesta llega en streaming y el progreso se ve como un diagrama de nodos con un panel de detalle al lado.
+- **Interruptor de tema claro/oscuro** — vive en la barra de actividad del layout. El tema claro se rehízo entero: el problema no era el contraste mínimo sino la saturación, que pasaba la métrica y se leía peor.
+- **El anillo 3D del stack** — estuvo meses huérfano y ahora vive en `/about/stack` como conmutador junto a la lista.
+- **Sitemap generado desde los datos** — `pnpm run sitemap`, con `sitemap.spec.ts` comprobando que no se quede atrás.
 
 Lo que se dejó fuera a propósito y sigue pendiente de decidir:
 
