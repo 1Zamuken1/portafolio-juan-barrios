@@ -219,3 +219,9 @@
   display: flex;
   gap: 0.25rem;
 }
+
+/* Los campos de PrimeNG que no heredan el ancho de su grupo se ajustan en
+   global.css y no aqui. No es capricho: el <input> de verdad lo dibuja PrimeNG,
+   asi que no lleva el atributo de este componente y una regla encapsulada no
+   llega a el. Es la misma trampa que dejo sin pintar el tema claro del
+   blueprint. */

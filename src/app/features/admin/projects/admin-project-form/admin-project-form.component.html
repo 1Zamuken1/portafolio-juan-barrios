@@ -26,10 +26,10 @@
 
   <div class="panel-borrador__cuerpo" *ngIf="panelBorradorAbierto()">
     <p class="panel-borrador__ayuda">
-      Pega el readme del repositorio y se redactaran las descripciones, las cinco
-      secciones del readme y los desafios. <strong>No se guarda nada</strong>: el
-      texto se queda en el formulario para que lo revises. El diagrama, el stack
-      y las metricas no se tocan.
+      De un readme salen el nombre, las descripciones, las cinco secciones del
+      caso de estudio y los desafíos. <strong>No se guarda nada, y tampoco entra
+      solo en el formulario</strong>: lo que redacte queda como propuesta y
+      tienes que aceptarla. El diagrama, el stack y las métricas no se tocan.
     </p>
 
     <!-- Traer el readme sin pegarlo a mano. Las dos vias dejan el texto en el
@@ -66,29 +66,74 @@
     <button pButton type="button" label="Redactar borrador" icon="pi pi-sparkles"
             [loading]="redactando()" (click)="redactarBorrador()"></button>
 
-    <!-- Por donde va. Cada linea la manda el backend al pasar por el paso; no
-         hay ningun temporizador aqui simulando progreso. -->
-    @if (pasos().length) {
-      <ol class="pipeline" aria-live="polite">
-        @for (paso of pasos(); track paso.clave) {
-          <li class="pipeline__paso" [attr.data-estado]="paso.estado">
-            <span class="pipeline__marca" aria-hidden="true">
-              @switch (paso.estado) {
-                @case ('curso')  { <i class="pi pi-spin pi-spinner"></i> }
-                @case ('hecho')  { <i class="pi pi-check"></i> }
-                @case ('fallo')  { <i class="pi pi-times"></i> }
-                @default         { <i class="pi pi-circle"></i> }
-              }
-            </span>
-            <span class="pipeline__texto">
-              <span class="pipeline__titulo">{{ paso.titulo }}</span>
-              @if (paso.detalle) {
-                <span class="pipeline__detalle">{{ paso.detalle }}</span>
-              }
-            </span>
-          </li>
+    <!-- La respuesta del modelo, segun la escribe. Es lo unico que de verdad
+         llena los ocho segundos de espera: los pasos dicen en que fase va,
+         esto ensenia que hay algo saliendo. Es texto para mirar, no datos:
+         nada de aqui toca el formulario. -->
+    @if (textoModelo()) {
+      <div class="salida">
+        <button type="button" class="salida__cabecera"
+                [attr.aria-expanded]="salidaAbierta()"
+                (click)="salidaAbierta.set(!salidaAbierta())">
+          <i class="pi" [class.pi-chevron-down]="salidaAbierta()"
+             [class.pi-chevron-right]="!salidaAbierta()" aria-hidden="true"></i>
+          <span>{{ redactando() ? 'Escribiendo…' : 'Lo que respondió el modelo' }}</span>
+          <span class="salida__medida">{{ textoModelo().length }} car.</span>
+        </button>
+
+        @if (salidaAbierta()) {
+          <pre class="salida__cuerpo" #salidaCuerpo>{{ textoModelo() }}@if (redactando()) {<span class="salida__cursor" aria-hidden="true"></span>}</pre>
         }
-      </ol>
+      </div>
+    }
+
+    <!-- Por donde va, y que va saliendo. Cada cambio viene de una linea que
+         mando el backend; no hay ningun temporizador simulando progreso. -->
+    @if (nodos().length) {
+      <app-pipeline-borrador [nodos]="nodos()" />
+    }
+
+    <!-- La propuesta. No entra sola en el formulario: al redactar sobre un
+         proyecto que ya tiene contenido, lo que habia se perdia sin haberlo
+         visto. Aqui se ve campo por campo y hay que aceptarla. -->
+    @if (propuesta(); as p) {
+      <section class="propuesta" aria-label="Borrador propuesto">
+        <header class="propuesta__cabecera">
+          <span class="propuesta__titulo">
+            <i class="pi pi-sparkles" aria-hidden="true"></i> Propuesta
+          </span>
+          <span class="propuesta__nota">Todavía no ha entrado nada en el formulario.</span>
+        </header>
+
+        <dl class="propuesta__campos">
+          <div><dt>Nombre</dt><dd>{{ p.name }}</dd></div>
+          <div><dt>Descripción corta</dt><dd>{{ p.shortDescription }}</dd></div>
+          <div><dt>Descripción completa</dt><dd>{{ p.fullDescription }}</dd></div>
+          <div><dt>Objetivo</dt><dd>{{ p.readmeMarkdown.objective }}</dd></div>
+          <div><dt>Arquitectura</dt><dd>{{ p.readmeMarkdown.architecture }}</dd></div>
+          <div><dt>Funcionalidades</dt><dd>{{ p.readmeMarkdown.mainFeatures }}</dd></div>
+          <div><dt>Tecnologías</dt><dd>{{ p.readmeMarkdown.technologies }}</dd></div>
+          <div><dt>Aprendizajes</dt><dd>{{ p.readmeMarkdown.learnings }}</dd></div>
+          <div>
+            <dt>Desafíos ({{ p.challenges.length }})</dt>
+            <dd>
+              <ul class="propuesta__lista">
+                @for (c of p.challenges; track c.title) {
+                  <li><strong>{{ c.title }}</strong> — {{ c.description }}</li>
+                }
+              </ul>
+            </dd>
+          </div>
+        </dl>
+
+        <div class="propuesta__acciones">
+          <button pButton type="button" label="Aplicar al formulario" icon="pi pi-check"
+                  (click)="aplicarPropuesta()"></button>
+          <button pButton type="button" label="Descartar" icon="pi pi-times"
+                  class="p-button-text p-button-secondary"
+                  (click)="descartarPropuesta()"></button>
+        </div>
+      </section>
     }
   </div>
 </div>
@@ -100,8 +145,8 @@
 
     <div class="form-row">
       <div class="form-group flex-2">
-        <label for="name">Nombre *</label>
-        <input pInputText id="name" formControlName="name" placeholder="Gastu" />
+        <label for="name">Nombre * @if (loRellenoLaIa('name')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
+        <input pInputText id="name" formControlName="name" (input)="marcarComoMio('name')" placeholder="Gastu" />
       </div>
       <div class="form-group flex-1">
         <label for="slug">Slug</label>
@@ -145,14 +190,14 @@
     <h3 class="form-seccion-titulo">Descripciones</h3>
 
     <div class="form-group">
-      <label for="shortDescription">Descripción corta *</label>
-      <textarea pTextarea id="shortDescription" formControlName="shortDescription" rows="2" placeholder="La frase que se lee en la tarjeta"></textarea>
+      <label for="shortDescription">Descripción corta * @if (loRellenoLaIa('shortDescription')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
+      <textarea pTextarea id="shortDescription" formControlName="shortDescription" (input)="marcarComoMio('shortDescription')" rows="2" placeholder="La frase que se lee en la tarjeta"></textarea>
       <p class="campo-ayuda">Una o dos frases. Es lo único que se ve sin abrir la ficha.</p>
     </div>
 
     <div class="form-group">
-      <label for="fullDescription">Descripción completa</label>
-      <textarea pTextarea id="fullDescription" formControlName="fullDescription" rows="5" placeholder="El detalle que se muestra al abrir la ficha"></textarea>
+      <label for="fullDescription">Descripción completa @if (loRellenoLaIa('fullDescription')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
+      <textarea pTextarea id="fullDescription" formControlName="fullDescription" (input)="marcarComoMio('fullDescription')" rows="5" placeholder="El detalle que se muestra al abrir la ficha"></textarea>
     </div>
   </section>
 
@@ -244,24 +289,24 @@
 
     <div formGroupName="readmeMarkdown">
       <div class="form-group">
-        <label for="rmObjective">Objetivo</label>
-        <textarea pTextarea id="rmObjective" formControlName="objective" rows="3"></textarea>
+        <label for="rmObjective">Objetivo @if (loRellenoLaIa('objective')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
+        <textarea pTextarea id="rmObjective" formControlName="objective" (input)="marcarComoMio('objective')" rows="3"></textarea>
       </div>
       <div class="form-group">
-        <label for="rmArchitecture">Arquitectura</label>
-        <textarea pTextarea id="rmArchitecture" formControlName="architecture" rows="3"></textarea>
+        <label for="rmArchitecture">Arquitectura @if (loRellenoLaIa('architecture')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
+        <textarea pTextarea id="rmArchitecture" formControlName="architecture" (input)="marcarComoMio('architecture')" rows="3"></textarea>
       </div>
       <div class="form-group">
-        <label for="rmMainFeatures">Funcionalidades principales</label>
-        <textarea pTextarea id="rmMainFeatures" formControlName="mainFeatures" rows="3"></textarea>
+        <label for="rmMainFeatures">Funcionalidades principales @if (loRellenoLaIa('mainFeatures')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
+        <textarea pTextarea id="rmMainFeatures" formControlName="mainFeatures" (input)="marcarComoMio('mainFeatures')" rows="3"></textarea>
       </div>
       <div class="form-group">
-        <label for="rmTechnologies">Tecnologías</label>
-        <textarea pTextarea id="rmTechnologies" formControlName="technologies" rows="3"></textarea>
+        <label for="rmTechnologies">Tecnologías @if (loRellenoLaIa('technologies')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
+        <textarea pTextarea id="rmTechnologies" formControlName="technologies" (input)="marcarComoMio('technologies')" rows="3"></textarea>
       </div>
       <div class="form-group">
-        <label for="rmLearnings">Aprendizajes</label>
-        <textarea pTextarea id="rmLearnings" formControlName="learnings" rows="3"></textarea>
+        <label for="rmLearnings">Aprendizajes @if (loRellenoLaIa('learnings')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
+        <textarea pTextarea id="rmLearnings" formControlName="learnings" (input)="marcarComoMio('learnings')" rows="3"></textarea>
       </div>
     </div>
   </section>

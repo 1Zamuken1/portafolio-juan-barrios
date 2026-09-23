@@ -1,0 +1,255 @@
+/* ================================================
+   El diagrama de la redaccion
+   ================================================
+
+   Los colores salen de LECTURA_ESTADO a traves de data-estado, y no se
+   escriben dos veces: si alli se cambia el color de un estado, aqui cambia
+   solo. Es la misma razon por la que el texto de los estados vive en un unico
+   sitio.
+*/
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.lienzo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(230px, 1fr);
+  gap: 1rem;
+  align-items: start;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+}
+
+.diagrama {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* ---- Los caminos ---- */
+.camino {
+  fill: none;
+  stroke: var(--border-default);
+  stroke-width: 1.5;
+  opacity: 0.5;
+}
+
+.camino--recorrido {
+  stroke: var(--estado-ok);
+  opacity: 0.55;
+}
+
+/* Un camino encendido es el que se esta recorriendo ahora. Se mueve porque el
+   movimiento es lo unico que dice "esto sigue vivo" cuando ninguna burbuja ha
+   cambiado todavia: entre que se pide la redaccion y que vuelve pasan ocho
+   segundos en los que, sin esto, no se moveria nada. */
+.camino--activo {
+  stroke: var(--text-accent);
+  stroke-width: 2;
+  opacity: 1;
+  stroke-dasharray: 6 6;
+  animation: fluir 0.6s linear infinite;
+}
+
+@keyframes fluir {
+  to { stroke-dashoffset: -12; }
+}
+
+/* ---- Las burbujas ---- */
+.nodo {
+  cursor: pointer;
+}
+
+.nodo:focus-visible {
+  outline: none;
+}
+
+.nodo:focus-visible .burbuja {
+  stroke: var(--text-accent);
+  stroke-width: 3;
+}
+
+.burbuja {
+  fill: var(--bg-secondary);
+  stroke: var(--border-default);
+  stroke-width: 1.5;
+  transition: stroke 0.25s ease, fill 0.25s ease;
+}
+
+.glifo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 0.95rem;
+  color: var(--text-tertiary);
+}
+
+.rotulo,
+.cronometro {
+  text-anchor: middle;
+  fill: var(--text-tertiary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.rotulo {
+  font-size: 12px;
+}
+
+.cronometro {
+  font-size: 11px;
+  fill: var(--text-accent);
+}
+
+/* El halo late solo mientras el nodo trabaja; el componente lo desmonta en
+   cuanto deja de ser verdad. */
+.halo {
+  fill: none;
+  stroke: var(--text-accent);
+  stroke-width: 1.5;
+  opacity: 0.35;
+  animation: latir 1.4s ease-in-out infinite;
+}
+
+@keyframes latir {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%      { opacity: 0;    transform: scale(1.25); }
+}
+
+/* ---- Cada estado ----
+   Solo destacan el que trabaja y el que fallo. Si destacaran todos no
+   destacaria ninguno, que es el problema que ya dio el blueprint. */
+.nodo[data-estado='curso'] .burbuja {
+  stroke: var(--text-accent);
+  stroke-width: 2.5;
+}
+
+.nodo[data-estado='curso'] .glifo,
+.nodo[data-estado='curso'] .rotulo {
+  color: var(--text-accent);
+  fill: var(--text-primary);
+}
+
+.nodo[data-estado='hecho'] .burbuja {
+  stroke: var(--estado-ok);
+}
+
+.nodo[data-estado='hecho'] .glifo {
+  color: var(--estado-ok);
+}
+
+.nodo[data-estado='hecho'] .rotulo {
+  fill: var(--text-secondary);
+}
+
+.nodo[data-estado='fallo'] .burbuja {
+  stroke: var(--estado-fallo);
+  stroke-width: 2.5;
+}
+
+.nodo[data-estado='fallo'] .glifo,
+.nodo[data-estado='fallo'] .rotulo {
+  color: var(--estado-fallo);
+  fill: var(--estado-fallo);
+}
+
+.nodo[data-estado='espera'] .burbuja,
+.nodo[data-estado='espera'] .glifo,
+.nodo[data-estado='no-alcanzado'] .burbuja,
+.nodo[data-estado='no-alcanzado'] .glifo {
+  opacity: 0.45;
+}
+
+.nodo[data-estado='no-alcanzado'] .rotulo {
+  opacity: 0.45;
+}
+
+.nodo--elegido .burbuja {
+  fill: var(--bg-tertiary);
+}
+
+/* ---- El panel ---- */
+.detalle {
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+}
+
+.detalle__cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.detalle__titulo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.detalle__estado {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+}
+
+.detalle__glosa {
+  margin: 0.6rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+/* Lo que conto el backend al pasar por aqui: que modelo respondio, cuanto
+   tardo, cuantos campos se comprobaron. */
+.detalle__linea {
+  margin: 0.4rem 0 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.detalle__contenido {
+  margin: 0.6rem 0 0;
+  max-height: 180px;
+  overflow: auto;
+  padding: 0.5rem;
+  border-radius: var(--radius-sm, 4px);
+  background: var(--bg-primary);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Quien pidio que no se muevan las cosas no quiere lineas fluyendo ni halos
+   latiendo. El estado se sigue viendo: el color y el glifo no dependen del
+   movimiento. */
+@media (prefers-reduced-motion: reduce) {
+  .camino--activo,
+  .halo {
+    animation: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .lienzo {
+    grid-template-columns: 1fr;
+  }
+}

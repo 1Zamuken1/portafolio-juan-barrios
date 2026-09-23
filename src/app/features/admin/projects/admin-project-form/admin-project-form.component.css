@@ -232,3 +232,176 @@
 .pipeline__paso[data-estado='espera'] .pipeline__titulo {
   opacity: 0.45;
 }
+
+/* ---- La salida del modelo en crudo ----
+   Se ve escribirse. No es adorno: son los unicos ocho segundos de la operacion
+   y sin esto son ocho segundos de pantalla quieta, que por fuera no se
+   distinguen de una conexion colgada. */
+.salida {
+  width: 100%;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+.salida__cabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.8rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.salida__cabecera:hover {
+  background: var(--bg-tertiary);
+}
+
+.salida__medida {
+  margin-left: auto;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+.salida__cuerpo {
+  max-height: 260px;
+  overflow: auto;
+  margin: 0;
+  padding: 0.75rem;
+  border-top: 1px solid var(--border-subtle);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* El cursor solo esta mientras escribe. Un cursor parpadeando sobre un texto
+   que ya termino diria que sigue pasando algo. */
+.salida__cursor {
+  display: inline-block;
+  width: 2px;
+  height: 0.95em;
+  margin-left: 1px;
+  background: var(--text-accent);
+  vertical-align: text-bottom;
+  animation: parpadeo 1s steps(2, start) infinite;
+}
+
+@keyframes parpadeo {
+  to { visibility: hidden; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .salida__cursor { animation: none; }
+}
+
+/* ---- La propuesta ---- */
+.propuesta {
+  width: 100%;
+  border: 1px solid var(--text-accent);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+}
+
+.propuesta__cabecera {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.propuesta__titulo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.propuesta__nota {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.propuesta__campos {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.propuesta__campos > div {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.propuesta__campos > div:last-child {
+  border-bottom: none;
+}
+
+.propuesta__campos dt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.propuesta__campos dd {
+  margin: 0.25rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.propuesta__lista {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.propuesta__lista li {
+  margin-bottom: 0.35rem;
+}
+
+.propuesta__acciones {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ---- El distintivo de lo que escribio la IA ----
+   Dura hasta que tocas el campo. Sin esto, tras aplicar una propuesta no hay
+   forma de saber que parte de la ficha revisaste tu y cual sigue tal cual
+   salio del modelo. */
+.marca-ia {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 1rem;
+  background: var(--bg-tertiary);
+  color: var(--text-accent);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+
+.marca-ia i {
+  font-size: 0.6rem;
+}

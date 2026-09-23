@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, ElementRef, effect, inject, OnInit, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormArray,
@@ -15,6 +15,8 @@ import {
   BorradorStreamService,
   LineaPipeline
 } from '../../../../core/services/borrador-stream.service';
+import { PipelineBorradorComponent } from '../pipeline-borrador/pipeline-borrador.component';
+import { EstadoNodo, NodoPipeline } from '../pipeline-borrador/estado-nodo';
 import { Project, ProjectDraft } from '../../../../shared/models/project.model';
 import { limpiarVacios } from '../../../../shared/utils/limpiar-vacios';
 
@@ -40,34 +42,45 @@ const README_MINIMO = 200;
  *  mega ya no es un readme, y leerlo entero en memoria no tiene sentido. */
 const MARKDOWN_MAXIMO = 512 * 1024;
 
-/** En que estado esta un paso de la pipeline. */
-type EstadoPaso = 'espera' | 'curso' | 'hecho' | 'fallo';
-
-interface PasoPipeline {
-  clave: string;
-  titulo: string;
-  estado: EstadoPaso;
-  /** Lo que conto el backend al pasar por aqui. Vacio hasta que pase. */
-  detalle: string;
-}
+/**
+ * Las burbujas del diagrama, en orden.
+ *
+ * Las cuatro primeras son la cadena: lo que pasa, por donde pasa. Las cuatro
+ * ultimas son lo que sale, y cuelgan de la validacion porque es cuando de
+ * verdad se sabe que un campo sirve.
+ *
+ * Se pintan todas desde el principio, tambien las que no han ocurrido. Una
+ * lista que crece no distingue "va por la tercera" de "se quedo en la
+ * tercera", y lo segundo es justo lo que hay que poder ver.
+ */
+const NODOS: ReadonlyArray<{ clave: string; titulo: string; icono: string }> = [
+  { clave: 'readme', titulo: 'Readme', icono: 'pi pi-file' },
+  { clave: 'modelo', titulo: 'Modelo', icono: 'pi pi-sparkles' },
+  { clave: 'parseo', titulo: 'JSON', icono: 'pi pi-code' },
+  { clave: 'validacion', titulo: 'Cotas', icono: 'pi pi-check-square' },
+  { clave: 'nombre', titulo: 'Nombre', icono: 'pi pi-tag' },
+  { clave: 'descripciones', titulo: 'Descripciones', icono: 'pi pi-align-left' },
+  { clave: 'caso', titulo: 'Caso de estudio', icono: 'pi pi-book' },
+  { clave: 'desafios', titulo: 'Desafios', icono: 'pi pi-flag' }
+];
 
 /**
- * Los pasos, en orden, y con nombre antes de que ocurran.
+ * Cuando se da por cerrado cada campo de la salida.
  *
- * Se pintan todos desde el principio y no segun van llegando: asi se ve cuanto
- * queda, y sobre todo se ve donde se paro cuando algo falla. Una lista que
- * crece no distingue "va por el tercero" de "se quedo en el tercero".
+ * El modelo escribe el JSON en el orden en que se le pidio, asi que ver
+ * aparecer la clave siguiente significa que la anterior ya se cerro. Eso deja
+ * que las burbujas de salida se enciendan repartidas por los ocho segundos de
+ * la llamada, en vez de las cuatro de golpe al final.
  *
- * Las claves son las que manda el backend. El titulo es lo que se espera que
- * pase; el detalle, que llega despues, es lo que paso de verdad.
+ * Es la unica suposicion de todo el diagrama, y esta acotada a proposito: si
+ * algun dia el modelo escribiera los campos en otro orden, lo peor que pasa es
+ * que una burbuja se encienda tarde. Los datos no salen de aqui, salen del JSON
+ * completo cuando termina.
  */
-const PASOS: ReadonlyArray<{ clave: string; titulo: string }> = [
-  { clave: 'entrada', titulo: 'Leyendo el readme' },
-  { clave: 'modelo', titulo: 'Consultando al modelo' },
-  { clave: 'respuesta', titulo: 'Recibiendo la redaccion' },
-  { clave: 'parseo', titulo: 'Interpretando el JSON' },
-  { clave: 'validacion', titulo: 'Comprobando las cotas' },
-  { clave: 'volcado', titulo: 'Rellenando el formulario' }
+const CIERRA_CON: ReadonlyArray<{ clave: string; marca: string }> = [
+  { clave: 'nombre', marca: '"shortDescription"' },
+  { clave: 'descripciones', marca: '"readmeMarkdown"' },
+  { clave: 'caso', marca: '"challenges"' }
 ];
 
 // PrimeNG
@@ -90,7 +103,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
     ButtonModule,
     SelectModule,
     ToastModule,
-    InputNumberModule
+    InputNumberModule,
+    PipelineBorradorComponent
   ],
   providers: [MessageService],
   templateUrl: './admin-project-form.component.html',
@@ -133,7 +147,30 @@ export class AdminProjectFormComponent implements OnInit {
    * dato que solo se conoce ahi --que modelo respondio, si hubo que bajar al de
    * reserva, cuanto tardo--.
    */
-  pasos = signal<PasoPipeline[]>([]);
+  nodos = signal<NodoPipeline[]>([]);
+
+  /**
+   * El texto del borrador segun lo escribe el modelo.
+   *
+   * Es lo unico que de verdad llena los ocho segundos de espera. Los pasos
+   * dicen en que fase va; esto ensenia que hay algo saliendo.
+   */
+  textoModelo = signal('');
+
+  /** Si se ensenia el texto en crudo. Abierto mientras escribe, que es cuando
+   *  sirve de algo; despues se puede plegar porque ya estan los campos. */
+  salidaAbierta = signal(true);
+
+  /**
+   * El borrador terminado, esperando a que lo aceptes.
+   *
+   * No entra en el formulario por su cuenta: al redactar sobre un proyecto que
+   * ya tiene contenido, lo que habia se perdia sin haberlo visto.
+   */
+  propuesta = signal<ProjectDraft | null>(null);
+
+  /** Los campos que escribio el borrador y todavia no has tocado. */
+  rellenados = signal<Set<string>>(new Set());
 
   statusOptions = [
     { label: 'Draft', value: 'Draft' },
@@ -151,6 +188,19 @@ export class AdminProjectFormComponent implements OnInit {
   private readmeGithub = inject(ReadmeGithubService);
   private borradorStream = inject(BorradorStreamService);
 
+  private salidaCuerpo = viewChild<ElementRef<HTMLElement>>('salidaCuerpo');
+
+  constructor() {
+    // El texto crece por abajo y la caja mide 260px: sin esto se ve el
+    // principio quieto mientras lo interesante --lo que se esta escribiendo
+    // ahora-- pasa fuera de la vista.
+    effect(() => {
+      this.textoModelo();
+      const caja = this.salidaCuerpo()?.nativeElement;
+      if (caja) caja.scrollTop = caja.scrollHeight;
+    });
+  }
+
   ngOnInit(): void {
     this.initForm();
 
@@ -160,6 +210,13 @@ export class AdminProjectFormComponent implements OnInit {
       this.projectId = +id;
       this.loadProject(this.projectId);
     }
+
+    // En un proyecto nuevo, lo primero es el readme. El formulario son treinta
+    // campos en blanco y casi todos los de prosa salen del borrador: empezar
+    // por ahi es empezar por donde hay trabajo hecho. En uno que ya existe el
+    // panel arranca cerrado, porque ahi el contenido ya esta y redactar es la
+    // excepcion.
+    this.panelBorradorAbierto.set(!this.isEditMode);
   }
 
   private initForm(): void {
@@ -337,33 +394,34 @@ export class AdminProjectFormComponent implements OnInit {
   }
 
   redactarBorrador(): void {
+    // El nombre ya no hace falta para empezar. Si esta escrito se manda como
+    // pista y manda sobre lo que diga el readme; si no, el borrador lo redacta.
+    // Exigirlo era poner un paso manual delante del automatico para pedir un
+    // dato que casi siempre esta en el texto de entrada.
     const nombre = (this.form.get('name')?.value ?? '').trim();
     const readme = (this.readmeFuente.value ?? '').trim();
 
-    if (!nombre) {
-      this.avisar('Escribe primero el nombre del proyecto: orienta la redaccion.');
-      return;
-    }
     if (readme.length < README_MINIMO) {
       this.avisar(
         `El readme es muy corto (${readme.length} caracteres, minimo ${README_MINIMO}). ` +
         'Con menos que eso el borrador se lo inventaria casi todo.');
       return;
     }
-    if (this.isEditMode && !confirm(
-      'Esto reemplaza las descripciones, las cinco secciones del readme y los ' +
-      'challenges por lo que redacte el borrador. Los demas campos no se tocan. ' +
-      'Nada se guarda hasta que pulses Guardar. Continuar?')) {
-      return;
-    }
+
+    // Ya no hay confirmacion antes de redactar sobre un proyecto que tiene
+    // contenido: lo que sale no entra solo en el formulario, queda como
+    // propuesta y hay que aceptarla. Preguntar dos veces por lo mismo sobra.
+    this.propuesta.set(null);
+    this.textoModelo.set('');
 
     this.redactando.set(true);
-    this.pasos.set(PASOS.map((p, i) => ({
-      ...p,
+    this.nodos.set(NODOS.map((n, i) => ({
+      ...n,
       // El primero arranca en curso: el backend no manda un aviso de "he
       // empezado", manda uno por cada paso terminado.
       estado: i === 0 ? 'curso' : 'espera',
-      detalle: ''
+      detalle: '',
+      desde: i === 0 ? Date.now() : undefined
     })));
 
     this.borradorStream.redactar(nombre, readme).subscribe({
@@ -393,7 +451,7 @@ export class AdminProjectFormComponent implements OnInit {
   private avanzar(linea: LineaPipeline): void {
     switch (linea.etapa) {
       case 'entrada':
-        this.cerrar('entrada', linea.detalle);
+        this.cerrar('readme', linea.detalle);
         this.abrir('modelo');
         break;
 
@@ -401,9 +459,19 @@ export class AdminProjectFormComponent implements OnInit {
         this.abrir('modelo', linea.detalle);
         break;
 
+      case 'texto':
+        // Llega letra a letra segun lo escribe el modelo. Se acumula y se
+        // enseina tal cual: es texto para mirar, no datos para usar. Nada de
+        // esto toca el formulario, ni podria: un JSON a medias no se valida.
+        this.textoModelo.update((t) => t + (linea.detalle ?? ''));
+        this.revisarSalidas();
+        break;
+
       case 'respuesta':
-        this.cerrar('modelo');
-        this.cerrar('respuesta', linea.detalle);
+        this.cerrar('modelo', linea.detalle);
+        // El modelo dejo de escribir, asi que lo ultimo que quedaba abierto ya
+        // esta cerrado tambien.
+        this.cerrar('desafios');
         this.abrir('parseo');
         break;
 
@@ -414,11 +482,10 @@ export class AdminProjectFormComponent implements OnInit {
 
       case 'validacion':
         this.cerrar('validacion', linea.detalle);
-        this.abrir('volcado');
         break;
 
       case 'fin':
-        this.volcar(linea.borrador);
+        this.proponer(linea.borrador);
         break;
 
       case 'error':
@@ -439,15 +506,96 @@ export class AdminProjectFormComponent implements OnInit {
     }
   }
 
-  /** Vuelca el borrador en el formulario. Sigue sin guardarse nada. */
-  private volcar(borrador?: ProjectDraft): void {
+  /**
+   * Enciende las burbujas de salida segun el modelo va cerrando cada campo.
+   *
+   * Escribe el JSON en el orden en que se le pidio, asi que ver aparecer la
+   * clave siguiente significa que la anterior se cerro. Es la unica suposicion
+   * del diagrama y esta acotada: si el modelo cambiara el orden, lo peor es que
+   * una burbuja se encienda tarde. El contenido de verdad llega al final, con
+   * el JSON entero.
+   */
+  private revisarSalidas(): void {
+    const texto = this.textoModelo();
+
+    // En cuanto hay una letra, el modelo esta escribiendo el primer campo.
+    this.abrirSiEspera('nombre');
+
+    for (let i = 0; i < CIERRA_CON.length; i++) {
+      if (!texto.includes(CIERRA_CON[i].marca)) break;
+
+      this.cerrar(CIERRA_CON[i].clave);
+      // Ver la clave siguiente significa que la anterior se cerro y que esta
+      // acaba de empezar. El ultimo de la cadena no tiene ninguna detras: lo
+      // cierra el final del flujo, en 'respuesta'.
+      this.abrirSiEspera(CIERRA_CON[i + 1]?.clave ?? 'desafios');
+    }
+  }
+
+  /**
+   * Abre un nodo solo si todavia no habia pasado por el.
+   *
+   * Se llama en cada trozo de texto que llega, y sin esta guarda un nodo ya
+   * terminado volveria a ponerse en marcha con cada letra posterior.
+   */
+  private abrirSiEspera(clave: string): void {
+    if (this.nodos().find((n) => n.clave === clave)?.estado === 'espera') {
+      this.abrir(clave);
+    }
+  }
+
+  /**
+   * Deja el borrador como propuesta. El formulario no se toca todavia.
+   *
+   * Antes se volcaba solo. Eso estaba bien mientras redactar era algo que se
+   * hacia sobre un formulario vacio, pero al redactar sobre un proyecto que ya
+   * tiene contenido, lo que habia se perdia sin haberlo visto. Ahora se ve
+   * primero campo por campo y hay que aceptarlo.
+   */
+  private proponer(borrador?: ProjectDraft): void {
     this.redactando.set(false);
     if (!borrador) {
       this.marcarFallo('El backend termino sin mandar el borrador.');
       return;
     }
 
+    this.propuesta.set(borrador);
+
+    // Ahora que esta el JSON entero, cada burbuja de salida puede ensenar lo
+    // que de verdad le toco. Hasta aqui solo se sabia que ya estaba escrito,
+    // no que decia: un objeto a medias no se puede leer.
+    const r = borrador.readmeMarkdown;
+    const parrafos = (partes: string[]) => partes.join('\n\n');
+
+    this.cerrar('nombre', 'El nombre del proyecto', borrador.name);
+
+    this.cerrar('descripciones', 'La de la tarjeta y la de la ficha',
+      parrafos([borrador.shortDescription, borrador.fullDescription]));
+
+    this.cerrar('caso', 'Las cinco secciones del readme', parrafos([
+      `Objetivo\n${r.objective}`,
+      `Arquitectura\n${r.architecture}`,
+      `Funcionalidades\n${r.mainFeatures}`,
+      `Tecnologias\n${r.technologies}`,
+      `Aprendizajes\n${r.learnings}`
+    ]));
+
+    this.cerrar('desafios', `${borrador.challenges.length} problemas tecnicos`,
+      parrafos(borrador.challenges.map((c) => `${c.title}\n${c.description}`)));
+  }
+
+  /**
+   * Pasa la propuesta al formulario. Sigue sin guardarse nada.
+   *
+   * Los campos que escribe quedan marcados hasta que los toques o guardes, para
+   * poder distinguir de un vistazo lo redactado de lo que ya habia.
+   */
+  aplicarPropuesta(): void {
+    const borrador = this.propuesta();
+    if (!borrador) return;
+
     this.form.patchValue({
+      name: borrador.name,
       shortDescription: borrador.shortDescription,
       fullDescription: borrador.fullDescription,
       readmeMarkdown: borrador.readmeMarkdown
@@ -457,14 +605,42 @@ export class AdminProjectFormComponent implements OnInit {
     (borrador.challenges ?? []).forEach((c) =>
       this.agregarChallenge(c.title, c.description));
 
-    const campos = 7 + this.challenges.length * 2;
-    this.cerrar('volcado', `${campos} campos rellenados`);
+    this.rellenados.set(new Set([
+      'name', 'shortDescription', 'fullDescription',
+      'objective', 'architecture', 'mainFeatures', 'technologies', 'learnings',
+      'challenges'
+    ]));
+
+    this.propuesta.set(null);
+    this.panelBorradorAbierto.set(false);
 
     this.messageService.add({
       severity: 'success',
-      summary: 'Borrador listo',
-      detail: 'Revisalo antes de guardar. Todavia no se ha guardado nada.',
+      summary: 'Campos rellenados',
+      detail: 'Revisalos y completa el resto. Todavia no se ha guardado nada.',
       life: 6000
+    });
+  }
+
+  /** Tira la propuesta sin tocar el formulario. */
+  descartarPropuesta(): void {
+    this.propuesta.set(null);
+    this.textoModelo.set('');
+    this.nodos.set([]);
+  }
+
+  /** Si un campo lo escribio el borrador y todavia no se ha tocado. */
+  loRellenoLaIa(campo: string): boolean {
+    return this.rellenados().has(campo);
+  }
+
+  /** Al editar un campo deja de ser de la IA: ya es tuyo. */
+  marcarComoMio(campo: string): void {
+    if (!this.rellenados().has(campo)) return;
+    this.rellenados.update((s) => {
+      const copia = new Set(s);
+      copia.delete(campo);
+      return copia;
     });
   }
 
@@ -472,21 +648,47 @@ export class AdminProjectFormComponent implements OnInit {
     this.cambiar(clave, 'curso', detalle);
   }
 
-  private cerrar(clave: string, detalle?: string): void {
-    this.cambiar(clave, 'hecho', detalle);
+  private cerrar(clave: string, detalle?: string, contenido?: string): void {
+    this.cambiar(clave, 'hecho', detalle, contenido);
   }
 
-  /** El paso que estuviera en curso se queda marcado: ahi fue donde se paro. */
+  /**
+   * El nodo que estuviera trabajando se queda marcado: ahi fue donde se paro.
+   *
+   * Y lo que venia detras pasa a "no se llego", que no es lo mismo que "sin
+   * empezar": uno todavia podia ocurrir y el otro ya no. Sin esa diferencia, un
+   * diagrama parado se lee igual que uno que no ha arrancado.
+   */
   private marcarFallo(detalle: string): void {
-    this.pasos.update((pasos) => pasos.map((p) =>
-      p.estado === 'curso' ? { ...p, estado: 'fallo' as EstadoPaso, detalle } : p));
+    this.nodos.update((nodos) => {
+      let roto = false;
+      return nodos.map((n) => {
+        if (n.estado === 'curso') {
+          roto = true;
+          return { ...n, estado: 'fallo' as EstadoNodo, detalle, desde: undefined };
+        }
+        if (roto && n.estado === 'espera') {
+          return { ...n, estado: 'no-alcanzado' as EstadoNodo };
+        }
+        return n;
+      });
+    });
   }
 
-  private cambiar(clave: string, estado: EstadoPaso, detalle?: string): void {
-    this.pasos.update((pasos) => pasos.map((p) =>
-      p.clave === clave
-        ? { ...p, estado, detalle: detalle ?? p.detalle }
-        : p));
+  private cambiar(clave: string, estado: EstadoNodo, detalle?: string, contenido?: string): void {
+    this.nodos.update((nodos) => nodos.map((n) =>
+      n.clave === clave
+        ? {
+            ...n,
+            estado,
+            detalle: detalle ?? n.detalle,
+            contenido: contenido ?? n.contenido,
+            // El cronometro arranca al entrar y desaparece al salir: un
+            // contador subiendo al lado de algo terminado diria que sigue
+            // trabajando.
+            desde: estado === 'curso' ? (n.desde ?? Date.now()) : undefined
+          }
+        : n));
   }
 
   private avisar(detalle: string): void {
