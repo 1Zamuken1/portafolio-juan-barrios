@@ -9,7 +9,7 @@ Skills en `.agents/skills/` que este agente debe cargar según la tarea:
 
 ### Frontend (Angular 22)
 - `angular-developer` — Official Angular skill (Angular 22, Standalone, Signals, Zoneless)
-- `primeng-developer` — PrimeNG component library (v21.x)
+- `primeng-developer` — PrimeNG component library (v21.x). El tema del panel está en `core/tema/preset-panel.ts`.
 - `ui-craft` — Design discipline: jerarquía, spacing, color, profundidad
 
 ### Backend (Spring Boot 3 - Hexagonal)
@@ -68,7 +68,18 @@ Este repositorio contiene el portafolio personal de Juan Barrios, un Backend Dev
 
   **El armazón es su propio contenedor de desplazamiento** (`height: 100dvh; overflow: hidden` en `.dashboard-layout`, y el scroll en `.dashboard-content`). No es una preferencia: `body` lleva `overflow-x: hidden`, eso le fuerza un `overflow-y` computado y lo convierte en contenedor de desplazamiento, con lo que `position: sticky` deja de tener contra qué pegarse. Con el scroll dentro del panel, la barra lateral se queda quieta y la barra de guardado de los formularios —también sticky— pasa a tener un contenedor real. `e2e/panel-admin.spec.ts` sujeta las dos cosas, porque la causa no se ve leyendo el CSS del panel.
 
-  **Los anchos de los campos de PrimeNG se ajustan en `styles/global.css`, no en `admin.css`.** El `<input>` lo dibuja PrimeNG dentro de su propio envoltorio, así que no lleva el atributo de encapsulación del componente y una regla escrita en el CSS de ese componente nunca lo alcanza: no falla, no avisa, simplemente no se aplica.
+  **El tema del panel es PrimeNG llevado a Material sobre vidrio, en tres ficheros:**
+
+  - `core/tema/preset-panel.ts` — el preset de PrimeNG (parte de Aura). Dice qué pieza toma qué papel: campos, superficies, capas flotantes, pestañas con barra de tinta, botones en pastilla, radios más redondos. **Los colores no están ahí**: cada token apunta a una variable `--admin-*`. La única excepción son las escalas `surface`, que PrimeNG necesita como colores concretos para derivar otros.
+  - `styles/admin-tema.css` — los valores, por tema. En oscuro es Shades of Purple, la misma paleta que el editor del sitio. **Los `--admin-*`, `--vidrio*`, `--liquido-*` y `--elev-*` se declaran en la raíz (`[data-theme]`) y no dentro de `.admin-app`**, y no es por gusto: PrimeNG declara sus `--p-*` en `:root`, y una variable que referencia a otra se resuelve donde se declara. Si estos tokens vivieran solo dentro del panel, en `:root` no existirían y PrimeNG se quedaría sin color. Tienen nombres que el sitio no usa, así que no le afectan. Lo que sí se acota a `.admin-app` son los tokens compartidos (`--bg-*`, `--text-*`, `--border-*`, `--estado-*`).
+  - `styles/admin-primeng.css` — lo que un token no alcanza: el desenfoque del vidrio, los campos que crecen, el botón de la IA (`styleClass="boton-ia"`), la marca de lo que escribió la IA. Es global por la trampa de siempre: el HTML de dentro de un componente de PrimeNG no lleva el atributo de encapsulación de la vista, y una regla escrita en el CSS de esa vista no lo alcanza. Lo que es de una sola vista va con `:host ::ng-deep`.
+
+  **En el panel no queda HTML interactivo nativo**: botones, campos, desplegables, números, pestañas, el selector de tema y la subida del `.md` son de PrimeNG. Los campos van en `p-floatlabel variant="in"` (el «relleno» de Material, con la etiqueta dentro). Dos cosas que conviene saber:
+
+  - **Un campo dentro de `p-floatlabel` no lleva `placeholder`.** PrimeNG sube la etiqueta en cuanto hay uno, y el ejemplo se leía como un valor escrito («gastu-django» en un slug vacío). Los formatos que importan van en la ayuda de debajo.
+  - **Las áreas crecen con su texto** con `field-sizing: content` y, donde no existe, con la directiva `appCrecerConTexto` (`features/admin/crecer-con-texto.directive.ts`). No se usa el `autoResize` de PrimeNG: mide al montar, y la ficha se rellena con el paso 2 oculto; un textarea oculto mide cero y se quedaba plano al aparecer.
+
+  Los avisos y la confirmación son uno para todo el panel: `MessageService` y `ConfirmationService` se proveen en el armazón, con su `<p-toast>` y su `<p-confirmdialog>`, y las vistas los heredan porque se crean dentro de su `router-outlet`. La confirmación de borrar pone el foco en Cancelar (`defaultFocus: 'reject'`).
 
 - **Despliegue**: Vercel (desde raíz del repo). URL producción: `https://portafolio-juan-barrios.vercel.app` (alias de `https://portafolio-juan-barrios-8en5oeoug-1zamuken1.vercel.app`).
 
@@ -137,7 +148,7 @@ El primer paso vive en `redactor-borrador/` y es de arriba abajo:
 1. **La fuente**: el enlace de GitHub, subir un `.md` —o soltarlo encima del editor— y el editor `README.md`, que es lo único que se manda. Se pliega al redactar.
 2. **El escenario**, que está desde el principio y no cambia de forma, solo se llena: a la izquierda la pipeline en vertical (`pipeline-borrador/`), a la derecha la ficha pública en pequeño (`vista-ficha/`), y debajo una barra de acciones que dice en cada momento qué se puede hacer. El diseño anterior montaba y desmontaba cajas según avanzaba, y eso era lo que se veía saltar.
 
-La pipeline es una **línea de montaje**: cuatro estaciones —readme, modelo, JSON, cotas— unidas por un conducto por el que baja un pulso en el tramo que se está recorriendo. Cada estación enseña algo propio y verdadero en vez de un icono genérico: el readme, cuántas letras trae; el **modelo**, que es la estación grande, un borde que gira mientras trabaja y un espectro dibujado con las últimas letras escritas (los espacios bajos, cada letra con su altura), y dentro las cuatro salidas como cartuchos que se llenan hacia el tamaño que pide el prompt; el JSON, sus claves encendiéndose según se cierran los campos; las cotas, una marca por campo comprobado. Pulsar un cartucho lleva la vista previa hasta su parte. Cada estación y cada cartucho siguen siendo un `.nodo` con `data-estado` y un `aria-label` que empieza por su nombre, que es el contrato de los tests.
+La pipeline es un **circuito de líquido**: cuatro estaciones —readme, modelo, JSON, cotas— que son vasos de vidrio casi transparente unidos por tubos. El líquido sale del readme, baja por el tubo que se está recorriendo y va llenando cada estación mientras trabaja; **una estación llena es una estación terminada** (`nivel()` en el componente: el modelo se llena al ritmo de lo que llevan escrito sus salidas, el resto sube a la mitad y se llena al acabar). Si una falla, tiembla, se agrieta y se vacía, con gotas saliendo por abajo. El líquido va detrás del texto y es translúcido, para que se lea igual lleno que vacío. El modelo lleva además un filo de luz que gira mientras trabaja, el espectro de las últimas letras escritas, y sus cuatro salidas como viales redondos que se llenan —sin caja: los «rectángulos dentro de rectángulos» fueron lo primero que hubo que quitar—. Pulsar un vial lleva la vista previa hasta su parte. Cada estación y cada vial siguen siendo un `.nodo` con `data-estado` y un `aria-label` que empieza por su nombre, que es el contrato de los tests.
 
 **La vista previa se escribe letra a letra.** `shared/utils/json-parcial.ts` lee el JSON a medias —devuelve lo leído, qué cadenas ya vieron su comilla de cierre y cuál se estaba escribiendo— y la ficha pone cada campo en su sitio con un cursor en el que está saliendo. Lo que se enseña así **es para mirar, no para guardar**: lo que se acepta sigue siendo el borrador que el backend manda entero y validado en la línea `fin`.
 
