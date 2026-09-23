@@ -23,7 +23,9 @@
       <span class="badge badge-python"><i class="devicon-python-plain" aria-hidden="true"></i> Python</span>
       <span class="badge badge-angular"><i class="devicon-angularjs-plain" aria-hidden="true"></i> Angular</span>
       <span class="badge badge-docker"><i class="devicon-docker-plain" aria-hidden="true"></i> Docker</span>
-      <span class="badge badge-available"><i class="pi pi-circle-fill" aria-hidden="true"></i> Software Developer @ SEK</span>
+      @if (perfil()?.estadoVisible) {
+        <span class="badge badge-available"><i class="pi pi-circle-fill" aria-hidden="true"></i> {{ perfil()!.estado }}</span>
+      }
     </div>
     <div class="md-line md-blank"></div>
 
@@ -177,13 +179,13 @@
     </div>
     <div class="md-line md-blank"></div>
     <div class="md-line links-row">
-      <a href="https://github.com/1Zamuken1" target="_blank" rel="noopener noreferrer" class="md-link">
+      <a [href]="perfil()?.github" target="_blank" rel="noopener noreferrer" class="md-link">
         <i class="pi pi-github"></i> GitHub
       </a>
-      <a href="https://www.linkedin.com/in/juan-barrios-a8a651274/" target="_blank" rel="noopener noreferrer" class="md-link">
+      <a [href]="perfil()?.linkedin" target="_blank" rel="noopener noreferrer" class="md-link">
         <i class="pi pi-linkedin"></i> LinkedIn
       </a>
-      <a href="mailto:juanbarrios072@gmail.com" class="md-link">
+      <a [href]="'mailto:' + (perfil()?.correo ?? '')" class="md-link">
         <i class="pi pi-envelope"></i> Email
       </a>
       <a routerLink="/contact" class="md-link md-link-primary">

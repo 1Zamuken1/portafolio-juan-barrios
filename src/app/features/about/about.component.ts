@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { DataService } from '../../core/services/data.service';
 import { SeoService } from '../../core/services/seo.service';
 import { Project } from '../../shared/models/project.model';
+import { Perfil } from '../../shared/models/perfil.model';
 import { DocumentoBase } from './documento-base';
 
 /**
@@ -32,6 +33,9 @@ export class AboutComponent extends DocumentoBase implements OnInit {
 
   projects = signal<Project[]>([]);
 
+  /** Cabecera del perfil, en src/assets/data/perfil.json. */
+  perfil = signal<Perfil | null>(null);
+
   ngOnInit(): void {
     this.seo.update({
       title: 'Sobre mí',
@@ -39,6 +43,8 @@ export class AboutComponent extends DocumentoBase implements OnInit {
       path: '/about',
       type: 'profile'
     });
+
+    this.dataService.getStaticPerfil().subscribe(p => this.perfil.set(p));
 
     this.dataService.getStaticProjects().subscribe(datos => {
       this.projects.set(datos.filter(p => p.status !== 'Draft'));

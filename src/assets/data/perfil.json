@@ -1,0 +1,14 @@
+{
+  "nombre": "Juan Barrios",
+  "titular": "Software Developer",
+  "especialidad": "Java & Spring Boot",
+  "formacion": "Tecnólogo en Análisis y Desarrollo de Software — SENA",
+  "ubicacion": "Bogotá, Colombia",
+
+  "estado": "En etapa productiva",
+  "estadoVisible": true,
+
+  "correo": "juanbarrios072@gmail.com",
+  "github": "https://github.com/1Zamuken1",
+  "linkedin": "https://www.linkedin.com/in/juan-barrios-a8a651274/"
+}

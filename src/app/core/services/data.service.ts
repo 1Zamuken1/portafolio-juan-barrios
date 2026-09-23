@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, map } from 'rxjs';
 import { Project, ProjectDraft } from '../../shared/models/project.model';
+import { Perfil } from '../../shared/models/perfil.model';
 import { Experience } from '../../shared/models/experience.model';
 import { AdminSkill, SkillCategory, Skill } from '../../shared/models/skill.model';
 import { environment } from '../../../environments/environment';
@@ -12,6 +13,7 @@ import { environment } from '../../../environments/environment';
 import projectsData from '../../../assets/data/projects.json';
 import experiencesData from '../../../assets/data/experiences.json';
 import skillsData from '../../../assets/data/skills.json';
+import perfilData from '../../../assets/data/perfil.json';
 
 @Injectable({ providedIn: 'root' })
 export class DataService {
@@ -21,6 +23,17 @@ export class DataService {
   // ═══════════════════════════════════════════
   //  STATIC DATA (JSON from assets — for production mirror)
   // ═══════════════════════════════════════════
+
+  /**
+   * Los datos de cabecera del perfil: titulo, ubicacion y estado laboral.
+   *
+   * No pasan por el backend como el resto. Son cinco cadenas que cambian una
+   * vez al ano; montarles un modelo, una tabla y un formulario costaria mas
+   * que editarlas aqui, y el sitio publico las leeria igual desde este fichero.
+   */
+  getStaticPerfil(): Observable<Perfil> {
+    return of(perfilData as Perfil);
+  }
 
   getStaticProjects(): Observable<Project[]> {
     return of(projectsData as unknown as Project[]);

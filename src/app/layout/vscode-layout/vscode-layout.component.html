@@ -251,10 +251,12 @@
           <span class="status-item hide-mobile">Angular 22</span>
           <span class="status-item hide-mobile">UTF-8</span>
           <span class="status-item hide-mobile">TypeScript</span>
-          <span class="status-item status-available">
-            <span class="availability-dot"></span>
-            Abierto a oportunidades
-          </span>
+          @if (perfil()?.estadoVisible) {
+            <span class="status-item status-available">
+              <span class="availability-dot"></span>
+              {{ perfil()!.estado }}
+            </span>
+          }
         </div>
       </footer>
 
@@ -274,16 +276,18 @@
         </div>
       </div>
       <div class="profile-panel-body">
-        <div class="profile-status">
-          <span class="availability-dot"></span>
-          <span>Abierto a oportunidades</span>
-        </div>
+        @if (perfil()?.estadoVisible) {
+          <div class="profile-status">
+            <span class="availability-dot"></span>
+            <span>{{ perfil()!.estado }}</span>
+          </div>
+        }
         <div class="profile-links">
-          <a href="https://github.com/1Zamuken1" target="_blank" rel="noopener noreferrer" class="profile-link">
+          <a [href]="perfil()?.github" target="_blank" rel="noopener noreferrer" class="profile-link">
             <i class="pi pi-github"></i>
             GitHub
           </a>
-          <a href="https://www.linkedin.com/in/juan-barrios-a8a651274/" target="_blank" rel="noopener noreferrer" class="profile-link">
+          <a [href]="perfil()?.linkedin" target="_blank" rel="noopener noreferrer" class="profile-link">
             <i class="pi pi-linkedin"></i>
             LinkedIn
           </a>

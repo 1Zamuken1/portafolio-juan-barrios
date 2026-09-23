@@ -9,30 +9,34 @@
 
   <div class="doc-body markdown-body" #cuerpo>
 
-    <!-- 1. Presentación -->
-    <h1>Juan Barrios</h1>
-    <h3 class="subtitle">Software Developer | Java &amp; Spring Boot</h3>
+    <!-- 1. Presentación. Sale de perfil.json: estas mismas cadenas estaban
+         escritas a mano aqui, en la portada y en la barra de estado, y tres
+         de ellas se quedaron desactualizadas durante meses. -->
+    @if (perfil(); as p) {
+      <h1>{{ p.nombre }}</h1>
+      <h3 class="subtitle">{{ p.titular }} | {{ p.especialidad }}</h3>
 
-    <p>Tecnólogo en Análisis y Desarrollo de Software — SENA</p>
+      <p>{{ p.formacion }}</p>
 
-    <p class="location-badge">
-      <i class="pi pi-map-marker"></i> Bogotá, Colombia
-    </p>
+      <p class="location-badge">
+        <i class="pi pi-map-marker"></i> {{ p.ubicacion }}
+      </p>
 
-    <div class="contact-links-inline">
-      <a href="https://github.com/1Zamuken1" target="_blank" class="contact-link">
-        <i class="pi pi-github"></i>
-        <span>GitHub</span>
-      </a>
-      <a href="https://www.linkedin.com/in/juan-barrios-a8a651274/" target="_blank" class="contact-link">
-        <i class="pi pi-linkedin"></i>
-        <span>LinkedIn</span>
-      </a>
-      <a href="mailto:juanbarrios072@gmail.com" class="contact-link">
-        <i class="pi pi-envelope"></i>
-        <span>Email</span>
-      </a>
-    </div>
+      <div class="contact-links-inline">
+        <a [href]="p.github" target="_blank" class="contact-link">
+          <i class="pi pi-github"></i>
+          <span>GitHub</span>
+        </a>
+        <a [href]="p.linkedin" target="_blank" class="contact-link">
+          <i class="pi pi-linkedin"></i>
+          <span>LinkedIn</span>
+        </a>
+        <a [href]="'mailto:' + p.correo" class="contact-link">
+          <i class="pi pi-envelope"></i>
+          <span>Email</span>
+        </a>
+      </div>
+    }
 
     <!-- 2. Sobre mí -->
     <h2 id="sobre-mi">Sobre mí</h2>
@@ -84,11 +88,13 @@
     <!-- 6. Contacto -->
     <h2 id="contacto">Contacto</h2>
     <p>Estoy disponible para proyectos y oportunidades relacionadas con el desarrollo de software.</p>
-    <ul>
-      <li><a href="mailto:juanbarrios072@gmail.com">juanbarrios072@gmail.com</a></li>
-      <li>LinkedIn: <a href="https://www.linkedin.com/in/juan-barrios-a8a651274/" target="_blank">juan-barrios</a></li>
-      <li>GitHub: <a href="https://github.com/1Zamuken1" target="_blank">1Zamuken1</a></li>
-    </ul>
+    @if (perfil(); as p) {
+      <ul>
+        <li><a [href]="'mailto:' + p.correo">{{ p.correo }}</a></li>
+        <li>LinkedIn: <a [href]="p.linkedin" target="_blank">juan-barrios</a></li>
+        <li>GitHub: <a [href]="p.github" target="_blank">1Zamuken1</a></li>
+      </ul>
+    }
 
     <!-- Continuidad entre los tres documentos del perfil. Es lo que hace
          cualquier sitio de documentacion: encadena la lectura sin fingir que

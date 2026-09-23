@@ -4,6 +4,7 @@ import { Router, RouterOutlet, RouterLink, NavigationEnd, ActivatedRoute } from 
 import { ThemeService } from '../../core/services/theme.service';
 import { DataService } from '../../core/services/data.service';
 import { Project } from '../../shared/models/project.model';
+import { Perfil } from '../../shared/models/perfil.model';
 import { filter, Subscription } from 'rxjs';
 interface EditorTab {
   id: string;
@@ -74,6 +75,9 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
    * no tenia un solo uso en todo el proyecto desde que se quito el navbar.
    */
   protected tema = inject(ThemeService);
+
+  /** Cabecera del perfil, en src/assets/data/perfil.json. */
+  protected perfil = signal<Perfil | null>(null);
   private routerSub?: Subscription;
   private fragmentSub?: Subscription;
 
@@ -158,6 +162,8 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.dataService.getStaticPerfil().subscribe(p => this.perfil.set(p));
+
     // En movil el explorer es un panel flotante y arranca cerrado, para no
     // comerse el area del editor.
     if (this.isBrowser) {
