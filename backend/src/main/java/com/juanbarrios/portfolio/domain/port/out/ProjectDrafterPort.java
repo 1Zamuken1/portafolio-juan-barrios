@@ -14,8 +14,21 @@ public interface ProjectDrafterPort {
     /**
      * @param nombre nombre del proyecto, para orientar la redaccion
      * @param readme texto fuente del que se extrae el contenido
+     * @param aviso  por donde va la redaccion; ver {@link AvisoDeEtapa}
      * @return el borrador tal como lo devolvio el proveedor, sin validar
      * @throws DrafterNoDisponibleException si no se pudo obtener respuesta
      */
-    ProjectDraft draft(String nombre, String readme);
+    ProjectDraft draft(String nombre, String readme, AvisoDeEtapa aviso);
+
+    /**
+     * Redacta sin avisar de nada.
+     *
+     * El metodo con avisos es el que hay que implementar, y este es el atajo, y
+     * no al reves. Si el atajo fuera el obligatorio, una implementacion podria
+     * ignorar los avisos sin enterarse y el panel se quedaria mudo sin que nada
+     * lo dijera.
+     */
+    default ProjectDraft draft(String nombre, String readme) {
+        return draft(nombre, readme, AvisoDeEtapa.NINGUNO);
+    }
 }

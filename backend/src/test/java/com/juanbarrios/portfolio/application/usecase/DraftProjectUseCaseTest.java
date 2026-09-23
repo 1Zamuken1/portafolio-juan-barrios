@@ -57,7 +57,7 @@ class DraftProjectUseCaseTest {
 
     /** Puerto de mentira: devuelve lo que se le diga, sin salir a la red. */
     private static DraftProjectUseCase conRespuesta(ProjectDraft respuesta) {
-        return new DraftProjectUseCase((nombre, readme) -> respuesta);
+        return new DraftProjectUseCase((nombre, readme, aviso) -> respuesta);
     }
 
     @Test
@@ -146,7 +146,7 @@ class DraftProjectUseCaseTest {
     @DisplayName("un readme demasiado corto se rechaza sin llegar a llamar al redactor")
     void seRechazaUnReadmeCortoSinLlamar() {
         boolean[] llamado = {false};
-        DraftProjectUseCase caso = new DraftProjectUseCase((nombre, readme) -> {
+        DraftProjectUseCase caso = new DraftProjectUseCase((nombre, readme, aviso) -> {
             llamado[0] = true;
             return borradorValido();
         });
@@ -168,7 +168,7 @@ class DraftProjectUseCaseTest {
         // Son dos situaciones distintas para quien usa el panel: un borrador
         // invalido se reintenta o se mejora el readme; un proveedor caido no
         // tiene nada que revisar. Si ambas salieran igual, el mensaje mentiria.
-        DraftProjectUseCase caso = new DraftProjectUseCase((nombre, readme) -> {
+        DraftProjectUseCase caso = new DraftProjectUseCase((nombre, readme, aviso) -> {
             throw new DrafterNoDisponibleException("Groq no responde");
         });
 

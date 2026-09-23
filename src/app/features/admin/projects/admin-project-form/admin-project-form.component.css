@@ -131,3 +131,104 @@
   opacity: 0;
   pointer-events: none;
 }
+
+/* ---- La pipeline ----
+   Los seis pasos se pintan desde el principio, incluso los que no han pasado
+   todavia. Una lista que crece no distingue "va por el tercero" de "se quedo
+   en el tercero", y lo segundo es justo lo que hay que poder ver. */
+.pipeline {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.pipeline__paso {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.4rem 0;
+  position: relative;
+}
+
+/* La linea que une un paso con el siguiente. Sale del centro de la marca. */
+.pipeline__paso:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 0.6rem;
+  top: 1.5rem;
+  bottom: -0.15rem;
+  width: 1px;
+  background: var(--border-subtle);
+}
+
+.pipeline__marca {
+  flex-shrink: 0;
+  width: 1.2rem;
+  height: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.15rem;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  background: var(--bg-secondary);
+  border-radius: 50%;
+  position: relative;
+  z-index: 1;
+}
+
+.pipeline__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.pipeline__titulo {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+}
+
+/* El dato que solo se conoce en ese momento: que modelo respondio, cuanto
+   tardo, cuantos campos se comprobaron. */
+.pipeline__detalle {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+  opacity: 0.85;
+  overflow-wrap: anywhere;
+}
+
+/* Solo el paso en curso y el que fallo destacan. Si destacaran todos no
+   destacaria ninguno, que es el problema que ya dio el blueprint. */
+.pipeline__paso[data-estado='curso'] .pipeline__titulo {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.pipeline__paso[data-estado='curso'] .pipeline__marca {
+  color: var(--text-accent);
+}
+
+.pipeline__paso[data-estado='hecho'] .pipeline__marca {
+  color: var(--estado-ok);
+}
+
+.pipeline__paso[data-estado='fallo'] .pipeline__marca {
+  color: var(--estado-fallo);
+}
+
+.pipeline__paso[data-estado='fallo'] .pipeline__titulo,
+.pipeline__paso[data-estado='fallo'] .pipeline__detalle {
+  color: var(--estado-fallo);
+  opacity: 1;
+}
+
+.pipeline__paso[data-estado='espera'] .pipeline__marca,
+.pipeline__paso[data-estado='espera'] .pipeline__titulo {
+  opacity: 0.45;
+}

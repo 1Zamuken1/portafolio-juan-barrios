@@ -65,6 +65,31 @@
 
     <button pButton type="button" label="Redactar borrador" icon="pi pi-sparkles"
             [loading]="redactando()" (click)="redactarBorrador()"></button>
+
+    <!-- Por donde va. Cada linea la manda el backend al pasar por el paso; no
+         hay ningun temporizador aqui simulando progreso. -->
+    @if (pasos().length) {
+      <ol class="pipeline" aria-live="polite">
+        @for (paso of pasos(); track paso.clave) {
+          <li class="pipeline__paso" [attr.data-estado]="paso.estado">
+            <span class="pipeline__marca" aria-hidden="true">
+              @switch (paso.estado) {
+                @case ('curso')  { <i class="pi pi-spin pi-spinner"></i> }
+                @case ('hecho')  { <i class="pi pi-check"></i> }
+                @case ('fallo')  { <i class="pi pi-times"></i> }
+                @default         { <i class="pi pi-circle"></i> }
+              }
+            </span>
+            <span class="pipeline__texto">
+              <span class="pipeline__titulo">{{ paso.titulo }}</span>
+              @if (paso.detalle) {
+                <span class="pipeline__detalle">{{ paso.detalle }}</span>
+              }
+            </span>
+          </li>
+        }
+      </ol>
+    }
   </div>
 </div>
 

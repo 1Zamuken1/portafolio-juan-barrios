@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, map } from 'rxjs';
-import { Project, ProjectDraft } from '../../shared/models/project.model';
+import { Project } from '../../shared/models/project.model';
 import { Perfil } from '../../shared/models/perfil.model';
 import { Experience } from '../../shared/models/experience.model';
 import { AdminSkill, SkillCategory, Skill } from '../../shared/models/skill.model';
@@ -92,17 +92,11 @@ export class DataService {
     return this.http.delete<void>(`${this.apiUrl}/projects/${id}`);
   }
 
-  /**
-   * Pide un borrador redactado a partir de un readme.
-   *
-   * No guarda nada: devuelve texto para rellenar el formulario, y de ahi sigue
-   * el camino normal de guardado. La clave de la API vive en el backend, que es
-   * el unico sitio donde puede vivir: el panel es Angular compilado y todo lo
-   * que llevara dentro seria publico.
-   */
-  draftProject(name: string, readme: string): Observable<ProjectDraft> {
-    return this.http.post<ProjectDraft>(`${this.apiUrl}/projects/draft`, { name, readme });
-  }
+  // El borrador ya no se pide desde aqui: BorradorStreamService va contra
+  // /projects/draft/stream, que cuenta por donde va mientras redacta. El
+  // endpoint de una sola respuesta sigue en el backend, con sus pruebas, porque
+  // es el contrato simple y no depende de que el navegador sepa leer un cuerpo
+  // a trozos.
 
   // ═══════════════════════════════════════════
   //  EXPERIENCES

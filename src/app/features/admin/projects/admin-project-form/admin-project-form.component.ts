@@ -11,7 +11,11 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../../../core/services/data.service';
 import { ReadmeGithubService } from '../../../../core/services/readme-github.service';
-import { Project } from '../../../../shared/models/project.model';
+import {
+  BorradorStreamService,
+  LineaPipeline
+} from '../../../../core/services/borrador-stream.service';
+import { Project, ProjectDraft } from '../../../../shared/models/project.model';
 import { limpiarVacios } from '../../../../shared/utils/limpiar-vacios';
 
 /** Lista -> texto, una entrada por linea. */
@@ -35,6 +39,36 @@ const README_MINIMO = 200;
 /** Tope para el fichero que se sube. Un readme largo ronda los 20 kB; medio
  *  mega ya no es un readme, y leerlo entero en memoria no tiene sentido. */
 const MARKDOWN_MAXIMO = 512 * 1024;
+
+/** En que estado esta un paso de la pipeline. */
+type EstadoPaso = 'espera' | 'curso' | 'hecho' | 'fallo';
+
+interface PasoPipeline {
+  clave: string;
+  titulo: string;
+  estado: EstadoPaso;
+  /** Lo que conto el backend al pasar por aqui. Vacio hasta que pase. */
+  detalle: string;
+}
+
+/**
+ * Los pasos, en orden, y con nombre antes de que ocurran.
+ *
+ * Se pintan todos desde el principio y no segun van llegando: asi se ve cuanto
+ * queda, y sobre todo se ve donde se paro cuando algo falla. Una lista que
+ * crece no distingue "va por el tercero" de "se quedo en el tercero".
+ *
+ * Las claves son las que manda el backend. El titulo es lo que se espera que
+ * pase; el detalle, que llega despues, es lo que paso de verdad.
+ */
+const PASOS: ReadonlyArray<{ clave: string; titulo: string }> = [
+  { clave: 'entrada', titulo: 'Leyendo el readme' },
+  { clave: 'modelo', titulo: 'Consultando al modelo' },
+  { clave: 'respuesta', titulo: 'Recibiendo la redaccion' },
+  { clave: 'parseo', titulo: 'Interpretando el JSON' },
+  { clave: 'validacion', titulo: 'Comprobando las cotas' },
+  { clave: 'volcado', titulo: 'Rellenando el formulario' }
+];
 
 // PrimeNG
 import { InputTextModule } from 'primeng/inputtext';
@@ -89,6 +123,18 @@ export class AdminProjectFormComponent implements OnInit {
   enlaceRepo = new FormControl('');
   trayendo = signal(false);
 
+  /**
+   * Por donde va la redaccion.
+   *
+   * Redactar tarda unos ocho segundos y casi todos son la llamada al modelo.
+   * Con solo un boton girando no hay forma de distinguir "esta pensando" de
+   * "se colgo", y cuando falla el motivo llega al final y de golpe. Esto no es
+   * una animacion: cada linea la manda el backend al pasar por el paso, con el
+   * dato que solo se conoce ahi --que modelo respondio, si hubo que bajar al de
+   * reserva, cuanto tardo--.
+   */
+  pasos = signal<PasoPipeline[]>([]);
+
   statusOptions = [
     { label: 'Draft', value: 'Draft' },
     { label: 'Active Development', value: 'Active Development' },
@@ -103,6 +149,7 @@ export class AdminProjectFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private messageService = inject(MessageService);
   private readmeGithub = inject(ReadmeGithubService);
+  private borradorStream = inject(BorradorStreamService);
 
   ngOnInit(): void {
     this.initForm();
@@ -311,41 +358,135 @@ export class AdminProjectFormComponent implements OnInit {
     }
 
     this.redactando.set(true);
-    this.dataService.draftProject(nombre, readme).subscribe({
-      next: (borrador) => {
-        this.form.patchValue({
-          shortDescription: borrador.shortDescription,
-          fullDescription: borrador.fullDescription,
-          readmeMarkdown: borrador.readmeMarkdown
-        });
+    this.pasos.set(PASOS.map((p, i) => ({
+      ...p,
+      // El primero arranca en curso: el backend no manda un aviso de "he
+      // empezado", manda uno por cada paso terminado.
+      estado: i === 0 ? 'curso' : 'espera',
+      detalle: ''
+    })));
 
-        this.challenges.clear();
-        (borrador.challenges ?? []).forEach((c) =>
-          this.agregarChallenge(c.title, c.description));
-
+    this.borradorStream.redactar(nombre, readme).subscribe({
+      next: (linea) => this.avanzar(linea),
+      error: (e: Error) => {
         this.redactando.set(false);
-        this.panelBorradorAbierto.set(false);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Borrador listo',
-          detail: 'Revisalo antes de guardar. Todavia no se ha guardado nada.',
-          life: 6000
-        });
-      },
-      error: (respuesta) => {
-        this.redactando.set(false);
-        // El backend distingue dos casos y manda el motivo en el cuerpo: un
-        // borrador que no sirve (422) se reintenta, un proveedor caido (503)
-        // no tiene nada que revisar. Mostrar el mensaje tal cual es lo unico
-        // que deja distinguirlos desde aqui.
+        this.marcarFallo(e.message);
         this.messageService.add({
           severity: 'error',
-          summary: respuesta?.status === 503 ? 'Redactor no disponible' : 'No se pudo redactar',
-          detail: respuesta?.error?.error ?? 'No se pudo contactar con el backend.',
-          life: 10000
+          summary: 'Se corto la redaccion',
+          detail: e.message,
+          life: 12000
         });
       }
     });
+  }
+
+  /**
+   * Mueve la pipeline con lo que acaba de contar el backend.
+   *
+   * Cada aviso cierra su paso y abre el siguiente. El de 'modelo' es la
+   * excepcion: no dice que se termino de consultar, dice que se esta
+   * consultando, y puede repetirse si Groq retiro el primero de la lista y hay
+   * que bajar al de reserva. Por eso se queda en curso hasta que llega la
+   * respuesta.
+   */
+  private avanzar(linea: LineaPipeline): void {
+    switch (linea.etapa) {
+      case 'entrada':
+        this.cerrar('entrada', linea.detalle);
+        this.abrir('modelo');
+        break;
+
+      case 'modelo':
+        this.abrir('modelo', linea.detalle);
+        break;
+
+      case 'respuesta':
+        this.cerrar('modelo');
+        this.cerrar('respuesta', linea.detalle);
+        this.abrir('parseo');
+        break;
+
+      case 'parseo':
+        this.cerrar('parseo', linea.detalle);
+        this.abrir('validacion');
+        break;
+
+      case 'validacion':
+        this.cerrar('validacion', linea.detalle);
+        this.abrir('volcado');
+        break;
+
+      case 'fin':
+        this.volcar(linea.borrador);
+        break;
+
+      case 'error':
+        this.redactando.set(false);
+        this.marcarFallo(linea.detalle ?? 'Sin detalle.');
+        this.messageService.add({
+          severity: 'error',
+          // Son dos situaciones distintas: un borrador que no sirve se
+          // reintenta o se mejora el readme, un proveedor caido no tiene nada
+          // que revisar. El backend las distingue y aqui se mantiene.
+          summary: linea.tipo === 'nodisponible'
+            ? 'Redactor no disponible'
+            : 'No se pudo redactar',
+          detail: linea.detalle ?? 'Sin detalle.',
+          life: 12000
+        });
+        break;
+    }
+  }
+
+  /** Vuelca el borrador en el formulario. Sigue sin guardarse nada. */
+  private volcar(borrador?: ProjectDraft): void {
+    this.redactando.set(false);
+    if (!borrador) {
+      this.marcarFallo('El backend termino sin mandar el borrador.');
+      return;
+    }
+
+    this.form.patchValue({
+      shortDescription: borrador.shortDescription,
+      fullDescription: borrador.fullDescription,
+      readmeMarkdown: borrador.readmeMarkdown
+    });
+
+    this.challenges.clear();
+    (borrador.challenges ?? []).forEach((c) =>
+      this.agregarChallenge(c.title, c.description));
+
+    const campos = 7 + this.challenges.length * 2;
+    this.cerrar('volcado', `${campos} campos rellenados`);
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Borrador listo',
+      detail: 'Revisalo antes de guardar. Todavia no se ha guardado nada.',
+      life: 6000
+    });
+  }
+
+  private abrir(clave: string, detalle?: string): void {
+    this.cambiar(clave, 'curso', detalle);
+  }
+
+  private cerrar(clave: string, detalle?: string): void {
+    this.cambiar(clave, 'hecho', detalle);
+  }
+
+  /** El paso que estuviera en curso se queda marcado: ahi fue donde se paro. */
+  private marcarFallo(detalle: string): void {
+    this.pasos.update((pasos) => pasos.map((p) =>
+      p.estado === 'curso' ? { ...p, estado: 'fallo' as EstadoPaso, detalle } : p));
+  }
+
+  private cambiar(clave: string, estado: EstadoPaso, detalle?: string): void {
+    this.pasos.update((pasos) => pasos.map((p) =>
+      p.clave === clave
+        ? { ...p, estado, detalle: detalle ?? p.detalle }
+        : p));
   }
 
   private avisar(detalle: string): void {
