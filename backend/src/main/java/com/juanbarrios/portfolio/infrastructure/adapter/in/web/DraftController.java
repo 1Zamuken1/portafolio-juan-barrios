@@ -138,8 +138,7 @@ public class DraftController {
     private void escribir(OutputStream salida, Map<String, Object> linea) {
         try {
             salida.write(json.writeValueAsBytes(linea));
-            salida.write('
-');
+            salida.write('\n');
             salida.flush();
         } catch (Exception e) {
             // La conexion se cerro por el otro lado: cerraron la pestania o
