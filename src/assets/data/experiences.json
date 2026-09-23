@@ -1,21 +1,72 @@
 [
   {
     "id": 1,
-    "company": "Freelance",
-    "role": "Backend Developer independiente",
-    "period": "2024 - Presente",
-    "description": "Desarrollo de aplicaciones backend con Spring Boot y bases de datos PostgreSQL. Diseño de APIs RESTful con arquitectura hexagonal.",
+    "company": "SEK",
+    "role": "Software Developer",
+    "period": "2026 — Presente",
+    "description": "Etapa productiva en un entorno especializado en ciberseguridad y MDR.",
     "achievements": [
-      "Portafolio fullstack deployado",
-      "API REST con JWT",
-      "Arquitectura hexagonal"
+      "Análisis de plataformas y soluciones orientadas a monitoreo y detección.",
+      "Revisión y análisis de aplicaciones y contenedores Docker.",
+      "Identificación de oportunidades de mejora en soluciones existentes.",
+      "Desarrollo e integración de componentes frontend y backend según las necesidades del equipo.",
+      "Uso de herramientas de IA para apoyar procesos de análisis y desarrollo."
     ],
     "icon": "briefcase",
     "technologies": [
-      "Java",
-      "Spring Boot",
-      "PostgreSQL"
+      "Ciberseguridad",
+      "MDR",
+      "Docker",
+      "Frontend",
+      "Backend",
+      "IA"
     ],
     "displayOrder": 1
+  },
+  {
+    "id": 2,
+    "company": "Proyectos propios",
+    "role": "Desarrollo independiente",
+    "period": "2024 — 2026",
+    "description": "Desarrollo de aplicaciones y proyectos personales orientados a backend, frontend, automatización e integración de servicios.",
+    "achievements": [
+      "Desarrollo de APIs REST con Java y Spring Boot.",
+      "Desarrollo de aplicaciones web con Angular, Python y Django.",
+      "Diseño de soluciones utilizando arquitectura hexagonal y separación de responsabilidades.",
+      "Integración de servicios de inteligencia artificial y automatización.",
+      "Despliegue de aplicaciones y servicios utilizando diferentes plataformas."
+    ],
+    "icon": "code",
+    "technologies": [
+      "Java",
+      "Spring Boot",
+      "Python",
+      "Django",
+      "Angular",
+      "PostgreSQL",
+      "Docker"
+    ],
+    "displayOrder": 2
+  },
+  {
+    "id": 3,
+    "company": "SENA",
+    "role": "Tecnólogo en Análisis y Desarrollo de Software",
+    "period": "2024 — 2026",
+    "description": "Formación tecnológica enfocada en análisis, diseño, desarrollo y mantenimiento de software.",
+    "achievements": [
+      "Desarrollo de aplicaciones web.",
+      "Bases de datos relacionales.",
+      "Programación orientada a objetos.",
+      "Diseño y análisis de sistemas.",
+      "Desarrollo backend y frontend.",
+      "Control de versiones y buenas prácticas de desarrollo."
+    ],
+    "icon": "graduation-cap",
+    "technologies": [
+      "SENA",
+      "ADSO"
+    ],
+    "displayOrder": 3
   }
 ]

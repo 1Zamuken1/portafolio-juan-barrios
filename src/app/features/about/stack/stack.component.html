@@ -1,0 +1,34 @@
+<div class="about-editor">
+
+  <div class="doc-tab-bar">
+    <div class="doc-tab active">
+      <i class="pi pi-database"></i>
+      <span>stack.md</span>
+    </div>
+  </div>
+
+  <div class="doc-body markdown-body" #cuerpo>
+
+    <h1>Tecnologías y herramientas</h1>
+    <p class="doc-intro">Lo que uso a diario y lo que he aplicado en los proyectos de este portafolio.</p>
+
+    @for (grupo of porCategoria(); track grupo.categoria) {
+      <h2 [id]="ancla(grupo.categoria)">{{ grupo.categoria }}</h2>
+
+      <div class="stack-grid">
+        @for (skill of grupo.skills; track skill.id) {
+          <div class="stack-card">
+            <span class="stack-card-head">
+              <i [class]="skill.icon" [style.color]="skill.color" aria-hidden="true"></i>
+              <strong>{{ skill.name }}</strong>
+            </span>
+            @if (skill.description) {
+              <span class="stack-card-desc">{{ skill.description }}</span>
+            }
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+</div>

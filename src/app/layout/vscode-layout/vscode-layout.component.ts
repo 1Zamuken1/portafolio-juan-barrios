@@ -109,11 +109,19 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
 
     if (path === '/') {
       label = 'README.md';
+    } else if (path === '/about/trayectoria') {
+      // Cada documento del perfil es una ruta propia y no un fragmento del
+      // mismo texto, asi que la pestana sale del camino y no del ancla.
+      label = 'trayectoria.md';
+      icon = 'pi pi-calendar';
+      iconColor = '#e8a94a';
+    } else if (path === '/about/stack') {
+      label = 'stack.md';
+      icon = 'pi pi-database';
+      iconColor = '#e8a94a';
     } else if (path === '/about') {
-      label = fragment === 'experience' ? 'timeline.json' : 
-              fragment === 'stack' ? 'tech-stack.yml' : 'profile.md';
-      icon = fragment === 'experience' ? 'pi pi-calendar' : 
-             fragment === 'stack' ? 'pi pi-database' : 'pi pi-user';
+      label = 'profile.md';
+      icon = 'pi pi-user';
       iconColor = '#e8a94a';
     } else if (path.startsWith('/projects/')) {
       let pIcon = 'pi pi-file';
@@ -199,7 +207,7 @@ export class VscodeLayoutComponent implements OnInit, OnDestroy {
     
     // Set active menu based on path
     if (path.startsWith('/projects')) this.activeMenu.set('projects');
-    else if (path === '/about') this.activeMenu.set('about');
+    else if (path.startsWith('/about')) this.activeMenu.set('about');
     else this.activeMenu.set('home');
 
     // Ignore project internal fragments (like #readme, #stack) from creating new tabs,

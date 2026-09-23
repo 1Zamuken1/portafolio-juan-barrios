@@ -109,6 +109,18 @@
                     <i class="pi pi-info-circle" style="color: #4ec9b0; font-size: 0.85rem;"></i>
                     README.md
                   </a>
+                  <a class="list-item nested-item" routerLink="/about" [class.active]="activeTabId() === '/about'">
+                    <i class="pi pi-user" style="color: #e8a94a; font-size: 0.85rem;"></i>
+                    profile.md
+                  </a>
+                  <a class="list-item nested-item" routerLink="/about/trayectoria" [class.active]="activeTabId() === '/about/trayectoria'">
+                    <i class="pi pi-calendar" style="color: #e8a94a; font-size: 0.85rem;"></i>
+                    trayectoria.md
+                  </a>
+                  <a class="list-item nested-item" routerLink="/about/stack" [class.active]="activeTabId() === '/about/stack'">
+                    <i class="pi pi-database" style="color: #e8a94a; font-size: 0.85rem;"></i>
+                    stack.md
+                  </a>
                 </div>
               }
             </div>
@@ -171,41 +183,6 @@
                 </div>
               }
             </div>
-
-            <!-- Experience Folder -->
-            <div class="sidebar-folder">
-              <div class="folder-header" (click)="toggleFolder('experience')">
-                <i class="pi" [ngClass]="expandedFolders().has('experience') ? 'pi-chevron-down' : 'pi-chevron-right'" style="font-size: 0.6rem;"></i>
-                <i class="pi pi-folder" style="color: #e8b74a; font-size: 0.85rem;"></i>
-                <span class="folder-name">experience</span>
-              </div>
-              @if (expandedFolders().has('experience')) {
-                <div class="folder-contents">
-                  <a class="list-item nested-item" routerLink="/about" fragment="experience" [class.active]="activeTabId() === '/about#experience'">
-                    <i class="pi pi-calendar" style="color: #e8a94a; font-size: 0.85rem;"></i>
-                    timeline.json
-                  </a>
-                </div>
-              }
-            </div>
-
-            <!-- Skills Folder -->
-            <div class="sidebar-folder">
-              <div class="folder-header" (click)="toggleFolder('skills')">
-                <i class="pi" [ngClass]="expandedFolders().has('skills') ? 'pi-chevron-down' : 'pi-chevron-right'" style="font-size: 0.6rem;"></i>
-                <i class="pi pi-folder" style="color: #e8b74a; font-size: 0.85rem;"></i>
-                <span class="folder-name">skills</span>
-              </div>
-              @if (expandedFolders().has('skills')) {
-                <div class="folder-contents">
-                  <a class="list-item nested-item" routerLink="/about" fragment="stack" [class.active]="activeTabId() === '/about#stack'">
-                    <i class="pi pi-database" style="color: #e8a94a; font-size: 0.85rem;"></i>
-                    tech-stack.yml
-                  </a>
-                </div>
-              }
-            </div>
-
 
           </div>
         </div>
@@ -273,7 +250,7 @@
           <span class="status-item hide-mobile">TypeScript</span>
           <span class="status-item status-available">
             <span class="availability-dot"></span>
-            Looking for SENA Apprenticeship
+            Abierto a oportunidades
           </span>
         </div>
       </footer>
@@ -296,7 +273,7 @@
       <div class="profile-panel-body">
         <div class="profile-status">
           <span class="availability-dot"></span>
-          <span>Looking for SENA Apprenticeship</span>
+          <span>Abierto a oportunidades</span>
         </div>
         <div class="profile-links">
           <a href="https://github.com/1Zamuken1" target="_blank" rel="noopener noreferrer" class="profile-link">

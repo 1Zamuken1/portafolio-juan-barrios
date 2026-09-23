@@ -17,7 +17,7 @@ export class WelcomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.seo.update({
-      title: 'Juan Esteban Barrios — Desarrollador Backend | Java & Spring Boot',
+      title: 'Juan Esteban Barrios — Software Developer | Java & Spring Boot',
       description: 'Portafolio de Juan Esteban Barrios Portela, desarrollador backend especializado en Java, Spring Boot, Python y Django. Cuatro proyectos en producción con arquitectura hexagonal y APIs REST.',
       path: '/',
       type: 'profile'
@@ -27,7 +27,7 @@ export class WelcomeComponent implements OnInit {
       '@context': 'https://schema.org',
       '@type': 'Person',
       name: 'Juan Esteban Barrios Portela',
-      jobTitle: 'Desarrollador Backend',
+      jobTitle: 'Software Developer',
       description: 'Tecnólogo en Análisis y Desarrollo de Software especializado en Java, Spring Boot, Python y Django.',
       url: this.seo.absolute('/'),
       image: this.seo.absolute('/assets/images/hero/profile.jpg'),
