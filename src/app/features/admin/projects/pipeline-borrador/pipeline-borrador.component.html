@@ -1,84 +1,122 @@
-<div class="lienzo">
-
-  <svg class="diagrama" [attr.viewBox]="'0 0 600 ' + alto()"
-       role="img" aria-label="Diagrama de la redacción">
-
-    <!-- Los caminos van debajo de las burbujas, para que el trazo no se vea
-         cruzando por encima de un icono. -->
-    <g class="caminos">
-      @for (c of caminos(); track c.desde + c.hasta) {
-        <path [attr.d]="c.d"
-              class="camino"
-              [class.camino--activo]="c.activo"
-              [class.camino--recorrido]="c.recorrido" />
+<!-- La cabecera de una estacion: su icono con el estado en la esquina, el
+     nombre, y el estado con su tiempo. -->
+<ng-template #cabeza let-nodo>
+  @let l = lectura(nodo.estado);
+  @let t = tiempo(nodo);
+  <header class="estacion__cabeza">
+    <span class="insignia" aria-hidden="true">
+      <i [class]="nodo.icono"></i>
+      @if (nodo.estado !== 'espera') {
+        <span class="insignia__estado"><i [class]="l.icono"></i></span>
       }
-    </g>
+    </span>
+    <span class="estacion__titulo">{{ nodo.titulo }}</span>
+    <span class="chip">{{ l.etiqueta }}@if (t) {<span class="chip__tiempo">&nbsp;· {{ t }}</span>}</span>
+  </header>
+</ng-template>
 
-    @for (nodo of nodos(); track nodo.clave) {
-      @let p = posicion(nodo.clave);
-      @let l = lectura(nodo.estado);
+<div class="linea">
 
-      <g class="nodo"
-         [attr.data-estado]="nodo.estado"
-         [class.nodo--elegido]="esElegido(nodo.clave)"
-         [attr.transform]="'translate(' + p.x + ',' + p.y + ')'"
-         (click)="elegir(nodo.clave)"
-         (keydown.enter)="elegir(nodo.clave)"
-         (keydown.space)="elegir(nodo.clave)"
-         tabindex="0"
-         role="button"
-         [attr.aria-label]="nodo.titulo + ': ' + l.etiqueta">
+  <!-- ===== El readme entra ===== -->
+  @if (readme(); as n) {
+    <section class="estacion estacion--readme nodo" [attr.data-estado]="n.estado"
+             [attr.aria-label]="n.titulo + ': ' + lectura(n.estado).etiqueta">
+      <ng-container *ngTemplateOutlet="cabeza; context: { $implicit: n }" />
+      <p class="estacion__detalle">{{ n.detalle || 'README.md, esperando a salir' }}</p>
+    </section>
+  }
 
-        <!-- El halo solo existe mientras el nodo trabaja. Un halo latiendo
-             sobre algo que ya termino diria que sigue pasando algo. -->
-        @if (l.corriendo) {
-          <circle class="halo" [attr.r]="RADIO + 8" />
+  <div class="conducto" [attr.data-estado]="conducto(readme(), modelo())" aria-hidden="true">
+    <span class="conducto__pulso"></span>
+  </div>
+
+  <!-- ===== El modelo: la estacion grande ===== -->
+  @if (modelo(); as n) {
+    <section class="estacion estacion--modelo nodo" [attr.data-estado]="n.estado"
+             [attr.aria-label]="n.titulo + ': ' + lectura(n.estado).etiqueta">
+      <ng-container *ngTemplateOutlet="cabeza; context: { $implicit: n }" />
+
+      <!-- El espectro late con lo que se va escribiendo: cada barra es un
+           latido reciente, y su altura, cuantas letras salieron. -->
+      <div class="espectro" aria-hidden="true">
+        @for (h of barras(); track $index) {
+          <span class="espectro__barra" [style.--h]="h"></span>
         }
+      </div>
 
-        <circle class="burbuja" [attr.r]="RADIO" />
-
-        <!-- foreignObject para poder usar los mismos iconos que el resto del
-             panel; un <text> con la fuente de iconos no hereda bien el tamaño. -->
-        <foreignObject [attr.x]="-RADIO" [attr.y]="-RADIO"
-                       [attr.width]="RADIO * 2" [attr.height]="RADIO * 2">
-          <div class="glifo">
-            <i [class]="nodo.estado === 'espera' ? nodo.icono : l.icono" aria-hidden="true"></i>
-          </div>
-        </foreignObject>
-
-        <text class="rotulo" [attr.y]="RADIO + 18">{{ nodo.titulo }}</text>
-
-        @if (l.corriendo && nodo.desde) {
-          <text class="cronometro" [attr.y]="RADIO + 31">{{ llevaCorriendo(nodo) }}</text>
+      <div class="modelo__datos">
+        <span class="estacion__detalle">{{ n.detalle || 'Todavía no se ha consultado' }}</span>
+        @if (caracteres()) {
+          <span class="modelo__cuenta">{{ caracteres() }} car.</span>
         }
-      </g>
-    }
-  </svg>
+      </div>
 
-  <!-- El panel de al lado. Sigue al nodo que trabaja mientras no elijas uno,
-       que es lo que hace que los resultados aparezcan solos segun caen. -->
-  @if (activo(); as nodo) {
-    @let l = lectura(nodo.estado);
-    <aside class="detalle" aria-live="polite">
-      <header class="detalle__cabecera">
-        <span class="detalle__titulo">{{ nodo.titulo }}</span>
-        <span class="detalle__estado" [style.color]="l.color">
-          <i [class]="l.icono" aria-hidden="true"></i> {{ l.etiqueta }}
-          @if (l.corriendo && nodo.desde) { · {{ llevaCorriendo(nodo) }} }
-        </span>
-      </header>
+      <!-- Lo que sale, como cartuchos que se llenan. Se escriben mientras el
+           modelo responde; pulsar uno lleva la vista previa a su parte. -->
+      <ol class="cartuchos" aria-label="Lo que se redacta">
+        @for (s of salidas(); track s.clave) {
+          @let l = lectura(s.estado);
+          @let t = tiempo(s);
+          <li>
+            <button type="button" class="cartucho nodo" [attr.data-estado]="s.estado"
+                    [attr.aria-label]="s.titulo + ': ' + l.etiqueta"
+                    title="Ver en la vista previa" (click)="elegir.emit(s.clave)">
+              <span class="cartucho__icono" aria-hidden="true">
+                <i [class]="s.estado === 'espera' || s.estado === 'curso' ? s.icono : l.icono"></i>
+              </span>
+              <span class="cartucho__cuerpo">
+                <span class="cartucho__cabeza">
+                  <span class="cartucho__titulo">{{ s.titulo }}</span>
+                  <span class="cartucho__detalle">{{ s.detalle || l.etiqueta }}</span>
+                  @if (t) { <span class="cartucho__tiempo">{{ t }}</span> }
+                </span>
+                <span class="cartucho__barra" aria-hidden="true">
+                  <span class="cartucho__relleno" [style.width.%]="(s.progreso ?? 0) * 100"></span>
+                </span>
+              </span>
+            </button>
+          </li>
+        }
+      </ol>
+    </section>
+  }
 
-      @if (l.glosa) {
-        <p class="detalle__glosa">{{ l.glosa }}</p>
-      }
+  <div class="conducto" [attr.data-estado]="conducto(modelo(), parseo())" aria-hidden="true">
+    <span class="conducto__pulso"></span>
+  </div>
 
-      @if (nodo.detalle) {
-        <p class="detalle__linea">{{ nodo.detalle }}</p>
-      }
+  <!-- ===== El JSON se lee =====
+       Sus claves se encienden segun se cierran los campos que contienen. -->
+  @if (parseo(); as n) {
+    <section class="estacion estacion--json nodo" [attr.data-estado]="n.estado"
+             [attr.aria-label]="n.titulo + ': ' + lectura(n.estado).etiqueta">
+      <ng-container *ngTemplateOutlet="cabeza; context: { $implicit: n }" />
+      <div class="claves" aria-hidden="true">
+        <span class="claves__llave">{{ '{' }}</span>
+        @for (c of claves(); track c.clave) {
+          <span class="clave" [attr.data-estado]="c.estado">{{ c.clave }}</span>
+        }
+        <span class="claves__llave">{{ '}' }}</span>
+      </div>
+      @if (n.detalle) { <p class="estacion__detalle">{{ n.detalle }}</p> }
+    </section>
+  }
 
-      @if (nodo.contenido) {
-        <pre class="detalle__contenido">{{ nodo.contenido }}</pre>
-      }
-    </aside>
+  <div class="conducto" [attr.data-estado]="conducto(parseo(), validacion())" aria-hidden="true">
+    <span class="conducto__pulso"></span>
+  </div>
+
+  <!-- ===== Las cotas se comprueban ===== -->
+  @if (validacion(); as n) {
+    <section class="estacion estacion--cotas nodo" [attr.data-estado]="n.estado"
+             [attr.aria-label]="n.titulo + ': ' + lectura(n.estado).etiqueta">
+      <ng-container *ngTemplateOutlet="cabeza; context: { $implicit: n }" />
+      <div class="marcas" aria-hidden="true">
+        @for (i of marcas(); track i) {
+          <span class="marca" [style.--i]="i"></span>
+        }
+      </div>
+      @if (n.detalle) { <p class="estacion__detalle">{{ n.detalle }}</p> }
+    </section>
   }
 </div>

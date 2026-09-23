@@ -4,46 +4,62 @@ import {
   computed,
   effect,
   input,
+  output,
   signal
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { EstadoNodo, LECTURA_ESTADO, NodoPipeline } from './estado-nodo';
 
+/** Cuantas barras tiene el espectro del modelo. */
+const BARRAS = 30;
+
+/** Que salida enciende cada clave del JSON, para la estacion del JSON. */
+const CLAVES_JSON: ReadonlyArray<{ clave: string; salida: string }> = [
+  { clave: 'name', salida: 'nombre' },
+  { clave: 'shortDescription', salida: 'descripciones' },
+  { clave: 'fullDescription', salida: 'descripciones' },
+  { clave: 'readmeMarkdown', salida: 'caso' },
+  { clave: 'challenges', salida: 'desafios' }
+];
+
 /**
- * El diagrama de la redaccion: se ve por donde va y que va saliendo.
+ * La redaccion como una linea de montaje.
  *
- * <p>Cuatro pasos en linea --el readme, el modelo, el parseo y la validacion--
- * y, colgando del ultimo, las cuatro cosas que salen. Los que salen no se
- * encienden todos de golpe al final: el modelo escribe el JSON en el orden en
- * que se le pidio, asi que cada uno se enciende cuando su campo termino de
- * escribirse, repartidos por los ocho segundos que dura la llamada.
+ * <p>Cuatro estaciones unidas por un conducto: el readme entra, el modelo lo
+ * convierte en texto, el JSON se lee y las cotas se comprueban. Por el tramo
+ * que se esta recorriendo viaja un pulso. El modelo es la estacion grande
+ * porque es donde pasa casi todo el tiempo: lleva un espectro que late con lo
+ * que se va escribiendo, y dentro, las cuatro salidas como cartuchos que se
+ * llenan.
  *
- * <p><b>Nada de esto es una animacion que finge progreso.</b> Cada cambio viene
- * de una linea que mando el backend. El unico sitio donde hay una suposicion es
- * en cuando se da por cerrado un campo de la salida, y esta explicada en
- * {@link PipelineBorradorComponent#cerrados}: si el modelo escribiera los campos
- * en otro orden, lo peor que pasa es que una burbuja se encienda tarde. Los
- * datos siguen saliendo del JSON completo al final.
+ * <p>Cada estacion ensenia algo propio y verdadero, no un icono generico: el
+ * readme cuantas letras trae, el modelo la forma de lo que escribe, el JSON que claves
+ * ya estan cerradas, las cotas cuantos campos se comprobaron. Todo sale de lo
+ * que conto el backend o de lo que ya se ve escrito.
+ *
+ * <p>El contrato de siempre se mantiene: cada paso y cada salida es un
+ * `.nodo` con `data-estado` y un `aria-label` que empieza por su nombre.
  */
 @Component({
   selector: 'app-pipeline-borrador',
   standalone: true,
-  imports: [CommonModule],
+  imports: [NgTemplateOutlet],
   templateUrl: './pipeline-borrador.component.html',
   styleUrl: './pipeline-borrador.component.css'
 })
 export class PipelineBorradorComponent implements OnDestroy {
   nodos = input.required<NodoPipeline[]>();
+  /** Lo que lleva escrito el modelo, de lo que ya se ve. */
+  texto = input('');
 
-  /** El que se esta mirando en el panel de al lado. */
-  private elegido = signal<string | null>(null);
+  /** Se pulso una salida: la vista previa se lleva hasta su parte. */
+  elegir = output<string>();
 
   /**
    * Un reloj que corre solo mientras haya algo trabajando.
    *
    * Sin el, el tiempo se calcularia una vez al dibujar y se quedaria congelado
-   * el resto del paso, que es justo lo que una senial de "esto sigue vivo" no
-   * puede hacer nunca. Y se para cuando no hay nada corriendo: un intervalo
+   * el resto del paso. Y se para cuando no hay nada corriendo: un intervalo
    * latiendo sobre una pantalla quieta es trabajo tirado.
    */
   protected ahora = signal(Date.now());
@@ -66,147 +82,91 @@ export class PipelineBorradorComponent implements OnDestroy {
     if (this.reloj !== undefined) clearInterval(this.reloj);
   }
 
-  /**
-   * El nodo que se ensenia al lado.
-   *
-   * Si no has elegido ninguno, sigue al que esta trabajando: asi los resultados
-   * van apareciendo solos segun caen, que es para lo que existe el panel. En
-   * cuanto pulsas uno, manda tu eleccion y deja de moverse bajo el cursor.
-   */
-  protected activo = computed<NodoPipeline | null>(() => {
-    const lista = this.nodos();
-    if (!lista.length) return null;
+  private nodo(clave: string): NodoPipeline | undefined {
+    return this.nodos().find((n) => n.clave === clave);
+  }
 
-    const elegido = this.elegido();
-    if (elegido) return lista.find((n) => n.clave === elegido) ?? null;
+  protected readme = computed(() => this.nodo('readme'));
+  protected modelo = computed(() => this.nodo('modelo'));
+  protected parseo = computed(() => this.nodo('parseo'));
+  protected validacion = computed(() => this.nodo('validacion'));
 
-    return lista.find((n) => LECTURA_ESTADO[n.estado].corriendo)
-      ?? lista.find((n) => n.estado === 'fallo')
-      ?? [...lista].reverse().find((n) => n.estado === 'hecho')
-      ?? lista[0];
-  });
+  protected salidas = computed(() =>
+    this.nodos().filter((n) => !['readme', 'modelo', 'parseo', 'validacion'].includes(n.clave)));
 
   protected lectura(estado: EstadoNodo) {
     return LECTURA_ESTADO[estado];
   }
 
-  protected elegir(clave: string): void {
-    this.elegido.update((actual) => (actual === clave ? null : clave));
+  /**
+   * Como se pinta el conducto que baja de una estacion a la siguiente.
+   *
+   * Se enciende --y lleva el pulso-- cuando lo de arriba ya paso y lo de abajo
+   * esta en marcha, que es justo el rato en que se esta recorriendo. Queda
+   * marcado como recorrido cuando lo de abajo termino.
+   */
+  protected conducto(desde?: NodoPipeline, hasta?: NodoPipeline): 'activo' | 'recorrido' | 'pendiente' {
+    if (!desde || !hasta) return 'pendiente';
+    if (hasta.estado === 'hecho') return 'recorrido';
+    if (desde.estado === 'hecho' && hasta.estado === 'curso') return 'activo';
+    return 'pendiente';
   }
 
-  protected esElegido(clave: string): boolean {
-    return this.activo()?.clave === clave;
+  /** El tiempo al lado del estado: el que lleva, o el que tardo. */
+  protected tiempo(nodo: NodoPipeline): string {
+    if (LECTURA_ESTADO[nodo.estado].corriendo && nodo.desde) {
+      // El reloj late cada 100 ms y el nodo puede haber entrado entre dos
+      // latidos: sin el tope, recien abierto marcaria un tiempo negativo.
+      return segundos(Math.max(0, this.ahora() - nodo.desde));
+    }
+    // Lo que entra y sale en el mismo trozo de texto no tardo nada que se
+    // pueda medir, y "0.0 s" se lee como un fallo del cronometro.
+    return nodo.duracion !== undefined && nodo.duracion >= 100 ? segundos(nodo.duracion) : '';
   }
 
-  /** Cuanto lleva trabajando un nodo, en segundos con un decimal. */
-  protected llevaCorriendo(nodo: NodoPipeline): string {
-    if (!nodo.desde) return '';
-    const ms = this.ahora() - nodo.desde;
-    return `${Math.floor(ms / 100) / 10} s`;
-  }
-
-  // ── El dibujo ────────────────────────────────────────────────────────────
-  //
-  // Las posiciones son fijas y estan aqui y no en la plantilla porque los
-  // caminos entre burbujas se calculan a partir de ellas: con las coordenadas
-  // escritas a mano en el SVG, mover una burbuja dejaba su linea colgando en el
-  // sitio de antes.
-
-  /** Los cuatro pasos de la cadena, de izquierda a derecha. */
-  protected readonly CADENA = ['readme', 'modelo', 'parseo', 'validacion'];
-
-  // El lienzo mide 600 unidades de ancho y se dibuja en una columna de unos
-  // 510 pixeles, asi que la escala queda cerca de 1:1 y los rotulos se leen. La
-  // primera version usaba 860 y todo salia al 60%: las burbujas se veian, pero
-  // debajo de cada una habia un borron.
-  private static readonly CADENA_X = [46, 152, 258, 364];
-  private static readonly SALIDA_X = 508;
-  private static readonly SALIDA_Y0 = 34;
-  private static readonly SALIDA_PASO = 72;
-  protected readonly RADIO = 20;
+  // ── El espectro del modelo ─────────────────────────────────────────────
 
   /**
-   * La cadena va a la altura del centro del abanico.
+   * Las barras del espectro, de 0 a 1: las ultimas letras que se han escrito.
    *
-   * Calculada y no fija: con la cadena arriba, el abanico caia entero hacia
-   * abajo y la mitad izquierda del lienzo quedaba vacia. Centrada, las ramas
-   * salen hacia arriba y hacia abajo por igual y el dibujo ocupa el sitio que
-   * tiene. Se recalcula sola si algun dia cambia el numero de salidas.
+   * Cada barra es una letra, y los espacios y la puntuacion quedan bajos, asi
+   * que lo que se ve pasar es la forma del texto --palabras, huecos, el salto
+   * al empezar un campo-- y se para cuando la escritura se para. Antes era
+   * cuantas letras salian en cada latido, y como el ritmo es casi constante,
+   * dibujaba un peine.
    */
-  private cadenaY = computed(() =>
-    PipelineBorradorComponent.SALIDA_Y0
-    + Math.max(0, this.salidas().length - 1) * PipelineBorradorComponent.SALIDA_PASO / 2);
-
-  protected posicion(clave: string): { x: number; y: number } {
-    const enCadena = this.CADENA.indexOf(clave);
-    if (enCadena >= 0) {
-      return { x: PipelineBorradorComponent.CADENA_X[enCadena], y: this.cadenaY() };
-    }
-
-    const enSalida = this.salidas().findIndex((n) => n.clave === clave);
-    return {
-      x: PipelineBorradorComponent.SALIDA_X,
-      y: PipelineBorradorComponent.SALIDA_Y0
-        + Math.max(0, enSalida) * PipelineBorradorComponent.SALIDA_PASO
-    };
-  }
-
-  protected salidas = computed(() =>
-    this.nodos().filter((n) => !this.CADENA.includes(n.clave)));
-
-  protected enCadena = computed(() =>
-    this.nodos().filter((n) => this.CADENA.includes(n.clave)));
-
-  /**
-   * Los caminos entre burbujas, ya calculados.
-   *
-   * Cada uno sabe de donde sale y adonde llega, para poder pintarlo encendido
-   * mientras la redaccion lo esta recorriendo: un camino que se mueve es lo que
-   * dice que esto sigue vivo cuando ninguna burbuja ha cambiado todavia.
-   */
-  protected caminos = computed(() => {
-    const estados = new Map(this.nodos().map((n) => [n.clave, n.estado]));
-    const tramos: { d: string; desde: string; hasta: string }[] = [];
-
-    for (let i = 0; i < this.CADENA.length - 1; i++) {
-      const a = this.posicion(this.CADENA[i]);
-      const b = this.posicion(this.CADENA[i + 1]);
-      tramos.push({
-        d: `M ${a.x + this.RADIO + 6} ${a.y} L ${b.x - this.RADIO - 6} ${b.y}`,
-        desde: this.CADENA[i],
-        hasta: this.CADENA[i + 1]
-      });
-    }
-
-    // El abanico: todo lo que sale cuelga de la validacion, que es cuando de
-    // verdad se sabe que un campo sirve.
-    const raiz = this.posicion('validacion');
-    for (const salida of this.salidas()) {
-      const p = this.posicion(salida.clave);
-      const x0 = raiz.x + this.RADIO + 6;
-      const x1 = p.x - this.RADIO - 6;
-      const medio = x0 + (x1 - x0) / 2;
-      tramos.push({
-        d: `M ${x0} ${raiz.y} C ${medio} ${raiz.y}, ${medio} ${p.y}, ${x1} ${p.y}`,
-        desde: 'validacion',
-        hasta: salida.clave
-      });
-    }
-
-    return tramos.map((t) => ({
-      ...t,
-      // Un camino se enciende cuando lo que tiene detras ya paso y lo de
-      // delante todavia no: ese es exactamente el rato en que se esta
-      // recorriendo.
-      activo: estados.get(t.desde) === 'hecho' && estados.get(t.hasta) === 'curso',
-      recorrido: estados.get(t.hasta) === 'hecho'
-    }));
+  protected barras = computed(() => {
+    const cola = this.texto().slice(-BARRAS).padStart(BARRAS, ' ');
+    return [...cola].map((c) => {
+      if (!/[\p{L}\p{N}]/u.test(c)) return 0.1;
+      // La altura de cada letra sale de su codigo: fija para cada letra, y
+      // variada, que es lo que da la forma de onda.
+      return 0.3 + ((c.codePointAt(0)! * 37) % 70) / 100;
+    });
   });
 
-  /** Alto del lienzo, para que crezca si algun dia hay mas salidas. */
-  protected alto = computed(() =>
-    PipelineBorradorComponent.SALIDA_Y0
-    + Math.max(1, this.salidas().length - 1) * PipelineBorradorComponent.SALIDA_PASO
-    + this.RADIO
-    + 34);
+  protected caracteres = computed(() => this.texto().length);
+
+  // ── La estacion del JSON ───────────────────────────────────────────────
+
+  protected claves = computed(() => {
+    const estados = new Map(this.salidas().map((s) => [s.clave, s.estado]));
+    return CLAVES_JSON.map((c) => ({ clave: c.clave, estado: estados.get(c.salida) ?? 'espera' }));
+  });
+
+  // ── La estacion de las cotas ───────────────────────────────────────────
+
+  /**
+   * Una marca por campo comprobado. El numero sale del detalle del backend
+   * ("Los 12 campos caben..."), porque es el que sabe cuantos mira; si no lo
+   * dice, se dibujan las ocho salidas de texto.
+   */
+  protected marcas = computed(() => {
+    const n = +(this.validacion()?.detalle.match(/(\d+)\s+campos/)?.[1] ?? 8);
+    return Array.from({ length: Math.min(n, 16) }, (_, i) => i);
+  });
+}
+
+function segundos(ms: number): string {
+  return `${(Math.floor(ms / 100) / 10).toFixed(1)} s`;
 }

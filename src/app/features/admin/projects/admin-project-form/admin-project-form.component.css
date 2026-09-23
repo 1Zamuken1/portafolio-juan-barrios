@@ -1,36 +1,128 @@
-/* Redactor de borradores */
-.panel-borrador {
-  max-width: 900px;
-  margin-bottom: 1.5rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-  background: var(--bg-secondary);
+/* Los pasos se ocultan con [hidden] en vez de desmontarse, para que el
+   redactor y el formulario conserven lo suyo al ir y volver. Hace falta
+   decirlo aqui: .project-form declara display: flex y eso pisaria el
+   display: none que el navegador da a [hidden]. */
+[hidden] {
+  display: none !important;
 }
 
-.panel-borrador__toggle {
-  width: 100%;
-  justify-content: flex-start;
-}
-
-.panel-borrador__cuerpo {
+/* ---- Los dos pasos ---- */
+.pasos {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.875rem;
-  padding: 0 1rem 1rem;
+  align-items: center;
+  gap: 0.5rem;
+  margin: -0.25rem 0 1.5rem;
 }
 
-.panel-borrador__ayuda {
-  margin: 0;
-  font-size: 0.8125rem;
-  line-height: 1.6;
+.pasos__paso {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 1rem 0.55rem 0.6rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.pasos__paso:hover {
+  border-color: var(--border-default);
+}
+
+.pasos__paso:focus-visible {
+  outline: 2px solid var(--estado-curso);
+  outline-offset: 2px;
+}
+
+.pasos__numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  border: 1px solid var(--border-default);
+  background: var(--bg-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
   color: var(--text-tertiary);
 }
 
-.panel-borrador__cuerpo textarea {
-  width: 100%;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.8125rem;
+.pasos__numero i {
+  font-size: 0.78rem;
+}
+
+.pasos__texto {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.pasos__titulo {
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.pasos__lema {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+.pasos__paso[aria-selected='true'] {
+  border-color: color-mix(in srgb, var(--estado-curso) 55%, var(--border-subtle));
+  background: color-mix(in srgb, var(--estado-curso) 7%, var(--bg-secondary));
+  color: var(--text-primary);
+}
+
+.pasos__paso[aria-selected='true'] .pasos__numero {
+  border-color: var(--estado-curso);
+  background: var(--estado-curso);
+  color: var(--bg-secondary);
+}
+
+.pasos__union {
+  width: 2.5rem;
+  height: 1px;
+  background: var(--border-default);
+}
+
+/* ---- El aviso de lo que escribio la IA ---- */
+.aviso-ia {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0.6rem 0.6rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--estado-curso) 35%, var(--border-subtle));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--estado-curso) 6%, var(--bg-secondary));
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.aviso-ia > i {
+  color: var(--estado-curso);
+}
+
+.aviso-ia > span {
+  flex: 1;
+  min-width: 14rem;
+}
+
+.aviso-ia strong {
+  color: var(--text-primary);
+}
+
+@media (max-width: 600px) {
+  .pasos__union { display: none; }
+  .pasos__paso { flex: 1; border-radius: var(--radius-md); }
+  .pasos__lema { display: none; }
 }
 
 /* Desafios */
@@ -73,315 +165,6 @@
   }
 }
 
-/* Las dos formas de traer el readme sin pegarlo a mano. */
-.fuentes {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  width: 100%;
-}
-
-.fuentes__repo {
-  display: flex;
-  gap: 0.5rem;
-  flex: 1;
-  min-width: 260px;
-}
-
-.fuentes__repo input {
-  flex: 1;
-  min-width: 0;
-}
-
-.fuentes__o {
-  font-size: 0.8rem;
-  color: var(--text-tertiary);
-}
-
-/* El input de fichero nativo no se puede estilar, asi que se esconde dentro de
-   su etiqueta y lo que se ve es la etiqueta. El input sigue ahi: el foco por
-   teclado y el espacio funcionan como en cualquier campo. */
-.fuentes__subir {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.5rem 0.9rem;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.fuentes__subir:hover {
-  border-color: var(--text-accent);
-  color: var(--text-primary);
-}
-
-.fuentes__subir:focus-within {
-  outline: 2px solid var(--text-accent);
-  outline-offset: 2px;
-}
-
-.fuentes__subir input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* ---- La pipeline ----
-   Los seis pasos se pintan desde el principio, incluso los que no han pasado
-   todavia. Una lista que crece no distingue "va por el tercero" de "se quedo
-   en el tercero", y lo segundo es justo lo que hay que poder ver. */
-.pipeline {
-  list-style: none;
-  margin: 0.5rem 0 0;
-  padding: 0;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.pipeline__paso {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.7rem;
-  padding: 0.4rem 0;
-  position: relative;
-}
-
-/* La linea que une un paso con el siguiente. Sale del centro de la marca. */
-.pipeline__paso:not(:last-child)::before {
-  content: '';
-  position: absolute;
-  left: 0.6rem;
-  top: 1.5rem;
-  bottom: -0.15rem;
-  width: 1px;
-  background: var(--border-subtle);
-}
-
-.pipeline__marca {
-  flex-shrink: 0;
-  width: 1.2rem;
-  height: 1.2rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 0.15rem;
-  font-size: 0.7rem;
-  color: var(--text-tertiary);
-  background: var(--bg-secondary);
-  border-radius: 50%;
-  position: relative;
-  z-index: 1;
-}
-
-.pipeline__texto {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  min-width: 0;
-}
-
-.pipeline__titulo {
-  font-size: 0.85rem;
-  color: var(--text-tertiary);
-}
-
-/* El dato que solo se conoce en ese momento: que modelo respondio, cuanto
-   tardo, cuantos campos se comprobaron. */
-.pipeline__detalle {
-  font-family: var(--font-mono, monospace);
-  font-size: 0.75rem;
-  line-height: 1.5;
-  color: var(--text-tertiary);
-  opacity: 0.85;
-  overflow-wrap: anywhere;
-}
-
-/* Solo el paso en curso y el que fallo destacan. Si destacaran todos no
-   destacaria ninguno, que es el problema que ya dio el blueprint. */
-.pipeline__paso[data-estado='curso'] .pipeline__titulo {
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-.pipeline__paso[data-estado='curso'] .pipeline__marca {
-  color: var(--text-accent);
-}
-
-.pipeline__paso[data-estado='hecho'] .pipeline__marca {
-  color: var(--estado-ok);
-}
-
-.pipeline__paso[data-estado='fallo'] .pipeline__marca {
-  color: var(--estado-fallo);
-}
-
-.pipeline__paso[data-estado='fallo'] .pipeline__titulo,
-.pipeline__paso[data-estado='fallo'] .pipeline__detalle {
-  color: var(--estado-fallo);
-  opacity: 1;
-}
-
-.pipeline__paso[data-estado='espera'] .pipeline__marca,
-.pipeline__paso[data-estado='espera'] .pipeline__titulo {
-  opacity: 0.45;
-}
-
-/* ---- La salida del modelo en crudo ----
-   Se ve escribirse. No es adorno: son los unicos ocho segundos de la operacion
-   y sin esto son ocho segundos de pantalla quieta, que por fuera no se
-   distinguen de una conexion colgada. */
-.salida {
-  width: 100%;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: var(--bg-primary);
-  overflow: hidden;
-}
-
-.salida__cabecera {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.55rem 0.75rem;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: 0.8rem;
-  text-align: left;
-  cursor: pointer;
-}
-
-.salida__cabecera:hover {
-  background: var(--bg-tertiary);
-}
-
-.salida__medida {
-  margin-left: auto;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.72rem;
-  color: var(--text-tertiary);
-}
-
-.salida__cuerpo {
-  max-height: 260px;
-  overflow: auto;
-  margin: 0;
-  padding: 0.75rem;
-  border-top: 1px solid var(--border-subtle);
-  font-family: var(--font-mono, monospace);
-  font-size: 0.75rem;
-  line-height: 1.6;
-  color: var(--text-secondary);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-/* El cursor solo esta mientras escribe. Un cursor parpadeando sobre un texto
-   que ya termino diria que sigue pasando algo. */
-.salida__cursor {
-  display: inline-block;
-  width: 2px;
-  height: 0.95em;
-  margin-left: 1px;
-  background: var(--text-accent);
-  vertical-align: text-bottom;
-  animation: parpadeo 1s steps(2, start) infinite;
-}
-
-@keyframes parpadeo {
-  to { visibility: hidden; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .salida__cursor { animation: none; }
-}
-
-/* ---- La propuesta ---- */
-.propuesta {
-  width: 100%;
-  border: 1px solid var(--text-accent);
-  border-radius: var(--radius-md);
-  background: var(--bg-secondary);
-}
-
-.propuesta__cabecera {
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.propuesta__titulo {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.propuesta__nota {
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
-}
-
-.propuesta__campos {
-  margin: 0;
-  padding: 0.5rem 1rem;
-  max-height: 340px;
-  overflow-y: auto;
-}
-
-.propuesta__campos > div {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.propuesta__campos > div:last-child {
-  border-bottom: none;
-}
-
-.propuesta__campos dt {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-}
-
-.propuesta__campos dd {
-  margin: 0.25rem 0 0;
-  font-size: 0.82rem;
-  line-height: 1.55;
-  color: var(--text-secondary);
-}
-
-.propuesta__lista {
-  margin: 0;
-  padding-left: 1.1rem;
-}
-
-.propuesta__lista li {
-  margin-bottom: 0.35rem;
-}
-
-.propuesta__acciones {
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  border-top: 1px solid var(--border-subtle);
-}
-
 /* ---- El distintivo de lo que escribio la IA ----
    Dura hasta que tocas el campo. Sin esto, tras aplicar una propuesta no hay
    forma de saber que parte de la ficha revisaste tu y cual sigue tal cual
@@ -394,7 +177,7 @@
   padding: 0.05rem 0.35rem;
   border-radius: 1rem;
   background: var(--bg-tertiary);
-  color: var(--text-accent);
+  color: var(--estado-curso);
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.62rem;
   font-weight: 600;
@@ -404,4 +187,452 @@
 
 .marca-ia i {
   font-size: 0.6rem;
+}
+
+/* ================================================
+   El segundo paso: la ficha completa
+   ================================================
+
+   Un indice fijo a la izquierda con lo que falta en cada seccion, y las
+   secciones como tarjetas. Antes eran treinta cajas seguidas separadas por
+   una linea: no habia forma de saber cuanto quedaba ni donde estaba cada
+   cosa sin recorrer la pagina entera. */
+
+.project-form.ficha {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: 1.25rem 1.75rem;
+  align-items: start;
+  max-width: 1180px;
+}
+
+.ficha > .aviso-ia {
+  grid-column: 1 / -1;
+}
+
+.ficha__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* ---- El indice ---- */
+.indice {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* La tarjeta del proyecto, como la vera quien entre al portafolio. */
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem 1rem;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--card-glow) 0%, transparent 60%),
+    var(--editor-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.tarjeta__tipo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--md-heading);
+}
+
+.tarjeta__nombre {
+  font-size: 1.02rem;
+  font-weight: 750;
+  line-height: 1.25;
+  color: var(--md-banner-text);
+  overflow-wrap: anywhere;
+}
+
+.tarjeta__frase {
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--md-text-soft);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tarjeta__estado {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--chip-border);
+  background: var(--chip-bg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--md-text-muted);
+}
+
+.indice__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.indice__enlace {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: var(--radius-md);
+  color: var(--text-tertiary);
+  font-size: 0.84rem;
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.indice__enlace:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.indice__enlace--activo {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--estado-curso);
+}
+
+.indice__enlace i {
+  width: 1rem;
+  font-size: 0.8rem;
+}
+
+.indice__nombre {
+  flex: 1;
+}
+
+/* Un anillo por seccion que se cierra segun se llenan sus campos. */
+.indice__anillo {
+  --p: 0;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: conic-gradient(var(--estado-curso) calc(var(--p) * 360deg), var(--border-default) 0);
+  -webkit-mask: radial-gradient(circle, transparent 3.5px, #000 4px);
+  mask: radial-gradient(circle, transparent 3.5px, #000 4px);
+}
+
+.indice__anillo--lleno {
+  background: var(--estado-ok);
+  -webkit-mask: none;
+  mask: none;
+}
+
+.indice__total {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0 0.6rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+}
+
+.indice__barra {
+  display: block;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+  overflow: hidden;
+}
+
+.indice__barra span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--estado-curso), var(--estado-ok));
+  transition: width 0.4s ease;
+}
+
+/* ---- Cada seccion, una tarjeta ---- */
+.ficha .seccion {
+  margin: 0;
+  padding: 1.2rem 1.4rem 1.4rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  scroll-margin-top: 1rem;
+}
+
+.seccion__cabeza {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.seccion__icono {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--border-default);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.seccion__titulos {
+  flex: 1;
+  min-width: 0;
+}
+
+.seccion__cabeza .form-seccion-titulo {
+  margin: 0;
+  font-family: inherit;
+  font-size: 0.98rem;
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-primary);
+}
+
+.seccion__lema {
+  margin: 0.15rem 0 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+.seccion__cuenta {
+  flex-shrink: 0;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+.seccion__cuenta--llena {
+  border-color: color-mix(in srgb, var(--estado-ok) 45%, transparent);
+  background: color-mix(in srgb, var(--estado-ok) 10%, transparent);
+  color: var(--estado-ok);
+}
+
+.seccion__ia {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--text-tertiary);
+}
+
+.seccion__ia .marca-ia {
+  margin-left: 0;
+}
+
+.ficha .form-group label i {
+  margin-right: 0.2rem;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+/* Los ejemplos de cada campo se leian con la misma tinta que un valor: la
+   seccion de arquitectura parecia rellena estando vacia. */
+.ficha input::placeholder,
+.ficha textarea::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.6;
+}
+
+/* Lo que escribio la IA lleva su color en el borde hasta que lo tocas: la
+   marca de la etiqueta dice que es, esto lo dice sin tener que leerla. */
+.campo-ia input,
+.campo-ia textarea {
+  border-left: 3px solid var(--estado-curso);
+}
+
+.campo-ayuda--fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.contador {
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.contador--fuera {
+  color: var(--estado-fallo);
+}
+
+/* ---- El caso de estudio ----
+   Numerado y con una linea que baja por la izquierda: son cinco partes de un
+   mismo texto, en el orden en que se leen, y asi se ven. */
+.caso {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-left: 0.65rem;
+  padding-left: 1.2rem;
+  border-left: 1px dashed var(--border-default);
+}
+
+.caso__numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.3rem;
+  height: 1.3rem;
+  margin-left: calc(-1.2rem - 0.65rem - 0.5px);
+  margin-right: 0.45rem;
+  border-radius: 50%;
+  border: 1px solid var(--border-default);
+  background: var(--bg-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.64rem;
+  color: var(--text-tertiary);
+  vertical-align: middle;
+}
+
+.campo-ia .caso__numero {
+  border-color: var(--estado-curso);
+  color: var(--estado-curso);
+}
+
+/* ---- Los desafios ---- */
+.desafios {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ficha .challenge {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr) minmax(0, 2fr) auto;
+  gap: 0.9rem;
+  align-items: start;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+}
+
+.challenge__numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-top: 1.55rem;
+  border-radius: 0.45rem;
+  background: var(--bg-tertiary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.anadir {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-tertiary);
+  font: inherit;
+  font-size: 0.84rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.anadir:hover {
+  border-color: var(--estado-curso);
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--estado-curso) 5%, transparent);
+}
+
+.nota-final {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.nota-final i {
+  margin-top: 0.15rem;
+}
+
+/* ---- La barra de guardado ---- */
+.ficha .barra-guardado {
+  margin-top: 0.25rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.barra-guardado-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.barra-guardado-punto {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--estado-fallo);
+}
+
+.barra-guardado-punto--listo {
+  background: var(--estado-ok);
+}
+
+@media (max-width: 1080px) {
+  .project-form.ficha {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .indice {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .ficha .seccion {
+    padding: 1rem;
+  }
+
+  .ficha .challenge {
+    grid-template-columns: 1fr;
+  }
+
+  .challenge__numero {
+    margin-top: 0;
+  }
 }

@@ -1,0 +1,386 @@
+/* ================================================
+   La vista previa de la ficha
+   ================================================
+
+   Toma los colores del documento publico (--md-*, --banner-bg) y no los del
+   panel: lo que se juzga aqui es como se va a leer en el portafolio, y en el
+   panel se leeria con otra tinta. */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.ventana {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--editor-bg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Mientras escribe, el marco toma el color de la IA. Es la unica senal del
+   marco, y se apaga cuando termina. */
+.ventana[data-modo='redactando'] {
+  border-color: color-mix(in srgb, var(--estado-curso) 55%, var(--border-default));
+  box-shadow: var(--shadow-md), 0 0 0 4px color-mix(in srgb, var(--estado-curso) 10%, transparent);
+}
+
+.ventana[data-modo='lista'] {
+  border-color: color-mix(in srgb, var(--estado-ok) 45%, var(--border-default));
+}
+
+/* ---- La barra del navegador ---- */
+.ventana__barra {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.8rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+.ventana__puntos {
+  display: inline-flex;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.ventana__puntos i {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--border-default);
+}
+
+.ventana__url {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ventana__url i {
+  font-size: 0.6rem;
+}
+
+.ventana__url strong {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.ventana__modo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ventana[data-modo='redactando'] .ventana__modo { color: var(--estado-curso); }
+.ventana[data-modo='lista'] .ventana__modo,
+.ventana[data-modo='aplicada'] .ventana__modo { color: var(--estado-ok); }
+.ventana[data-modo='fallo'] .ventana__modo { color: var(--estado-fallo); }
+
+.ventana__latido {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--estado-curso);
+  animation: latido 1.2s ease-in-out infinite;
+}
+
+@keyframes latido {
+  50% { opacity: 0.25; transform: scale(0.7); }
+}
+
+/* ---- El cuerpo, que es el que se desplaza ---- */
+.ventana__cuerpo {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+/* ---- Cabecera ----
+   La publica lleva la captura del proyecto de fondo. Aqui no hay captura, asi
+   que se deja la rejilla del plano, que es la otra seña de identidad de la
+   ficha. */
+.banner {
+  position: relative;
+  padding: 2.25rem 2rem 1.75rem;
+  background:
+    linear-gradient(var(--md-code-border) 1px, transparent 1px) 0 0 / 28px 28px,
+    linear-gradient(90deg, var(--md-code-border) 1px, transparent 1px) 0 0 / 28px 28px,
+    var(--banner-bg);
+  background-blend-mode: normal;
+  border-bottom: 1px solid var(--md-code-border);
+}
+
+.banner::after {
+  /* Funde la rejilla hacia abajo para que el texto no quede encima de lineas. */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 0%, var(--banner-bg) 85%);
+  pointer-events: none;
+}
+
+.banner > * {
+  position: relative;
+  z-index: 1;
+}
+
+.banner__insignias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.9rem;
+}
+
+.insignia {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--card-border-hover);
+  background: var(--md-code-bg);
+  color: var(--md-heading);
+}
+
+.insignia--suave {
+  border-color: var(--md-code-border);
+  color: var(--md-text-muted);
+}
+
+.banner__titulo {
+  margin: 0 0 0.6rem;
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--md-banner-text);
+  text-shadow: var(--md-banner-shadow);
+}
+
+.banner__frase {
+  margin: 0;
+  max-width: 60ch;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: var(--md-text);
+}
+
+/* ---- El documento ---- */
+.documento {
+  padding: 0.5rem 2rem 2rem;
+  color: var(--md-text);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.entradilla {
+  margin: 1.25rem 0 0.5rem;
+  padding: 0.8rem 1rem;
+  border: 1px dashed var(--md-code-border);
+  border-radius: var(--radius-md);
+  background: var(--md-code-bg);
+}
+
+.entradilla__rotulo {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--md-text-muted);
+}
+
+.entradilla .parrafo {
+  margin: 0;
+  color: var(--md-text-soft);
+}
+
+.md-h2 {
+  margin: 1.6rem 0 0.6rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--md-code-border);
+  font-size: 1.12rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--md-text-soft);
+}
+
+.md-h3 {
+  margin: 1.1rem 0 0.35rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--md-text-soft);
+}
+
+/* Igual que la ficha publica: las almohadillas son decoracion, no texto, para
+   que no acaben en el indice de un buscador. */
+.md-h2::before { content: '## '; opacity: 0.5; color: var(--md-heading); }
+.md-h3::before { content: '### '; opacity: 0.5; color: var(--md-heading); }
+
+.parrafo {
+  margin: 0 0 0.5rem;
+}
+
+.texto {
+  white-space: pre-line;
+}
+
+.pie {
+  margin: 2rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--md-code-border);
+  font-size: 0.72rem;
+  color: var(--md-text-muted);
+}
+
+.pie code {
+  font-size: 0.95em;
+  padding: 0.05em 0.35em;
+  border-radius: 3px;
+  background: var(--md-code-bg);
+}
+
+/* ---- El bloque que se esta escribiendo ----
+   Una marca en el margen izquierdo, del color de la IA. Solo una a la vez:
+   si se marcaran tambien los terminados, no se sabria donde mirar. */
+.bloque {
+  position: relative;
+}
+
+.bloque::before {
+  content: '';
+  position: absolute;
+  left: -1rem;
+  top: 0.4rem;
+  bottom: 0.4rem;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--estado-curso);
+  opacity: 0;
+  transform: scaleY(0.4);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.banner.bloque::before {
+  left: 0.9rem;
+  top: 2.25rem;
+  bottom: 1.75rem;
+  z-index: 2;
+}
+
+.bloque[data-estado='escribiendo']::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+/* Al pulsar una burbuja de salida, su bloque se ilumina un momento para que
+   se vea a donde ha llevado. */
+.bloque--senalado {
+  animation: senalar 1.4s ease-out;
+}
+
+@keyframes senalar {
+  0%   { background-color: color-mix(in srgb, var(--estado-curso) 14%, transparent); }
+  100% { background-color: transparent; }
+}
+
+/* ---- El cursor ---- */
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  margin-left: 1px;
+  background: var(--estado-curso);
+  vertical-align: text-bottom;
+  box-shadow: 0 0 8px var(--estado-curso);
+  animation: parpadeo 1s steps(2, start) infinite;
+}
+
+@keyframes parpadeo {
+  to { visibility: hidden; }
+}
+
+/* ---- Los huecos ----
+   Tienen la forma de lo que va a llegar: una linea para el titulo, dos para
+   la frase, cuatro para un parrafo. Asi la vista no cambia de tamaño al
+   llenarse, solo se escribe. */
+.hueco {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45em;
+  padding: 0.25em 0;
+}
+
+.hueco__linea {
+  display: block;
+  height: 0.62em;
+  border-radius: 999px;
+  background: var(--md-code-border);
+  opacity: 0.55;
+}
+
+.banner__titulo .hueco__linea { height: 0.7em; }
+
+/* Solo laten mientras se esta redactando: un hueco latiendo sin nada en
+   marcha diria que algo esta cargando. */
+.ventana[data-modo='redactando'] .hueco__linea {
+  background: linear-gradient(90deg,
+    var(--md-code-border) 0%,
+    color-mix(in srgb, var(--estado-curso) 35%, var(--md-code-border)) 50%,
+    var(--md-code-border) 100%) 0 0 / 200% 100%;
+  animation: brillo 1.6s linear infinite;
+}
+
+.ventana[data-modo='fallo'] .hueco__linea {
+  opacity: 0.25;
+}
+
+@keyframes brillo {
+  from { background-position: 100% 0; }
+  to   { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor,
+  .ventana__latido,
+  .bloque--senalado,
+  .ventana[data-modo='redactando'] .hueco__linea {
+    animation: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .banner { padding: 1.5rem 1.25rem 1.25rem; }
+  .banner__titulo { font-size: 1.5rem; }
+  .documento { padding: 0.5rem 1.25rem 1.5rem; }
+  .bloque::before { left: -0.7rem; }
+  .banner.bloque::before { left: 0.5rem; }
+}

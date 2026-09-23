@@ -1,13 +1,14 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * La pipeline del redactor, con el backend simulado.
+ * El redactor, con el backend simulado.
  *
  * El endpoint responde NDJSON: un objeto por línea, que el panel va leyendo
  * mientras llega. Aquí se sirve entero de golpe —Playwright no trocea la
  * respuesta— pero el cliente lo parte por líneas igual, así que lo que se
- * comprueba es lo que importa: que cada línea mueve su paso, que el texto se
- * acumula, y sobre todo que el borrador NO entra solo en el formulario.
+ * comprueba es lo que importa: que cada línea mueve su paso, que la vista
+ * previa se llena con lo que va llegando, y sobre todo que el borrador NO entra
+ * solo en el formulario.
  *
  * Esa última parte es la razón de ser del fichero. Antes se volcaba directo, y
  * al redactar sobre un proyecto que ya tenía contenido, lo que había se perdía
@@ -61,35 +62,97 @@ async function prepararRedaccion(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Redactar borrador' }).click();
 }
 
+const nodo = (page: import('@playwright/test').Page, titulo: string) =>
+  page.locator(`.nodo[aria-label^="${titulo}:"]`);
+
+test('las burbujas y la ficha están antes de redactar', async ({ page }) => {
+  // Lo que se reportó del diseño anterior: cuadros que aparecían y
+  // desaparecían. La pipeline y la vista previa tienen que estar desde el
+  // principio, vacías, y llenarse; no aparecer.
+  await page.addInitScript(() => localStorage.setItem('jwt_token', 'prueba-e2e'));
+  await page.goto('/admin/dashboard/projects/new');
+
+  await expect(page.locator('.nodo')).toHaveCount(8);
+  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(8);
+  await expect(page.locator('.ventana')).toBeVisible();
+  await expect(page.locator('.banner__titulo .hueco')).toBeVisible();
+});
+
 test('el diagrama enciende todas las burbujas que el backend cuenta', async ({ page }) => {
   await simularStream(page, FLUJO_COMPLETO);
   await prepararRedaccion(page);
 
-  // Las ocho se dibujan desde el principio, también las que no han ocurrido:
-  // un diagrama que crece no distingue "va por la tercera" de "se quedó en la
-  // tercera".
   await expect(page.locator('.nodo')).toHaveCount(8);
   await expect(page.locator('.nodo[data-estado="hecho"]')).toHaveCount(8);
 });
 
-test('el panel lateral cuenta lo de la burbuja que se elige', async ({ page }) => {
+test('cada paso cuenta lo que dijo el backend al pasar por él', async ({ page }) => {
   await simularStream(page, FLUJO_COMPLETO);
   await prepararRedaccion(page);
 
   // El dato que sólo se conoce en ese momento: qué modelo respondió y cuánto
-  // tardó. Es la razón de que el panel exista.
-  await page.locator('.nodo[aria-label^="Modelo"]').click();
-  await expect(page.locator('.detalle')).toContainText('openai/gpt-oss-120b');
-
-  // Y las burbujas de salida llevan el texto que de verdad se redactó.
-  await page.locator('.nodo[aria-label^="Nombre"]').click();
-  await expect(page.locator('.detalle__contenido')).toHaveText('Tsuki Translator');
+  // tardó. Antes había que pulsar la burbuja para verlo; ahora va en su fila.
+  await expect(nodo(page, 'Modelo')).toContainText('openai/gpt-oss-120b');
+  await expect(nodo(page, 'Cotas')).toContainText('12 campos');
 });
 
-test('el texto del modelo se acumula segun llega', async ({ page }) => {
+test('la ficha de la vista previa enseña lo que se redactó', async ({ page }) => {
   await simularStream(page, FLUJO_COMPLETO);
   await prepararRedaccion(page);
 
+  await expect(page.locator('.banner__titulo')).toHaveText('Tsuki Translator');
+  await expect(page.locator('.ventana')).toContainText('Aislar el motor');
+  await expect(page.locator('.ventana')).toContainText('Sincronía de tiempos');
+});
+
+test('la ficha se llena con lo que ha llegado, aunque el JSON esté a medias', async ({ page }) => {
+  // Es lo que llena los ocho segundos: el campo aparece según se escribe, no
+  // al final. Aquí el flujo se corta a mitad de la descripción corta.
+  await simularStream(page, [
+    { etapa: 'entrada', detalle: 'Readme de 1200 caracteres' },
+    { etapa: 'modelo', detalle: 'Consultando openai/gpt-oss-120b' },
+    { etapa: 'texto', detalle: '{"name":"Tsuki Translator","shortDescription":"Traductor de sub' }
+  ]);
+  await prepararRedaccion(page);
+
+  await expect(page.locator('.banner__titulo')).toHaveText('Tsuki Translator');
+  await expect(page.locator('.banner__frase')).toHaveText('Traductor de sub');
+});
+
+test('un campo se da por escrito al cerrarse, no por el orden', async ({ page }) => {
+  // Antes se suponía que el modelo escribe los campos en el orden pedido. Si
+  // empezara por las descripciones, el nombre quedaba encendido sin haberse
+  // escrito. Ahora cada burbuja mira la comilla de cierre de su campo.
+  await simularStream(page, [
+    { etapa: 'entrada', detalle: 'Readme de 1200 caracteres' },
+    { etapa: 'modelo', detalle: 'Consultando openai/gpt-oss-120b' },
+    { etapa: 'texto', detalle: '{"shortDescription":"A","fullDescription":"B","name":"Tsu' }
+  ]);
+  await prepararRedaccion(page);
+
+  await expect(nodo(page, 'Descripciones')).toHaveAttribute('data-estado', 'hecho');
+  await expect(nodo(page, 'Nombre')).not.toHaveAttribute('data-estado', 'hecho');
+});
+
+test('un flujo que se acaba sin terminar no se queda escribiendo', async ({ page }) => {
+  // Sin 'fin' ni 'error', la vista se quedaba en "escribiendo" para siempre:
+  // indistinguible de un cuelgue.
+  await simularStream(page, [
+    { etapa: 'entrada', detalle: 'Readme de 1200 caracteres' },
+    { etapa: 'modelo', detalle: 'Consultando openai/gpt-oss-120b' },
+    { etapa: 'texto', detalle: '{"name":"Tsu' }
+  ]);
+  await prepararRedaccion(page);
+
+  await expect(page.locator('.acciones[data-modo="fallo"]')).toContainText('se cerró antes de terminar');
+  await expect(page.locator('.nodo[data-estado="fallo"]')).toHaveCount(1);
+});
+
+test('la respuesta en crudo se acumula según llega', async ({ page }) => {
+  await simularStream(page, FLUJO_COMPLETO);
+  await prepararRedaccion(page);
+
+  await page.getByRole('button', { name: /Respuesta en crudo/ }).click();
   await expect(page.locator('.salida__cuerpo')).toHaveText('{"name":"Tsuki Translator"');
 });
 
@@ -97,18 +160,28 @@ test('el borrador no entra solo en el formulario', async ({ page }) => {
   await simularStream(page, FLUJO_COMPLETO);
   await prepararRedaccion(page);
 
-  await expect(page.locator('.propuesta')).toBeVisible();
+  await expect(page.locator('.acciones[data-modo="lista"]')).toBeVisible();
   // Lo que de verdad se protege: el formulario sigue como estaba.
   await expect(page.locator('#name')).toHaveValue('');
   await expect(page.locator('#shortDescription')).toHaveValue('');
 });
 
-test('al aceptarla se rellenan los campos, el nombre incluido', async ({ page }) => {
+test('al terminar, el foco va a aceptar y no se queda en redactar', async ({ page }) => {
+  // El botón de redactar se quedaba con el foco, y pulsar Enter o Espacio
+  // después volvía a lanzar la redacción: otra llamada de pago.
   await simularStream(page, FLUJO_COMPLETO);
   await prepararRedaccion(page);
 
-  await page.getByRole('button', { name: 'Aplicar al formulario' }).click();
+  await expect(page.getByRole('button', { name: 'Aceptar y completar la ficha' })).toBeFocused();
+});
 
+test('al aceptarla se rellenan los campos y se pasa a completar la ficha', async ({ page }) => {
+  await simularStream(page, FLUJO_COMPLETO);
+  await prepararRedaccion(page);
+
+  await page.getByRole('button', { name: 'Aceptar y completar la ficha' }).click();
+
+  await expect(page.getByRole('tab', { name: /Completar la ficha/ })).toHaveAttribute('aria-selected', 'true');
   // El nombre lo pone el borrador: ya no hay que escribirlo antes de empezar.
   await expect(page.locator('#name')).toHaveValue('Tsuki Translator');
   await expect(page.locator('#rmLearnings')).toHaveValue(/Aislar el motor/);
@@ -118,25 +191,26 @@ test('al aceptarla se rellenan los campos, el nombre incluido', async ({ page })
 test('los campos que escribio la IA quedan marcados hasta que los tocas', async ({ page }) => {
   await simularStream(page, FLUJO_COMPLETO);
   await prepararRedaccion(page);
-  await page.getByRole('button', { name: 'Aplicar al formulario' }).click();
+  await page.getByRole('button', { name: 'Aceptar y completar la ficha' }).click();
 
   // Una cuenta exacta y no un "más de cero": count() no reintenta, así que
   // preguntar a pelo justo después de aplicar llegaba a veces antes de que el
   // formulario se repintara. toHaveCount sí espera.
-  const marcas = page.locator('.marca-ia');
+  const marcas = page.locator('.form-group label .marca-ia');
   await expect(marcas).toHaveCount(8);
 
   await page.locator('#name').fill('Otro nombre');
   await expect(marcas).toHaveCount(7);
 });
 
-test('descartar deja el formulario intacto', async ({ page }) => {
+test('descartar deja el formulario intacto y la vista como al principio', async ({ page }) => {
   await simularStream(page, FLUJO_COMPLETO);
   await prepararRedaccion(page);
 
   await page.getByRole('button', { name: 'Descartar' }).click();
 
-  await expect(page.locator('.propuesta')).toHaveCount(0);
+  await expect(page.locator('.acciones[data-modo="vacia"]')).toBeVisible();
+  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(8);
   await expect(page.locator('#name')).toHaveValue('');
 });
 
@@ -156,8 +230,8 @@ test('solo una burbuja se lleva el fallo, aunque hubiera dos trabajando', async 
   await expect(page.locator('.nodo[data-estado="fallo"]')).toHaveCount(1);
   // Y es la del modelo, que es donde se rompio: la del nombre solo reflejaba
   // lo que iba escribiendose.
-  await expect(page.locator('.nodo[aria-label^="Modelo"]')).toHaveAttribute('data-estado', 'fallo');
-  await expect(page.locator('.nodo[aria-label^="Nombre"]')).toHaveAttribute('data-estado', 'no-alcanzado');
+  await expect(nodo(page, 'Modelo')).toHaveAttribute('data-estado', 'fallo');
+  await expect(nodo(page, 'Nombre')).toHaveAttribute('data-estado', 'no-alcanzado');
 });
 
 test('un fallo a mitad se ve donde paro, aunque el estado HTTP sea 200', async ({ page }) => {
@@ -172,12 +246,13 @@ test('un fallo a mitad se ve donde paro, aunque el estado HTTP sea 200', async (
   await prepararRedaccion(page);
 
   await expect(page.locator('.nodo[data-estado="fallo"]')).toHaveCount(1);
-  await expect(page.locator('.detalle')).toContainText('Groq no responde');
+  await expect(page.locator('.nodo[data-estado="fallo"]')).toContainText('Groq no responde');
 
   // Lo que venía detrás queda como "no se llegó", que no es lo mismo que "sin
   // empezar": uno todavía podía ocurrir y el otro ya no. Sin esa diferencia,
   // un diagrama parado se lee igual que uno que no ha arrancado.
   await expect(page.locator('.nodo[data-estado="no-alcanzado"]')).not.toHaveCount(0);
   await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(0);
-  await expect(page.locator('.propuesta')).toHaveCount(0);
+  await expect(page.locator('.acciones[data-modo="fallo"]')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Aceptar y completar la ficha' })).toHaveCount(0);
 });

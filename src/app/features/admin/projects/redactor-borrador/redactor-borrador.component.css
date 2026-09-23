@@ -1,0 +1,525 @@
+/* ================================================
+   El redactor: de donde sale el readme, y como se escribe
+   ================================================
+
+   El color de la IA es --estado-curso. Se usa para lo que hace la IA --el
+   boton que la lanza, lo que esta escribiendo-- y para nada mas: si tambien
+   pintara los bordes y los titulos, dejaria de decir "aqui trabaja el
+   modelo". */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ---- La fuente ---- */
+.fuente {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.35rem 1.5rem 1.1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(120% 140% at 0% 0%,
+      color-mix(in srgb, var(--estado-curso) 9%, transparent) 0%, transparent 55%),
+    var(--bg-secondary);
+  overflow: hidden;
+}
+
+.fuente__cabeza {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.fuente__icono {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--estado-curso) 16%, var(--bg-secondary));
+  border: 1px solid color-mix(in srgb, var(--estado-curso) 40%, transparent);
+  color: var(--estado-curso);
+  font-size: 1.05rem;
+}
+
+.fuente__titulo {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.fuente__lema {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+.fuente__lema strong {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.fuente__nota {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+.fuente__nota i {
+  font-size: 0.7rem;
+}
+
+/* ---- Las vias ---- */
+.vias {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.via-repo {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 260px;
+  padding-left: 0.8rem;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.via-repo:focus-within {
+  border-color: var(--estado-curso);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--estado-curso) 18%, transparent);
+}
+
+.via-repo__icono {
+  color: var(--text-tertiary);
+  font-size: 0.95rem;
+}
+
+/* El campo va sin marco propio: el marco es el del grupo, para que el enlace
+   y su boton se lean como una sola cosa. */
+.via-repo input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+}
+
+.via-repo input:focus {
+  box-shadow: none;
+  outline: none;
+}
+
+.via-repo__boton {
+  flex-shrink: 0;
+}
+
+.vias__o {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+}
+
+/* El input de fichero nativo no se puede estilar, asi que se esconde dentro de
+   su etiqueta y lo que se ve es la etiqueta. El input sigue ahi: el foco por
+   teclado y el espacio funcionan como en cualquier campo. */
+.via-subir {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 0.95rem;
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.via-subir:hover {
+  border-color: var(--estado-curso);
+  color: var(--text-primary);
+}
+
+.via-subir:focus-within {
+  outline: 2px solid var(--estado-curso);
+  outline-offset: 2px;
+}
+
+.via-subir input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* El boton que lanza al modelo lleva el color del modelo. */
+.redactar {
+  margin-left: auto;
+  background: var(--estado-curso);
+  border-color: var(--estado-curso);
+  color: var(--bg-secondary);
+  font-weight: 600;
+  box-shadow: 0 6px 20px -6px color-mix(in srgb, var(--estado-curso) 70%, transparent);
+}
+
+.redactar:not(:disabled):hover {
+  background: color-mix(in srgb, var(--estado-curso) 85%, var(--text-primary));
+  border-color: color-mix(in srgb, var(--estado-curso) 85%, var(--text-primary));
+  color: var(--bg-secondary);
+}
+
+/* ---- El editor ---- */
+.editor {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.editor--arrastrando {
+  border-color: var(--estado-curso);
+  border-style: dashed;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--estado-curso) 18%, transparent);
+}
+
+.editor__barra {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem 0.8rem;
+  border: none;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.editor__barra:hover {
+  background: var(--bg-tertiary);
+}
+
+.editor__icono {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.editor__nombre {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.editor__origen {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-tertiary);
+}
+
+.editor__medida {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.editor__medida--corta {
+  color: var(--estado-fallo);
+}
+
+.editor__plegar {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+.editor textarea {
+  display: block;
+  width: 100%;
+  min-height: 10rem;
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border: none;
+  border-top: 1px solid var(--border-subtle);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.editor textarea:focus {
+  box-shadow: none;
+  outline: none;
+}
+
+/* ---- El escenario ----
+   Mide lo que la ventana, y cada columna se desplaza por su cuenta: asi la
+   pipeline y la ficha se ven a la vez de principio a fin, que es la gracia de
+   ponerlas juntas. */
+.escenario {
+  display: grid;
+  grid-template-columns: minmax(270px, 330px) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 1rem;
+  height: clamp(560px, calc(100dvh - 4rem), 1000px);
+  scroll-margin-top: 1rem;
+}
+
+.columna {
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.columna--pipeline {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  overflow: hidden;
+}
+
+.columna__cabeza {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.columna__titulo {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.columna__cuenta {
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.escenario[data-modo='redactando'] .columna__cuenta { color: var(--estado-curso); }
+.escenario[data-modo='lista'] .columna__cuenta,
+.escenario[data-modo='aplicada'] .columna__cuenta { color: var(--estado-ok); }
+
+.columna__cuerpo {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.1rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  scrollbar-width: thin;
+}
+
+/* En una columna flex que se desplaza, los hijos se encogen antes de que
+   aparezca la barra. La caja de la respuesta en crudo, que lleva
+   overflow: hidden, llegaba a medir 2px con la pipeline terminada en una
+   ventana baja: se veia el borde y el boton quedaba debajo, sin poder
+   pulsarse. */
+.columna__cuerpo > * {
+  flex-shrink: 0;
+}
+
+/* ---- La respuesta en crudo ---- */
+.salida {
+  margin-top: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+.salida__cabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.75rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.salida__cabecera:hover {
+  background: var(--bg-tertiary);
+}
+
+.salida__cabecera i {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+.salida__medida {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+.salida__cuerpo {
+  max-height: 220px;
+  overflow: auto;
+  margin: 0;
+  padding: 0.7rem;
+  border-top: 1px solid var(--border-subtle);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* El cursor solo esta mientras escribe. Un cursor parpadeando sobre un texto
+   que ya termino diria que sigue pasando algo. */
+.salida__cursor {
+  display: inline-block;
+  width: 2px;
+  height: 0.95em;
+  margin-left: 1px;
+  background: var(--estado-curso);
+  vertical-align: text-bottom;
+  animation: parpadeo 1s steps(2, start) infinite;
+}
+
+@keyframes parpadeo {
+  to { visibility: hidden; }
+}
+
+/* ---- Las acciones ---- */
+.acciones {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  min-height: 3.5rem;
+  padding: 0.55rem 0.65rem 0.55rem 1.1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  transition: border-color 0.3s ease;
+}
+
+.acciones__estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-right: auto;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-tertiary);
+}
+
+.acciones[data-modo='redactando'] { border-color: color-mix(in srgb, var(--estado-curso) 45%, var(--border-subtle)); }
+.acciones[data-modo='redactando'] .acciones__estado { color: var(--text-secondary); }
+
+.acciones[data-modo='lista'],
+.acciones[data-modo='aplicada'] { border-color: color-mix(in srgb, var(--estado-ok) 45%, var(--border-subtle)); }
+.acciones[data-modo='lista'] .acciones__estado,
+.acciones[data-modo='aplicada'] .acciones__estado { color: var(--text-secondary); }
+.acciones[data-modo='lista'] .acciones__estado i,
+.acciones[data-modo='aplicada'] .acciones__estado i { color: var(--estado-ok); }
+
+.acciones[data-modo='fallo'] { border-color: color-mix(in srgb, var(--estado-fallo) 45%, var(--border-subtle)); }
+.acciones[data-modo='fallo'] .acciones__estado { color: var(--estado-fallo); }
+
+.acciones__latido {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--estado-curso);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--estado-curso) 60%, transparent);
+  animation: onda 1.4s ease-out infinite;
+}
+
+@keyframes onda {
+  to { box-shadow: 0 0 0 8px transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .salida__cursor,
+  .acciones__latido {
+    animation: none;
+  }
+}
+
+/* ---- Estrecho ----
+   Una columna. Cada una mide lo que su contenido y lo que se desplaza vuelve
+   a ser la pagina: dos barras de desplazamiento anidadas en un movil son una
+   de mas. */
+@media (max-width: 900px) {
+  /* minmax(0, 1fr) y no 1fr: 1fr no baja del ancho minimo de su contenido,
+     y la direccion de la barra de la vista previa no se parte, asi que la
+     columna se salia de la pantalla. */
+  .escenario {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    height: auto;
+  }
+
+  .columna__cuerpo {
+    overflow: visible;
+  }
+
+  .columna--vista {
+    height: 75vh;
+    min-height: 480px;
+  }
+
+  .redactar {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .fuente {
+    padding: 1.1rem 1rem 1rem;
+  }
+
+  .via-repo {
+    min-width: 100%;
+  }
+
+  .vias__o {
+    display: none;
+  }
+}

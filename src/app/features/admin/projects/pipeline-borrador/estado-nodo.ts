@@ -62,7 +62,7 @@ export const LECTURA_ESTADO: Record<EstadoNodo, LecturaEstado> = {
   curso: {
     etiqueta: 'Trabajando',
     icono: 'pi pi-spin pi-spinner',
-    color: 'var(--text-accent)',
+    color: 'var(--estado-curso)',
     // El dato que quiere quien espera un paso lento: empezo y no ha vuelto.
     // Cuanto lleva va al lado, en las dos superficies que dicen esto.
     glosa: 'la redaccion esta aqui ahora mismo',
@@ -104,6 +104,10 @@ export interface NodoPipeline {
   detalle: string;
   /** Cuando entro en curso, para poder decir cuanto lleva. */
   desde?: number;
-  /** Solo en los nodos de salida: el texto que redacto el modelo. */
-  contenido?: string;
+  /** Cuanto tardo, en ms, una vez que salio de curso. Sin esto, al terminar
+   *  se perdia el unico dato que el cronometro llevaba ensenando. */
+  duracion?: number;
+  /** Solo en las salidas: cuanto lleva escrito, de 0 a 1, respecto a lo que
+   *  suele ocupar. Una estimacion; llega a 1 solo cuando el campo se cierra. */
+  progreso?: number;
 }
