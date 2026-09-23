@@ -120,12 +120,14 @@ test('los campos que escribio la IA quedan marcados hasta que los tocas', async 
   await prepararRedaccion(page);
   await page.getByRole('button', { name: 'Aplicar al formulario' }).click();
 
+  // Una cuenta exacta y no un "más de cero": count() no reintenta, así que
+  // preguntar a pelo justo después de aplicar llegaba a veces antes de que el
+  // formulario se repintara. toHaveCount sí espera.
   const marcas = page.locator('.marca-ia');
-  const antes = await marcas.count();
-  expect(antes).toBeGreaterThan(0);
+  await expect(marcas).toHaveCount(8);
 
   await page.locator('#name').fill('Otro nombre');
-  await expect(marcas).toHaveCount(antes - 1);
+  await expect(marcas).toHaveCount(7);
 });
 
 test('descartar deja el formulario intacto', async ({ page }) => {
@@ -136,6 +138,26 @@ test('descartar deja el formulario intacto', async ({ page }) => {
 
   await expect(page.locator('.propuesta')).toHaveCount(0);
   await expect(page.locator('#name')).toHaveValue('');
+});
+
+test('solo una burbuja se lleva el fallo, aunque hubiera dos trabajando', async ({ page }) => {
+  // Mientras el modelo escribe hay dos en curso a la vez: la del modelo y la
+  // del campo que está saliendo. Marcando todas, un corte a media escritura
+  // pintaba dos en rojo diciendo cada una "aquí es donde se cortó", que es la
+  // contradicción que la declaración de estados existe para impedir.
+  await simularStream(page, [
+    { etapa: 'entrada', detalle: 'Readme de 1200 caracteres' },
+    { etapa: 'modelo', detalle: 'Consultando openai/gpt-oss-120b' },
+    { etapa: 'texto', detalle: '{"name":"A medias' },
+    { etapa: 'error', tipo: 'nodisponible', detalle: 'Se corto la conexion' }
+  ]);
+  await prepararRedaccion(page);
+
+  await expect(page.locator('.nodo[data-estado="fallo"]')).toHaveCount(1);
+  // Y es la del modelo, que es donde se rompio: la del nombre solo reflejaba
+  // lo que iba escribiendose.
+  await expect(page.locator('.nodo[aria-label^="Modelo"]')).toHaveAttribute('data-estado', 'fallo');
+  await expect(page.locator('.nodo[aria-label^="Nombre"]')).toHaveAttribute('data-estado', 'no-alcanzado');
 });
 
 test('un fallo a mitad se ve donde paro, aunque el estado HTTP sea 200', async ({ page }) => {

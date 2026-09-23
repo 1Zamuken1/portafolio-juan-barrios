@@ -653,22 +653,34 @@ export class AdminProjectFormComponent implements OnInit {
   }
 
   /**
-   * El nodo que estuviera trabajando se queda marcado: ahi fue donde se paro.
+   * Marca donde se paro la redaccion.
    *
-   * Y lo que venia detras pasa a "no se llego", que no es lo mismo que "sin
-   * empezar": uno todavia podia ocurrir y el otro ya no. Sin esa diferencia, un
-   * diagrama parado se lee igual que uno que no ha arrancado.
+   * <p><b>Un solo nodo se lleva el fallo</b>, y eso hay que decidirlo porque
+   * puede haber dos trabajando a la vez: mientras el modelo escribe, la burbuja
+   * del modelo y la del campo que esta saliendo estan las dos en curso. La
+   * primera version marcaba todas, asi que un corte a media escritura pintaba
+   * dos burbujas en rojo diciendo cada una "aqui es donde se corto", que es
+   * precisamente la contradiccion que la declaracion de estados existe para
+   * impedir.
+   *
+   * <p>El fallo es de la primera en orden, que siempre es la de la cadena: lo
+   * que se rompe son los pasos del backend, y las de salida solo reflejan lo
+   * que iba escribiendose. Esas se quedan en "no se llego".
+   *
+   * <p>Y lo que no habia empezado tambien pasa a "no se llego", que no es lo
+   * mismo que "sin empezar": uno todavia podia ocurrir y el otro ya no. Sin esa
+   * diferencia, un diagrama parado se lee igual que uno que no ha arrancado.
    */
   private marcarFallo(detalle: string): void {
     this.nodos.update((nodos) => {
-      let roto = false;
+      const culpable = nodos.find((n) => n.estado === 'curso')?.clave;
+
       return nodos.map((n) => {
-        if (n.estado === 'curso') {
-          roto = true;
+        if (n.clave === culpable) {
           return { ...n, estado: 'fallo' as EstadoNodo, detalle, desde: undefined };
         }
-        if (roto && n.estado === 'espera') {
-          return { ...n, estado: 'no-alcanzado' as EstadoNodo };
+        if (n.estado === 'curso' || n.estado === 'espera') {
+          return { ...n, estado: 'no-alcanzado' as EstadoNodo, desde: undefined };
         }
         return n;
       });
