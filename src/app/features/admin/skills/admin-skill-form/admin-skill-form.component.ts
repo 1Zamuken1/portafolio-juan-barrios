@@ -27,7 +27,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
   ],
   providers: [MessageService],
   templateUrl: './admin-skill-form.component.html',
-  styleUrl: './admin-skill-form.component.css'
+  styleUrls: ['../../admin.css']
 })
 export class AdminSkillFormComponent implements OnInit {
   form!: FormGroup;
