@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { DataService } from '../../../core/services/data.service';
 import { SeoService } from '../../../core/services/seo.service';
 import { AdminSkill } from '../../../shared/models/skill.model';
@@ -16,7 +17,7 @@ import { DocumentoBase } from '../documento-base';
 @Component({
   selector: 'app-stack',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './stack.component.html',
   styleUrls: ['../documento.css']
 })

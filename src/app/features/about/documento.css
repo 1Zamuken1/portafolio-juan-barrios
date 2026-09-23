@@ -224,3 +224,60 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Navegación entre documentos ──
+   El pie de cada documento del perfil. La alternativa que se planteó era
+   simular un scroll continuo entre los tres, pero eso volvería a fingir que
+   unos ficheros no son ficheros; esto encadena la lectura sin mentir. */
+.doc-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--md-code-border);
+}
+
+.doc-nav a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--card-border);
+  border-radius: 0.4rem;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.doc-nav a:hover {
+  border-color: var(--card-border-hover);
+  background: var(--card-bg);
+}
+
+.doc-nav-next {
+  text-align: right;
+  margin-left: auto;
+}
+
+.doc-nav-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--md-text-muted);
+}
+
+.doc-nav-file {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--md-link);
+}
+
+@media (max-width: 520px) {
+  .doc-nav {
+    flex-direction: column;
+  }
+  .doc-nav-next {
+    margin-left: 0;
+    text-align: left;
+  }
+}

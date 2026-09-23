@@ -95,7 +95,14 @@
             <span>WORKSPACE</span>
           </div>
           <div class="section-list">
-            
+
+            <!-- README, en la raiz del arbol: es la portada del sitio, no un
+                 documento del perfil. -->
+            <a class="list-item" routerLink="/" [class.active]="activeTabId() === '/'">
+              <i class="pi pi-info-circle" style="color: #4ec9b0; font-size: 0.85rem;"></i>
+              README.md
+            </a>
+
             <!-- About Folder -->
             <div class="sidebar-folder">
               <div class="folder-header" (click)="toggleFolder('about')">
@@ -105,10 +112,6 @@
               </div>
               @if (expandedFolders().has('about')) {
                 <div class="folder-contents">
-                  <a class="list-item nested-item" routerLink="/" [class.active]="activeTabId() === '/'">
-                    <i class="pi pi-info-circle" style="color: #4ec9b0; font-size: 0.85rem;"></i>
-                    README.md
-                  </a>
                   <a class="list-item nested-item" routerLink="/about" [class.active]="activeTabId() === '/about'">
                     <i class="pi pi-user" style="color: #e8a94a; font-size: 0.85rem;"></i>
                     profile.md
