@@ -4,8 +4,8 @@
   <div>
     <h2 class="pagina-titulo">{{ isEditMode ? 'Editar proyecto' : 'Nuevo proyecto' }}</h2>
     <p class="pagina-descripcion">
-      La ficha completa: lo que se ve en la tarjeta, lo que se ve al abrirla y
-      el readme del caso de estudio.
+      Primero la IA redacta la prosa a partir del readme; después se completa
+      lo demás y se guarda.
     </p>
   </div>
 </header>
@@ -15,136 +15,114 @@
   <p>Cargando el proyecto…</p>
 </div>
 
-<!-- Redactar un borrador a partir de un readme.
-     Va fuera del <form> a proposito: el readme de origen no es un campo del
-     proyecto, es material de entrada y no se guarda en ningun sitio. -->
-<div class="panel-borrador" *ngIf="!loading()">
-  <button pButton type="button" class="p-button-text panel-borrador__toggle"
-          [label]="panelBorradorAbierto() ? 'Ocultar el redactor' : 'Redactar desde un readme'"
-          [icon]="panelBorradorAbierto() ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
-          (click)="panelBorradorAbierto.set(!panelBorradorAbierto())"></button>
+@if (!loading()) {
+  <!-- Los dos pasos. Se puede ir y volver cuando se quiera: el formulario y
+       el redactor guardan lo suyo al cambiar, no se reinician. -->
+  <nav class="pasos" role="tablist" aria-label="Pasos de la ficha">
+    <button type="button" role="tab" class="pasos__paso" id="paso-redactar"
+            [attr.aria-selected]="paso() === 1" aria-controls="panel-redactar"
+            (click)="irA(1)">
+      <span class="pasos__numero"><i class="pi pi-sparkles" aria-hidden="true"></i></span>
+      <span class="pasos__texto">
+        <span class="pasos__titulo">Redactar con IA</span>
+        <span class="pasos__lema">del readme a la ficha</span>
+      </span>
+    </button>
 
-  <div class="panel-borrador__cuerpo" *ngIf="panelBorradorAbierto()">
-    <p class="panel-borrador__ayuda">
-      De un readme salen el nombre, las descripciones, las cinco secciones del
-      caso de estudio y los desafíos. <strong>No se guarda nada, y tampoco entra
-      solo en el formulario</strong>: lo que redacte queda como propuesta y
-      tienes que aceptarla. El diagrama, el stack y las métricas no se tocan.
-    </p>
+    <span class="pasos__union" aria-hidden="true"></span>
 
-    <!-- Traer el readme sin pegarlo a mano. Las dos vias dejan el texto en el
-         area de abajo, que sigue siendo lo unico que se le manda al modelo. -->
-    <div class="fuentes">
-      <div class="fuentes__repo">
-        <input pInputText type="text" [formControl]="enlaceRepo"
-               placeholder="https://github.com/usuario/repo"
-               (keydown.enter)="traerDeGithub()" aria-label="Enlace del repositorio" />
-        <button pButton type="button" label="Traer readme" icon="pi pi-github"
-                class="p-button-outlined" [loading]="trayendo()"
-                (click)="traerDeGithub()"></button>
-      </div>
+    <button type="button" role="tab" class="pasos__paso" id="paso-completar"
+            [attr.aria-selected]="paso() === 2" aria-controls="panel-completar"
+            (click)="irA(2)">
+      <span class="pasos__numero">2</span>
+      <span class="pasos__texto">
+        <span class="pasos__titulo">Completar la ficha</span>
+        <span class="pasos__lema">
+          @if (rellenados().size) { {{ rellenados().size }} campos de la IA por revisar }
+          @else { enlaces, estado, listas }
+        </span>
+      </span>
+    </button>
+  </nav>
+}
 
-      <span class="fuentes__o">o</span>
-
-      <label class="fuentes__subir">
-        <i class="pi pi-upload" aria-hidden="true"></i>
-        Subir un .md
-        <input type="file" accept=".md,.markdown,text/markdown,text/plain"
-               (change)="subirMarkdown($event)" />
-      </label>
-    </div>
-
-    <p class="panel-borrador__ayuda">
-      Solo repositorios publicos: no se manda ningun token. El fichero que
-      subes se lee en el navegador y no viaja a ningun sitio; lo unico que sale
-      de aqui es el texto de abajo, y solo al pulsar Redactar.
-    </p>
-
-    <textarea pTextarea id="readmeFuente" [formControl]="readmeFuente" rows="10"
-              placeholder="# Mi proyecto&#10;&#10;Pega aqui el readme completo..."></textarea>
-
-    <button pButton type="button" label="Redactar borrador" icon="pi pi-sparkles"
-            [loading]="redactando()" (click)="redactarBorrador()"></button>
-
-    <!-- La respuesta del modelo, segun la escribe. Es lo unico que de verdad
-         llena los ocho segundos de espera: los pasos dicen en que fase va,
-         esto ensenia que hay algo saliendo. Es texto para mirar, no datos:
-         nada de aqui toca el formulario. -->
-    @if (textoModelo()) {
-      <div class="salida">
-        <button type="button" class="salida__cabecera"
-                [attr.aria-expanded]="salidaAbierta()"
-                (click)="salidaAbierta.set(!salidaAbierta())">
-          <i class="pi" [class.pi-chevron-down]="salidaAbierta()"
-             [class.pi-chevron-right]="!salidaAbierta()" aria-hidden="true"></i>
-          <span>{{ redactando() ? 'Escribiendo…' : 'Lo que respondió el modelo' }}</span>
-          <span class="salida__medida">{{ textoModelo().length }} car.</span>
-        </button>
-
-        @if (salidaAbierta()) {
-          <pre class="salida__cuerpo" #salidaCuerpo>{{ textoModelo() }}@if (redactando()) {<span class="salida__cursor" aria-hidden="true"></span>}</pre>
-        }
-      </div>
-    }
-
-    <!-- Por donde va, y que va saliendo. Cada cambio viene de una linea que
-         mando el backend; no hay ningun temporizador simulando progreso. -->
-    @if (nodos().length) {
-      <app-pipeline-borrador [nodos]="nodos()" />
-    }
-
-    <!-- La propuesta. No entra sola en el formulario: al redactar sobre un
-         proyecto que ya tiene contenido, lo que habia se perdia sin haberlo
-         visto. Aqui se ve campo por campo y hay que aceptarla. -->
-    @if (propuesta(); as p) {
-      <section class="propuesta" aria-label="Borrador propuesto">
-        <header class="propuesta__cabecera">
-          <span class="propuesta__titulo">
-            <i class="pi pi-sparkles" aria-hidden="true"></i> Propuesta
-          </span>
-          <span class="propuesta__nota">Todavía no ha entrado nada en el formulario.</span>
-        </header>
-
-        <dl class="propuesta__campos">
-          <div><dt>Nombre</dt><dd>{{ p.name }}</dd></div>
-          <div><dt>Descripción corta</dt><dd>{{ p.shortDescription }}</dd></div>
-          <div><dt>Descripción completa</dt><dd>{{ p.fullDescription }}</dd></div>
-          <div><dt>Objetivo</dt><dd>{{ p.readmeMarkdown.objective }}</dd></div>
-          <div><dt>Arquitectura</dt><dd>{{ p.readmeMarkdown.architecture }}</dd></div>
-          <div><dt>Funcionalidades</dt><dd>{{ p.readmeMarkdown.mainFeatures }}</dd></div>
-          <div><dt>Tecnologías</dt><dd>{{ p.readmeMarkdown.technologies }}</dd></div>
-          <div><dt>Aprendizajes</dt><dd>{{ p.readmeMarkdown.learnings }}</dd></div>
-          <div>
-            <dt>Desafíos ({{ p.challenges.length }})</dt>
-            <dd>
-              <ul class="propuesta__lista">
-                @for (c of p.challenges; track c.title) {
-                  <li><strong>{{ c.title }}</strong> — {{ c.description }}</li>
-                }
-              </ul>
-            </dd>
-          </div>
-        </dl>
-
-        <div class="propuesta__acciones">
-          <button pButton type="button" label="Aplicar al formulario" icon="pi pi-check"
-                  (click)="aplicarPropuesta()"></button>
-          <button pButton type="button" label="Descartar" icon="pi pi-times"
-                  class="p-button-text p-button-secondary"
-                  (click)="descartarPropuesta()"></button>
-        </div>
-      </section>
-    }
-  </div>
+<!-- El redactor va fuera del <form> a proposito: el readme de origen no es un
+     campo del proyecto, es material de entrada y no se guarda en ningun sitio.
+     Se oculta en vez de desmontarse para que al volver siga ahi lo redactado. -->
+<div id="panel-redactar" role="tabpanel" aria-labelledby="paso-redactar"
+     [hidden]="loading() || paso() !== 1">
+  <app-redactor-borrador [pista]="pista()" [actual]="actual()" [meta]="meta()"
+                         [proyectoId]="projectId"
+                         (aceptar)="aplicarPropuesta($event)"
+                         (completar)="irA(2)" />
 </div>
 
-<form [formGroup]="form" (ngSubmit)="onSubmit()" class="project-form" *ngIf="!loading()">
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="project-form ficha"
+      id="panel-completar" role="tabpanel" aria-labelledby="paso-completar"
+      [hidden]="loading() || paso() !== 2">
 
-  <section class="form-seccion">
-    <h3 class="form-seccion-titulo">Identidad</h3>
+  @if (rellenados().size) {
+    <div class="aviso-ia">
+      <i class="pi pi-sparkles" aria-hidden="true"></i>
+      <span>
+        <strong>{{ rellenados().size }} campos los escribió la IA.</strong>
+        Llevan la marca <span class="marca-ia marca-ia--muestra"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>
+        hasta que los toques.
+      </span>
+      <button pButton type="button" label="Ver la propuesta" icon="pi pi-arrow-left"
+              class="p-button-text p-button-sm" (click)="irA(1)"></button>
+    </div>
+  }
+
+  <!-- ===== El indice =====
+       Una ficha son treinta campos en siete secciones. Esto dice cuales estan
+       y cuanto falta en cada una, y lleva a ellas sin recorrer la pagina. -->
+  <aside class="indice" aria-label="Secciones de la ficha">
+    <!-- La tarjeta tal como sale en la lista del portafolio, en vivo: es lo
+         unico que se ve sin abrir la ficha, asi que es lo primero que hay que
+         ver bien. -->
+    <div class="tarjeta">
+      <span class="tarjeta__tipo">{{ valor().type || 'Proyecto' }} · {{ valor().year }}</span>
+      <span class="tarjeta__nombre">{{ valor().name || 'Sin nombre' }}</span>
+      <span class="tarjeta__frase">{{ valor().shortDescription || 'La frase de la tarjeta aparecerá aquí.' }}</span>
+      <span class="tarjeta__estado">{{ valor().status }}</span>
+    </div>
+
+    <nav class="indice__lista">
+      @for (s of SECCIONES; track s.id) {
+        @let c = cuenta(s.id);
+        <a class="indice__enlace" [class.indice__enlace--activo]="seccionActiva() === s.id"
+           [href]="'#seccion-' + s.id" (click)="$event.preventDefault(); irASeccion(s.id)">
+          <i [class]="s.icono" aria-hidden="true"></i>
+          <span class="indice__nombre">{{ s.titulo }}</span>
+          <span class="indice__anillo" [style.--p]="c.llenos / c.total"
+                [class.indice__anillo--lleno]="c.llenos === c.total"
+                [attr.title]="c.llenos + ' de ' + c.total + ' campos'"></span>
+        </a>
+      }
+    </nav>
+
+    <div class="indice__total">
+      <span>{{ total().llenos }} de {{ total().total }} campos</span>
+      <span class="indice__barra"><span [style.width.%]="total().llenos / total().total * 100"></span></span>
+    </div>
+  </aside>
+
+  <div class="ficha__cuerpo">
+
+  <section class="form-seccion seccion" id="seccion-identidad">
+    <header class="seccion__cabeza">
+      <span class="seccion__icono" aria-hidden="true"><i class="pi pi-id-card"></i></span>
+      <div class="seccion__titulos">
+        <h3 class="form-seccion-titulo">Identidad</h3>
+        <p class="seccion__lema">Cómo se llama, qué es y dónde va en la lista.</p>
+      </div>
+      @let c_identidad = cuenta('identidad');
+      <span class="seccion__cuenta" [class.seccion__cuenta--llena]="c_identidad.llenos === c_identidad.total">{{ c_identidad.llenos }}/{{ c_identidad.total }}</span>
+    </header>
 
     <div class="form-row">
-      <div class="form-group flex-2">
+      <div class="form-group flex-2" [class.campo-ia]="loRellenoLaIa('name')">
         <label for="name">Nombre * @if (loRellenoLaIa('name')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
         <input pInputText id="name" formControlName="name" (input)="marcarComoMio('name')" placeholder="Gastu" />
       </div>
@@ -186,29 +164,45 @@
     </div>
   </section>
 
-  <section class="form-seccion">
-    <h3 class="form-seccion-titulo">Descripciones</h3>
+  <section class="form-seccion seccion" id="seccion-descripciones">
+    <header class="seccion__cabeza">
+      <span class="seccion__icono" aria-hidden="true"><i class="pi pi-align-left"></i></span>
+      <div class="seccion__titulos">
+        <h3 class="form-seccion-titulo">Descripciones</h3>
+        <p class="seccion__lema">La frase de la tarjeta y el resumen para buscadores y enlaces.</p>
+      </div>
+      @let c_descripciones = cuenta('descripciones');
+      <span class="seccion__cuenta" [class.seccion__cuenta--llena]="c_descripciones.llenos === c_descripciones.total">{{ c_descripciones.llenos }}/{{ c_descripciones.total }}</span>
+    </header>
 
-    <div class="form-group">
+    <div class="form-group" [class.campo-ia]="loRellenoLaIa('shortDescription')">
       <label for="shortDescription">Descripción corta * @if (loRellenoLaIa('shortDescription')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
       <textarea pTextarea id="shortDescription" formControlName="shortDescription" (input)="marcarComoMio('shortDescription')" rows="2" placeholder="La frase que se lee en la tarjeta"></textarea>
-      <p class="campo-ayuda">Una o dos frases. Es lo único que se ve sin abrir la ficha.</p>
+      <p class="campo-ayuda campo-ayuda--fila">
+        <span>Una o dos frases. Es lo único que se ve sin abrir la ficha.</span>
+        <!-- 90 es el tope que se le pide al modelo, medido sobre los
+             proyectos reales. Pasarse no rompe nada, pero en la tarjeta se
+             corta. -->
+        <span class="contador" [class.contador--fuera]="(valor().shortDescription?.length ?? 0) > 90">{{ valor().shortDescription?.length ?? 0 }} / 90</span>
+      </p>
     </div>
 
-    <div class="form-group">
+    <div class="form-group" [class.campo-ia]="loRellenoLaIa('fullDescription')">
       <label for="fullDescription">Descripción completa @if (loRellenoLaIa('fullDescription')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
       <textarea pTextarea id="fullDescription" formControlName="fullDescription" (input)="marcarComoMio('fullDescription')" rows="5" placeholder="El detalle que se muestra al abrir la ficha"></textarea>
     </div>
   </section>
 
-  <section class="form-seccion">
-    <h3 class="form-seccion-titulo">Listas</h3>
-    <!-- Una entrada por linea, NO separadas por comas: el contenido lleva
-         comas y partir por ellas convertia una vinieta en tres al guardar. -->
-    <p class="form-seccion-nota">
-      Una entrada por línea. No se separan por comas a propósito: el contenido
-      lleva comas y partir por ellas convertía una viñeta en tres.
-    </p>
+  <section class="form-seccion seccion" id="seccion-listas">
+    <header class="seccion__cabeza">
+      <span class="seccion__icono" aria-hidden="true"><i class="pi pi-list"></i></span>
+      <div class="seccion__titulos">
+        <h3 class="form-seccion-titulo">Listas</h3>
+        <p class="seccion__lema">Una entrada por línea. No se separan por comas a propósito: el contenido lleva comas y partir por ellas convertía una viñeta en tres.</p>
+      </div>
+      @let c_listas = cuenta('listas');
+      <span class="seccion__cuenta" [class.seccion__cuenta--llena]="c_listas.llenos === c_listas.total">{{ c_listas.llenos }}/{{ c_listas.total }}</span>
+    </header>
 
     <div class="form-group">
       <label for="featuresText">Funcionalidades</label>
@@ -216,35 +210,44 @@
                 placeholder="Autenticacion mixta (Email, Google OAuth)&#10;Exportacion a Excel, PDF y CSV"></textarea>
     </div>
 
-    <div class="form-group">
-      <label for="highlightsText">Destacados</label>
-      <textarea pTextarea id="highlightsText" formControlName="highlightsText" rows="4"
-                placeholder="Arquitectura modular&#10;Sistema hibrido SQLite/PostgreSQL"></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="keywordsText">Palabras clave</label>
-      <textarea pTextarea id="keywordsText" formControlName="keywordsText" rows="3"
-                placeholder="finanzas&#10;ia&#10;django"></textarea>
+    <div class="form-row">
+      <div class="form-group flex-1">
+        <label for="highlightsText">Destacados</label>
+        <textarea pTextarea id="highlightsText" formControlName="highlightsText" rows="4"
+                  placeholder="Arquitectura modular&#10;Sistema hibrido SQLite/PostgreSQL"></textarea>
+      </div>
+      <div class="form-group flex-1">
+        <label for="keywordsText">Palabras clave</label>
+        <textarea pTextarea id="keywordsText" formControlName="keywordsText" rows="4"
+                  placeholder="finanzas&#10;ia&#10;django"></textarea>
+      </div>
     </div>
   </section>
 
-  <section class="form-seccion">
-    <h3 class="form-seccion-titulo">Enlaces</h3>
+  <section class="form-seccion seccion" id="seccion-enlaces">
+    <header class="seccion__cabeza">
+      <span class="seccion__icono" aria-hidden="true"><i class="pi pi-link"></i></span>
+      <div class="seccion__titulos">
+        <h3 class="form-seccion-titulo">Enlaces</h3>
+        <p class="seccion__lema">El repositorio, dónde verlo funcionando y la imagen de la cabecera.</p>
+      </div>
+      @let c_enlaces = cuenta('enlaces');
+      <span class="seccion__cuenta" [class.seccion__cuenta--llena]="c_enlaces.llenos === c_enlaces.total">{{ c_enlaces.llenos }}/{{ c_enlaces.total }}</span>
+    </header>
 
     <!-- Van a links.github y links.live, que es donde vive el dato;
          githubUrl y liveUrl eran campos heredados y estaban siempre vacios. -->
     <div class="form-row" formGroupName="links">
       <div class="form-group flex-1">
-        <label for="linkGithub">Repositorio</label>
+        <label for="linkGithub"><i class="pi pi-github" aria-hidden="true"></i> Repositorio</label>
         <input pInputText id="linkGithub" formControlName="github" placeholder="https://github.com/..." />
       </div>
       <div class="form-group flex-1">
-        <label for="linkLive">Despliegue</label>
+        <label for="linkLive"><i class="pi pi-external-link" aria-hidden="true"></i> Despliegue</label>
         <input pInputText id="linkLive" formControlName="live" placeholder="https://..." />
       </div>
       <div class="form-group flex-1">
-        <label for="linkDownload">Descarga</label>
+        <label for="linkDownload"><i class="pi pi-download" aria-hidden="true"></i> Descarga</label>
         <input pInputText id="linkDownload" formControlName="download"
                placeholder="https://github.com/usuario/repo/releases/latest" />
       </div>
@@ -258,14 +261,21 @@
     </p>
 
     <div class="form-group">
-      <label for="imageUrl">Imagen</label>
+      <label for="imageUrl"><i class="pi pi-image" aria-hidden="true"></i> Imagen</label>
       <input pInputText id="imageUrl" formControlName="imageUrl" placeholder="/assets/images/projects/..." />
     </div>
   </section>
 
-  <section class="form-seccion">
-    <h3 class="form-seccion-titulo">Arquitectura</h3>
-    <p class="form-seccion-nota">Resúmenes de una línea que se muestran en la ficha.</p>
+  <section class="form-seccion seccion" id="seccion-arquitectura">
+    <header class="seccion__cabeza">
+      <span class="seccion__icono" aria-hidden="true"><i class="pi pi-sitemap"></i></span>
+      <div class="seccion__titulos">
+        <h3 class="form-seccion-titulo">Arquitectura</h3>
+        <p class="seccion__lema">Resúmenes de una línea que se muestran en la cabecera de la ficha.</p>
+      </div>
+      @let c_arquitectura = cuenta('arquitectura');
+      <span class="seccion__cuenta" [class.seccion__cuenta--llena]="c_arquitectura.llenos === c_arquitectura.total">{{ c_arquitectura.llenos }}/{{ c_arquitectura.total }}</span>
+    </header>
 
     <div class="form-row">
       <div class="form-group flex-1">
@@ -283,50 +293,59 @@
     </div>
   </section>
 
-  <section class="form-seccion">
-    <h3 class="form-seccion-titulo">Readme</h3>
-    <p class="form-seccion-nota">Las cinco secciones del caso de estudio.</p>
+  <section class="form-seccion seccion" id="seccion-caso">
+    <header class="seccion__cabeza">
+      <span class="seccion__icono" aria-hidden="true"><i class="pi pi-book"></i></span>
+      <div class="seccion__titulos">
+        <h3 class="form-seccion-titulo">Caso de estudio</h3>
+        <p class="seccion__lema">Las cinco secciones del readme de la ficha, en el orden en que se leen.</p>
+      </div>
+      @let c_caso = cuenta('caso');
+      <span class="seccion__cuenta" [class.seccion__cuenta--llena]="c_caso.llenos === c_caso.total">{{ c_caso.llenos }}/{{ c_caso.total }}</span>
+    </header>
 
-    <div formGroupName="readmeMarkdown">
-      <div class="form-group">
-        <label for="rmObjective">Objetivo @if (loRellenoLaIa('objective')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
-        <textarea pTextarea id="rmObjective" formControlName="objective" (input)="marcarComoMio('objective')" rows="3"></textarea>
-      </div>
-      <div class="form-group">
-        <label for="rmArchitecture">Arquitectura @if (loRellenoLaIa('architecture')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
-        <textarea pTextarea id="rmArchitecture" formControlName="architecture" (input)="marcarComoMio('architecture')" rows="3"></textarea>
-      </div>
-      <div class="form-group">
-        <label for="rmMainFeatures">Funcionalidades principales @if (loRellenoLaIa('mainFeatures')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
-        <textarea pTextarea id="rmMainFeatures" formControlName="mainFeatures" (input)="marcarComoMio('mainFeatures')" rows="3"></textarea>
-      </div>
-      <div class="form-group">
-        <label for="rmTechnologies">Tecnologías @if (loRellenoLaIa('technologies')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
-        <textarea pTextarea id="rmTechnologies" formControlName="technologies" (input)="marcarComoMio('technologies')" rows="3"></textarea>
-      </div>
-      <div class="form-group">
-        <label for="rmLearnings">Aprendizajes @if (loRellenoLaIa('learnings')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
-        <textarea pTextarea id="rmLearnings" formControlName="learnings" (input)="marcarComoMio('learnings')" rows="3"></textarea>
-      </div>
+    <div formGroupName="readmeMarkdown" class="caso">
+      @for (s of SECCIONES_CASO; track s.clave; let n = $index) {
+        <div class="form-group caso__parte" [class.campo-ia]="loRellenoLaIa(s.clave)">
+          <label [for]="s.id"><span class="caso__numero">{{ n + 1 }}</span> {{ s.titulo }} @if (loRellenoLaIa(s.clave)) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
+          <textarea pTextarea [id]="s.id" [formControlName]="s.clave" (input)="marcarComoMio(s.clave)" rows="3"></textarea>
+        </div>
+      }
     </div>
   </section>
 
-  <section class="form-seccion">
-    <h3 class="form-seccion-titulo">Desafíos</h3>
+  <section class="form-seccion seccion" id="seccion-desafios">
+    <header class="seccion__cabeza">
+      <span class="seccion__icono" aria-hidden="true"><i class="pi pi-flag"></i></span>
+      <div class="seccion__titulos">
+        <h3 class="form-seccion-titulo">Desafíos</h3>
+        <p class="seccion__lema">Problemas técnicos concretos y cómo se abordaron. Entre tres y cuatro.</p>
+      </div>
+      @let c_desafios = cuenta('desafios');
+      <span class="seccion__cuenta" [class.seccion__cuenta--llena]="c_desafios.llenos === c_desafios.total">{{ c_desafios.llenos }}/{{ c_desafios.total }}</span>
+    </header>
+
     <!-- Cada uno son dos campos y no una linea con separador: ya se aprendio
          con las comas que meter un delimitador dentro del contenido acaba
          partiendo lo que no debia. -->
+    @if (loRellenoLaIa('challenges')) {
+      <p class="seccion__ia">
+        <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>
+        Los escribió la IA; la marca se va al editar cualquiera.
+      </p>
+    }
 
-    <div formArrayName="challenges">
+    <div formArrayName="challenges" class="desafios">
       <div class="challenge" *ngFor="let c of challenges.controls; let i = index" [formGroupName]="i">
+        <span class="challenge__numero" aria-hidden="true">{{ i + 1 }}</span>
         <div class="form-group challenge__titulo">
           <label [for]="'challengeTitle' + i">Título</label>
-          <input pInputText [id]="'challengeTitle' + i" formControlName="title"
+          <input pInputText [id]="'challengeTitle' + i" formControlName="title" (input)="marcarComoMio('challenges')"
                  placeholder="Implementacion de autenticacion hibrida" />
         </div>
         <div class="form-group challenge__descripcion">
           <label [for]="'challengeDesc' + i">Descripción</label>
-          <textarea pTextarea [id]="'challengeDesc' + i" formControlName="description" rows="2"
+          <textarea pTextarea [id]="'challengeDesc' + i" formControlName="description" rows="2" (input)="marcarComoMio('challenges')"
                     placeholder="En que consistia la dificultad y como se resolvio"></textarea>
         </div>
         <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-danger challenge__quitar"
@@ -334,22 +353,29 @@
       </div>
     </div>
 
-    <button pButton type="button" label="Añadir desafío" icon="pi pi-plus"
-            class="p-button-text" (click)="agregarChallenge()"></button>
+    <button type="button" class="anadir" (click)="agregarChallenge()">
+      <i class="pi pi-plus" aria-hidden="true"></i> Añadir desafío
+    </button>
   </section>
 
-  <p class="campo-ayuda">
-    El diagrama de arquitectura, el stack estructurado y las métricas no se
-    editan aquí: se escriben en <code>src/assets/data/projects.json</code> y se
-    suben con <code>pnpm run mirror:push</code>. Guardar desde este formulario
-    no los altera.
+  <p class="campo-ayuda nota-final">
+    <i class="pi pi-info-circle" aria-hidden="true"></i>
+    <span>
+      El diagrama de arquitectura, el stack estructurado y las métricas no se
+      editan aquí: se escriben en <code>src/assets/data/projects.json</code> y se
+      suben con <code>pnpm run mirror:push</code>. Guardar desde este formulario
+      no los altera.
+    </span>
   </p>
 
   <div class="barra-guardado">
     <span class="barra-guardado-estado">
+      <span class="barra-guardado-punto" [class.barra-guardado-punto--listo]="form.valid" aria-hidden="true"></span>
+      @if (form.valid) { Lista para guardar. } @else { Faltan campos obligatorios. }
       Guardar escribe en la base de datos, no publica el sitio.
     </span>
     <button pButton type="button" label="Cancelar" class="p-button-text" (click)="cancel()"></button>
     <button pButton type="submit" [label]="isEditMode ? 'Guardar cambios' : 'Crear proyecto'" [loading]="saving()" [disabled]="form.invalid"></button>
+  </div>
   </div>
 </form>

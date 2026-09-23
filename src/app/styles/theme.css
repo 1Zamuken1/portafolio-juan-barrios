@@ -98,6 +98,10 @@
      quedan por debajo de AA sobre fondo claro. */
   --estado-ok: #2F7D32;
   --estado-fallo: #C62828;
+  /* Trabajando. El violeta de la identidad y no el azul del panel: es el color
+     de la IA en el redactor, y en oscuro --text-accent es blanco, que no
+     distingue "trabajando" de "texto normal". */
+  --estado-curso: #5B50A5;
 
   --border-subtle: #CBD5E1;
   --border-default: #94A3B8;
@@ -229,6 +233,7 @@
   /* Aclarados para el fondo negro: los mismos de arriba no se leerian. */
   --estado-ok: #7BC96F;
   --estado-fallo: #FF6B6B;
+  --estado-curso: #C3A6FF;
 
   --border-subtle: #1F1F1F;
   --border-default: #27272A;

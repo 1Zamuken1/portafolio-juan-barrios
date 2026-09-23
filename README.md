@@ -17,7 +17,7 @@ Detras hay un backend propio en Spring Boot con arquitectura hexagonal, que da s
 - **Visor de arquitectura**: cada caso de estudio dibuja su diagrama como un plano tecnico, con zoom, desplazamiento y trazado de conectores calculado para esquivar nodos.
 - **Anillo 3D del stack**: las tecnologias en orbita, en `/about/stack`, como alternativa a la lista. La lista es lo principal; el anillo se pide.
 - **Tema claro y oscuro**: toda la paleta sale de variables CSS, y los tests comprueban que en claro ningun texto baje de AA.
-- **Panel de administracion con redactor por IA**: se le da el readme de un repositorio —pegado, por enlace de GitHub o subiendo un `.md`— y redacta la ficha del proyecto. El progreso se ve como un diagrama de nodos mientras ocurre, y lo que sale queda como propuesta hasta que se acepta.
+- **Panel de administracion con redactor por IA**: se le da el readme de un repositorio —pegado, por enlace de GitHub o subiendo un `.md`— y redacta la ficha del proyecto. El progreso se ve como una pipeline vertical y, al lado, la ficha pública escribiéndose mientras el modelo responde; lo que sale queda como propuesta hasta que se acepta.
 - **Sitio publico sin backend**: los datos se incrustan en el HTML durante el prerender, asi que ninguna visita espera a que despierte el servidor.
 - **Optimizado para SEO**: metadatos por ruta, datos estructurados, sitemap generado desde los datos y HTML prerenderizado.
 

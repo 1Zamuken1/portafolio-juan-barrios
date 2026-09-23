@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,6 +13,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 })
 export class DashboardComponent {
   private authService = inject(AuthService);
+  protected tema = inject(ThemeService);
 
   logout() {
     this.authService.logout();

@@ -36,7 +36,7 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayecto
 
 ### Tests
 
-**Frontend**, 124 tests en 18 ficheros (`pnpm run e2e`):
+**Frontend**, 152 tests en 20 ficheros (`pnpm run e2e`):
 
 | Suite | Qué protege |
 |---|---|
@@ -56,8 +56,10 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayecto
 | `anillo-stack.spec.ts` | que la lista siga siendo lo principal y el anillo un extra que se pide |
 | `repo-github.spec.ts` | a qué host se le pide un readme; la mitad son destinos que **no** deben pasar |
 | `jwt-interceptor.spec.ts` | a qué peticiones se les pega el token; casi todas son destinos que **no** deben llevarlo |
-| `panel-admin.spec.ts` | el armazón del panel: la barra que se quedaba atrás y la de guardado |
-| `pipeline-borrador.spec.ts` | la pipeline entera con el NDJSON simulado, y que el borrador no entre solo en el formulario |
+| `panel-admin.spec.ts` | el armazón del panel: la barra que se quedaba atrás, la de guardado, los dos pasos, el interruptor de tema y el índice de la ficha |
+| `pipeline-borrador.spec.ts` | la pipeline entera con el NDJSON simulado: que la ficha se llene con el JSON a medias, que un campo se dé por escrito al cerrarse y no por el orden, que un flujo sin final no se quede escribiendo, y que el borrador no entre solo en el formulario |
+| `reproductor.spec.ts` | el ritmo de la redacción con un reloj falso: que nunca enseñe lo que no ha llegado, que un paso espere a su texto, que un error no espere, y el tope de retraso |
+| `json-parcial.spec.ts` | el lector del JSON a medias, cortando en cada posición posible: dentro de una clave, de un escape, tras los dos puntos |
 
 **`ng test` no tiene target en `angular.json`**, así que `e2e/` es también donde viven los tests unitarios del frontend: las funciones puras se importan y se prueban sin navegador. Es el patrón a seguir mientras no se monte Karma. Las suites del panel entran poniendo un token en `localStorage` —el guard solo mira que exista— y `pipeline-borrador` simula el NDJSON con `page.route`, así que se prueban sin backend y sin gastar cuota de Groq.
 
@@ -129,6 +131,9 @@ Cinco causas encadenadas costaron una sesión entera. Cada una tapaba a la sigui
 | El `<input>` de PrimeNG no lleva el atributo de encapsulacion del componente que lo usa | «Equipo» y «Orden» dibujaban un campo de 241px en un hueco de 110 y se montaban sobre el de al lado | la regla vive en `styles/global.css`, que si lo alcanza |
 | El lector de SSE daba por hecho que la respuesta seria un flujo | una respuesta de una pieza se recorria entera sin reconocer una linea y salia como «respondio sin contenido generado» | se mira la primera linea y se decide; `RespuestaDeUnaPiezaTest` |
 | `marcarFallo` pintaba en rojo todos los nodos en curso | al cortarse la redaccion salian dos burbujas diciendo cada una «aqui es donde se corto» | un solo nodo se lleva el fallo; el resto pasa a «no se llego» |
+| Hijos de una columna flex con desplazamiento, que se encogen antes de que salga la barra | en una ventana baja, la caja de la respuesta en crudo medía 2px: se veía el borde y el botón quedaba debajo, sin poder pulsarse | `flex-shrink: 0` en los hijos; lo destapó un test que no podía hacer clic |
+| Tope de retraso calculado sobre el total pendiente | «pendiente ÷ 5 s» recalculado en cada latido frena exponencialmente: la vista nunca se ponía al día con un bloque grande | el tope se mide por trozo, con la hora a la que llegó; lo cazó `reproductor.spec.ts` |
+| `grid-template-columns: 1fr` en móvil | `1fr` no baja del ancho mínimo de su contenido, y la dirección de la vista previa no se parte: la columna se salía de la pantalla | `minmax(0, 1fr)` y `min-width: 0` en las columnas |
 
 Y dos pérdidas de datos desde el panel de administración, ambas recuperadas con `mirror:push` desde el JSON del repositorio.
 
@@ -144,6 +149,7 @@ Y dos pérdidas de datos desde el panel de administración, ambas recuperadas co
 - **Un arreglo que no se mira no está comprobado.** El primer intento de fijar la barra lateral fue `position: sticky`, y no funcionó. No se vio leyendo el CSS —ahí parecía correcto— sino midiendo la cadena de ancestros en el navegador: la causa estaba en `body`, tres niveles por encima y en otro fichero.
 - **Angular no avisa cuando una regla CSS no alcanza a su objetivo.** La encapsulación añade un atributo a cada selector, y si el elemento lo dibuja una librería no lo lleva: la regla no falla, no se queja, simplemente no se aplica. Ya pasó con el tema claro del blueprint y volvió a pasar con los campos de PrimeNG.
 - **Una prueba intermitente es una prueba mal escrita hasta que se demuestre lo contrario.** Una del panel falló dos veces y las dos se achacó a arrastre de la tanda; era un `count()` sin reintento preguntando antes de que el formulario se repintara.
+- **`ng serve` puede quedarse con una versión vieja de un componente.** Tras cambiar a la vez la plantilla de un padre y las entradas de un hijo, el servidor de desarrollo sirvió la plantilla nueva contra la clase antigua: `ASSERTION ERROR: ... does not have an input with a public name of "texto"` en la consola, la vista del hijo congelada y nada más. Los tests pasaban porque Playwright arranca su propio servidor. Si algo se ve roto en `ng serve` y los tests pasan, primero la consola, y después reiniciar el servidor.
 - **Si dos cosas pueden estar trabajando a la vez, hay que decidir cuál falla.** Marcar todas las que estuvieran en curso hacía que el diagrama dijera dos veces «aquí se cortó», que es la contradicción que la declaración única de estados existe para impedir.
 
 ---
@@ -162,7 +168,6 @@ Y dos pérdidas de datos desde el panel de administración, ambas recuperadas co
 - **Coreografía scroll ↔ URL en `ProjectsComponent`.** Dos banderas y temporizadores de 1 s coordinando el scroll y el fragmento. Funciona, pero es el punto más frágil del frontend.
 - **`knowledge-pillars` está huérfano.** Solo lo usaba `legacy-ring`, que se borró. Tiene contenido —«lo que aplico hoy» frente a «lo que estoy incorporando»— que no está en ningún otro sitio: o vuelve a `profile.md` o se borra, pero merece una decisión.
 - **`environment.useStaticData` no se consulta en ningún sitio.** Su único lector era `legacy-ring`. Hoy es configuración muerta.
-- **El botón de redactar se queda con el foco.** Pulsar Espacio o Enter después vuelve a lanzar la redacción, y cada lanzamiento gasta cuota de Groq. Es comportamiento normal de un botón, pero aquí tiene precio.
 - **La barra de guardado sólo está en las fichas.** Las listas no la necesitan, pero conviene no olvidar que el patrón existe si se añade otra vista con formulario largo.
 
 ### Rendimiento
@@ -188,7 +193,7 @@ Lo que queda por mirar, en orden de peso:
 Lo que en su día se discutió aquí y hoy funciona:
 
 - **Publicar desde el panel con menos pasos** — `node scripts/mirror.mjs publish` encadena volcado, commit y push, y muestra el diff pidiendo confirmación antes de commitear. El pull request se mantiene manual a propósito: es el diff que ha salvado el contenido dos veces.
-- **Pipeline de IA para redactar contenido** — construido y en uso. Descrito en `AGENTS.md`, apartado 3. Hoy además: el readme se trae de un enlace de GitHub o se sube como `.md`, el nombre lo redacta el modelo, la respuesta llega en streaming y el progreso se ve como un diagrama de nodos con un panel de detalle al lado.
+- **Pipeline de IA para redactar contenido** — construido y en uso. Descrito en `AGENTS.md`, apartado 3. Hoy además: el readme se trae de un enlace de GitHub o se sube como `.md`, el nombre lo redacta el modelo, la respuesta llega en streaming y el progreso se ve como una pipeline vertical con la ficha pública al lado, escribiéndose letra a letra mientras el modelo responde.
 - **Interruptor de tema claro/oscuro** — vive en la barra de actividad del layout. El tema claro se rehízo entero: el problema no era el contraste mínimo sino la saturación, que pasaba la métrica y se leía peor.
 - **El anillo 3D del stack** — estuvo meses huérfano y ahora vive en `/about/stack` como conmutador junto a la lista.
 - **Sitemap generado desde los datos** — `pnpm run sitemap`, con `sitemap.spec.ts` comprobando que no se quede atrás.

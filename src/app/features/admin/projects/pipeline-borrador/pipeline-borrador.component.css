@@ -1,255 +1,512 @@
 /* ================================================
-   El diagrama de la redaccion
+   La redaccion como una linea de montaje
    ================================================
 
-   Los colores salen de LECTURA_ESTADO a traves de data-estado, y no se
-   escriben dos veces: si alli se cambia el color de un estado, aqui cambia
-   solo. Es la misma razon por la que el texto de los estados vive en un unico
-   sitio.
-*/
+   Los colores de cada estado salen de los tokens --estado-* a traves de
+   data-estado. No se escriben dos veces: si en el tema cambia el color de un
+   estado, aqui cambia solo.
+
+   La unica medida que manda es --insignia, el lado del icono de cada
+   estacion: el conducto que las une baja por su centro. Con numeros sueltos,
+   cambiar el icono dejaba el conducto colgando donde estaba antes. */
 
 :host {
+  --insignia: 30px;
+  --relleno: 0.8rem;
   display: block;
-  width: 100%;
 }
 
-.lienzo {
-  display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(230px, 1fr);
-  gap: 1rem;
-  align-items: start;
-  width: 100%;
-  padding: 0.75rem;
+/* El angulo del borde que gira alrededor del modelo mientras trabaja. Hace
+   falta declararlo para que el navegador sepa interpolarlo. */
+@property --giro {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.linea {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Una estacion ---- */
+.estacion {
+  position: relative;
+  padding: 0.7rem var(--relleno) 0.75rem;
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   background: var(--bg-primary);
+  transition: border-color 0.35s ease, box-shadow 0.35s ease, opacity 0.35s ease;
 }
 
-.diagrama {
-  width: 100%;
-  height: auto;
-  overflow: visible;
-}
-
-/* ---- Los caminos ---- */
-.camino {
-  fill: none;
-  stroke: var(--border-default);
-  stroke-width: 1.5;
-  opacity: 0.5;
-}
-
-.camino--recorrido {
-  stroke: var(--estado-ok);
-  opacity: 0.55;
-}
-
-/* Un camino encendido es el que se esta recorriendo ahora. Se mueve porque el
-   movimiento es lo unico que dice "esto sigue vivo" cuando ninguna burbuja ha
-   cambiado todavia: entre que se pide la redaccion y que vuelve pasan ocho
-   segundos en los que, sin esto, no se moveria nada. */
-.camino--activo {
-  stroke: var(--text-accent);
-  stroke-width: 2;
-  opacity: 1;
-  stroke-dasharray: 6 6;
-  animation: fluir 0.6s linear infinite;
-}
-
-@keyframes fluir {
-  to { stroke-dashoffset: -12; }
-}
-
-/* ---- Las burbujas ---- */
-.nodo {
-  cursor: pointer;
-}
-
-.nodo:focus-visible {
-  outline: none;
-}
-
-.nodo:focus-visible .burbuja {
-  stroke: var(--text-accent);
-  stroke-width: 3;
-}
-
-.burbuja {
-  fill: var(--bg-secondary);
-  stroke: var(--border-default);
-  stroke-width: 1.5;
-  transition: stroke 0.25s ease, fill 0.25s ease;
-}
-
-.glifo {
+.estacion__cabeza {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  font-size: 0.95rem;
-  color: var(--text-tertiary);
+  gap: 0.6rem;
 }
 
-.rotulo,
-.cronometro {
-  text-anchor: middle;
-  fill: var(--text-tertiary);
+.estacion__titulo {
+  font-size: 0.86rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+}
+
+.estacion__detalle {
+  margin: 0.45rem 0 0;
   font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+  overflow-wrap: anywhere;
 }
 
-.rotulo {
-  font-size: 12px;
+/* El icono de la estacion, con su estado en la esquina. */
+.insignia {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--insignia);
+  height: var(--insignia);
+  border-radius: 9px;
+  border: 1px solid var(--border-default);
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
+  transition: color 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
 }
 
-.cronometro {
-  font-size: 11px;
-  fill: var(--text-accent);
+.insignia__estado {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-primary);
+  background: var(--text-tertiary);
+  color: var(--bg-primary);
+  font-size: 0.45rem;
 }
 
-/* El halo late solo mientras el nodo trabaja; el componente lo desmonta en
-   cuanto deja de ser verdad. */
-.halo {
-  fill: none;
-  stroke: var(--text-accent);
-  stroke-width: 1.5;
-  opacity: 0.35;
-  animation: latir 1.4s ease-in-out infinite;
+.chip {
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text-tertiary);
+  white-space: nowrap;
 }
 
-@keyframes latir {
-  0%, 100% { opacity: 0.35; transform: scale(1); }
-  50%      { opacity: 0;    transform: scale(1.25); }
+.chip__tiempo {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
-/* ---- Cada estado ----
-   Solo destacan el que trabaja y el que fallo. Si destacaran todos no
-   destacaria ninguno, que es el problema que ya dio el blueprint. */
-.nodo[data-estado='curso'] .burbuja {
-  stroke: var(--text-accent);
-  stroke-width: 2.5;
+/* ---- Los estados de una estacion ----
+   Solo destacan la que trabaja y la que fallo. Si destacaran todas no
+   destacaria ninguna, que es el problema que ya dio el blueprint. */
+.estacion[data-estado='espera'] { opacity: 0.62; }
+
+.estacion[data-estado='curso'] {
+  border-color: color-mix(in srgb, var(--estado-curso) 55%, var(--border-subtle));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--estado-curso) 10%, transparent),
+              0 10px 30px -12px color-mix(in srgb, var(--estado-curso) 55%, transparent);
 }
 
-.nodo[data-estado='curso'] .glifo,
-.nodo[data-estado='curso'] .rotulo {
-  color: var(--text-accent);
-  fill: var(--text-primary);
+.estacion[data-estado='curso'] > .estacion__cabeza .insignia {
+  border-color: var(--estado-curso);
+  color: var(--estado-curso);
+  background: color-mix(in srgb, var(--estado-curso) 12%, var(--bg-secondary));
 }
 
-.nodo[data-estado='hecho'] .burbuja {
-  stroke: var(--estado-ok);
+.estacion[data-estado='curso'] > .estacion__cabeza .insignia__estado { background: var(--estado-curso); }
+.estacion[data-estado='curso'] > .estacion__cabeza .chip {
+  border-color: color-mix(in srgb, var(--estado-curso) 45%, transparent);
+  color: var(--estado-curso);
 }
 
-.nodo[data-estado='hecho'] .glifo {
+.estacion[data-estado='hecho'] {
+  border-color: color-mix(in srgb, var(--estado-ok) 28%, var(--border-subtle));
+}
+
+.estacion[data-estado='hecho'] > .estacion__cabeza .insignia {
+  border-color: color-mix(in srgb, var(--estado-ok) 55%, var(--border-default));
   color: var(--estado-ok);
 }
 
-.nodo[data-estado='hecho'] .rotulo {
-  fill: var(--text-secondary);
+.estacion[data-estado='hecho'] > .estacion__cabeza .insignia__estado { background: var(--estado-ok); }
+.estacion[data-estado='hecho'] > .estacion__cabeza .chip { color: var(--estado-ok); }
+
+.estacion[data-estado='fallo'] {
+  border-color: var(--estado-fallo);
+  background: color-mix(in srgb, var(--estado-fallo) 6%, var(--bg-primary));
 }
 
-.nodo[data-estado='fallo'] .burbuja {
-  stroke: var(--estado-fallo);
-  stroke-width: 2.5;
-}
-
-.nodo[data-estado='fallo'] .glifo,
-.nodo[data-estado='fallo'] .rotulo {
+.estacion[data-estado='fallo'] > .estacion__cabeza .insignia {
+  border-color: var(--estado-fallo);
   color: var(--estado-fallo);
-  fill: var(--estado-fallo);
 }
 
-.nodo[data-estado='espera'] .burbuja,
-.nodo[data-estado='espera'] .glifo,
-.nodo[data-estado='no-alcanzado'] .burbuja,
-.nodo[data-estado='no-alcanzado'] .glifo {
-  opacity: 0.45;
+.estacion[data-estado='fallo'] > .estacion__cabeza .insignia__estado { background: var(--estado-fallo); }
+.estacion[data-estado='fallo'] > .estacion__cabeza .chip,
+.estacion[data-estado='fallo'] > .estacion__detalle,
+.estacion[data-estado='fallo'] > .modelo__datos .estacion__detalle { color: var(--estado-fallo); }
+
+/* "No se llego" va con trazo discontinuo: ya no va a pasar, y no debe
+   confundirse con "todavia no ha pasado". */
+.estacion[data-estado='no-alcanzado'] {
+  border-style: dashed;
+  opacity: 0.5;
 }
 
-.nodo[data-estado='no-alcanzado'] .rotulo {
-  opacity: 0.45;
+/* ---- El modelo ----
+   Mientras trabaja, un arco de luz le da la vuelta al borde. Es la unica
+   estacion que se mueve asi: es donde pasa casi todo el tiempo, y lo que dice
+   el giro es "sigue vivo" durante los segundos en que nada mas cambia. */
+.estacion--modelo[data-estado='curso'] {
+  border-color: transparent;
+  background:
+    linear-gradient(var(--bg-primary), var(--bg-primary)) padding-box,
+    conic-gradient(from var(--giro),
+      color-mix(in srgb, var(--estado-curso) 25%, transparent) 0deg,
+      var(--estado-curso) 70deg,
+      color-mix(in srgb, var(--estado-curso) 25%, transparent) 140deg,
+      color-mix(in srgb, var(--estado-curso) 25%, transparent) 360deg) border-box;
+  animation: girar 2.6s linear infinite;
 }
 
-.nodo--elegido .burbuja {
-  fill: var(--bg-tertiary);
+@keyframes girar {
+  to { --giro: 360deg; }
 }
 
-/* ---- El panel ---- */
-.detalle {
-  min-width: 0;
-  padding: 0.75rem;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: var(--bg-secondary);
-}
-
-.detalle__cabecera {
+.espectro {
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  padding-bottom: 0.5rem;
+  align-items: flex-end;
+  gap: 2px;
+  height: 30px;
+  margin-top: 0.65rem;
+  padding: 0 1px;
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.detalle__titulo {
+.espectro__barra {
+  flex: 1;
+  height: calc(var(--h, 0.08) * 100%);
+  min-height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--border-default);
+  transition: height 0.14s ease-out, background-color 0.4s ease;
+}
+
+.estacion--modelo[data-estado='curso'] .espectro__barra {
+  background: linear-gradient(180deg, var(--estado-curso), color-mix(in srgb, var(--estado-curso) 35%, transparent));
+}
+
+.estacion--modelo[data-estado='hecho'] .espectro__barra {
+  background: color-mix(in srgb, var(--estado-ok) 45%, var(--border-default));
+}
+
+.modelo__datos {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.modelo__cuenta {
+  flex-shrink: 0;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+/* ---- Los cartuchos ---- */
+.cartuchos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0.7rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cartucho {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 0.6rem;
+  align-items: center;
+  width: 100%;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+  background: var(--bg-secondary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.25s ease, background-color 0.25s ease, transform 0.15s ease, opacity 0.3s ease;
+}
+
+.cartucho:hover {
+  border-color: var(--border-default);
+  transform: translateX(2px);
+}
+
+.cartucho:focus-visible {
+  outline: 2px solid var(--estado-curso);
+  outline-offset: 1px;
+}
+
+.cartucho__icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.cartucho__cuerpo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.32rem;
+  min-width: 0;
+  min-height: 26px;
+}
+
+/* Una linea: el nombre, lo que lleva escrito y cuanto tardo. El estado lo
+   dicen el icono y el color; escrito ademas, no cabia sin partir la fila. */
+.cartucho__cabeza {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.cartucho__titulo {
+  flex-shrink: 0;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.detalle__estado {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.75rem;
-}
-
-.detalle__glosa {
-  margin: 0.6rem 0 0;
-  font-size: 0.75rem;
-  line-height: 1.5;
+.cartucho__tiempo {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-variant-numeric: tabular-nums;
   color: var(--text-tertiary);
 }
 
-/* Lo que conto el backend al pasar por aqui: que modelo respondio, cuanto
-   tardo, cuantos campos se comprobaron. */
-.detalle__linea {
-  margin: 0.4rem 0 0;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.72rem;
-  line-height: 1.55;
-  color: var(--text-secondary);
-  overflow-wrap: anywhere;
+.cartucho__barra {
+  display: block;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+  overflow: hidden;
 }
 
-.detalle__contenido {
-  margin: 0.6rem 0 0;
-  max-height: 180px;
-  overflow: auto;
-  padding: 0.5rem;
-  border-radius: var(--radius-sm, 4px);
-  background: var(--bg-primary);
-  font-family: var(--font-mono, monospace);
-  font-size: 0.72rem;
-  line-height: 1.6;
-  color: var(--text-secondary);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+.cartucho__relleno {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--border-strong);
+  transition: width 0.25s ease-out, background-color 0.3s ease;
 }
 
-/* Quien pidio que no se muevan las cosas no quiere lineas fluyendo ni halos
-   latiendo. El estado se sigue viendo: el color y el glifo no dependen del
-   movimiento. */
+.cartucho__detalle {
+  min-width: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cartucho[data-estado='espera'] { opacity: 0.55; }
+
+.cartucho[data-estado='curso'] {
+  border-color: color-mix(in srgb, var(--estado-curso) 50%, var(--border-subtle));
+  background: color-mix(in srgb, var(--estado-curso) 6%, var(--bg-secondary));
+}
+
+.cartucho[data-estado='curso'] .cartucho__icono {
+  background: color-mix(in srgb, var(--estado-curso) 18%, var(--bg-tertiary));
+  color: var(--estado-curso);
+}
+
+.cartucho[data-estado='curso'] .cartucho__tiempo { color: var(--estado-curso); }
+
+/* Lo que se esta llenando brilla al avanzar: una franja de luz que recorre el
+   relleno. */
+.cartucho[data-estado='curso'] .cartucho__relleno {
+  background:
+    linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%) 0 0 / 60% 100% no-repeat,
+    var(--estado-curso);
+  animation: brillo 1.1s linear infinite;
+}
+
+@keyframes brillo {
+  from { background-position: -80% 0, 0 0; }
+  to   { background-position: 180% 0, 0 0; }
+}
+
+.cartucho[data-estado='hecho'] .cartucho__icono {
+  background: color-mix(in srgb, var(--estado-ok) 16%, var(--bg-tertiary));
+  color: var(--estado-ok);
+}
+
+.cartucho[data-estado='hecho'] .cartucho__tiempo { color: var(--estado-ok); }
+.cartucho[data-estado='hecho'] .cartucho__relleno { background: var(--estado-ok); }
+
+.cartucho[data-estado='no-alcanzado'] {
+  border-style: dashed;
+  opacity: 0.45;
+}
+
+/* ---- El conducto entre estaciones ---- */
+.conducto {
+  position: relative;
+  width: 2px;
+  height: 20px;
+  margin-left: calc(var(--relleno) + var(--insignia) / 2 - 1px);
+  background: var(--border-default);
+  transition: background-color 0.4s ease;
+}
+
+.conducto[data-estado='recorrido'] {
+  background: color-mix(in srgb, var(--estado-ok) 55%, var(--border-default));
+}
+
+.conducto[data-estado='activo'] {
+  background: color-mix(in srgb, var(--estado-curso) 40%, transparent);
+}
+
+/* El pulso: una gota de luz bajando por el tramo que se esta recorriendo. */
+.conducto__pulso {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: var(--estado-curso);
+  box-shadow: 0 0 10px 2px var(--estado-curso);
+}
+
+.conducto[data-estado='activo'] .conducto__pulso {
+  display: block;
+  animation: bajar 0.9s ease-in infinite;
+}
+
+@keyframes bajar {
+  0%   { transform: translateY(-3px); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translateY(17px); opacity: 0; }
+}
+
+/* ---- El JSON ---- */
+.claves {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.6rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+}
+
+.claves__llave {
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
+}
+
+.clave {
+  padding: 0.1rem 0.4rem;
+  border-radius: 5px;
+  border: 1px dashed var(--border-default);
+  color: var(--text-tertiary);
+  transition: all 0.3s ease;
+}
+
+.clave[data-estado='curso'] {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--estado-curso) 55%, transparent);
+  color: var(--estado-curso);
+}
+
+.clave[data-estado='hecho'] {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--estado-ok) 45%, transparent);
+  background: color-mix(in srgb, var(--estado-ok) 10%, transparent);
+  color: var(--estado-ok);
+}
+
+/* ---- Las cotas ---- */
+.marcas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 0.6rem;
+}
+
+.marca {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  border: 1px solid var(--border-default);
+}
+
+.estacion--cotas[data-estado='curso'] .marca {
+  border-color: var(--estado-curso);
+  animation: tantear 1s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 70ms);
+}
+
+@keyframes tantear {
+  50% { background: color-mix(in srgb, var(--estado-curso) 40%, transparent); }
+}
+
+/* Al terminar se marcan una detras de otra: es la comprobacion, campo a
+   campo, que el backend acaba de hacer. */
+.estacion--cotas[data-estado='hecho'] .marca {
+  border-color: var(--estado-ok);
+  background: var(--estado-ok);
+  animation: marcar 0.35s ease-out backwards;
+  animation-delay: calc(var(--i) * 45ms);
+}
+
+@keyframes marcar {
+  from { transform: scale(0.3); opacity: 0; }
+}
+
+/* Quien pidio que no se muevan las cosas no quiere giros, pulsos ni brillos.
+   El estado se sigue viendo: el color y el icono no dependen del movimiento. */
 @media (prefers-reduced-motion: reduce) {
-  .camino--activo,
-  .halo {
+  .estacion--modelo[data-estado='curso'],
+  .conducto[data-estado='activo'] .conducto__pulso,
+  .cartucho[data-estado='curso'] .cartucho__relleno,
+  .estacion--cotas .marca {
     animation: none;
-  }
-}
-
-@media (max-width: 900px) {
-  .lienzo {
-    grid-template-columns: 1fr;
   }
 }

@@ -1,0 +1,97 @@
+<!-- Un campo de la ficha: su texto si ya llego, o un hueco con la forma de lo
+     que va a ocupar. El cursor va solo en el que se esta escribiendo ahora. -->
+<ng-template #campo let-ruta="ruta" let-lineas="lineas">
+  @let t = texto(ruta);
+  @if (t || abierta() === ruta) {
+    <span class="texto" [attr.data-ruta]="ruta">{{ t }}@if (abierta() === ruta) {<span class="cursor" aria-hidden="true"></span>}</span>
+  } @else {
+    <span class="hueco" [attr.data-ruta]="ruta" aria-hidden="true">
+      @for (ancho of lineas; track $index) {
+        <span class="hueco__linea" [style.width.%]="ancho"></span>
+      }
+    </span>
+  }
+</ng-template>
+
+<div class="ventana" [attr.data-modo]="modo()">
+
+  <!-- La barra de un navegador: lo de abajo es una pagina, no un formulario. -->
+  <div class="ventana__barra">
+    <span class="ventana__puntos" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="ventana__url">
+      <i class="pi pi-lock" aria-hidden="true"></i>
+      portafolio-juan-barrios.vercel.app/projects/<strong>{{ proyectoId() ?? 'nuevo' }}</strong>
+    </span>
+    <span class="ventana__modo">
+      @if (modo() === 'redactando') { <span class="ventana__latido" aria-hidden="true"></span> }
+      {{ etiquetaModo() }}
+    </span>
+  </div>
+
+  <div class="ventana__cuerpo" #cuerpo (wheel)="dejarDeSeguir()" (touchmove)="dejarDeSeguir()"
+       aria-label="Vista previa de la ficha" aria-live="off">
+
+    <!-- ===== Cabecera: lo que se ve en la tarjeta ===== -->
+    <header class="banner bloque" data-grupo="nombre" [attr.data-estado]="estadoGrupo('nombre') === 'escribiendo' || estadoGrupo('descripciones') === 'escribiendo' ? 'escribiendo' : 'quieto'">
+      <div class="banner__insignias">
+        <span class="insignia">{{ meta().type || 'Proyecto' }}</span>
+        @if (meta().status) { <span class="insignia insignia--suave">{{ meta().status }}</span> }
+        @if (meta().year) { <span class="insignia insignia--suave">{{ meta().year }}</span> }
+      </div>
+
+      <h1 class="banner__titulo">
+        <ng-container *ngTemplateOutlet="campo; context: { ruta: 'name', lineas: HUECO_TITULO }" />
+      </h1>
+
+      <p class="banner__frase" data-grupo="descripciones">
+        <ng-container *ngTemplateOutlet="campo; context: { ruta: 'shortDescription', lineas: HUECO_FRASE }" />
+      </p>
+    </header>
+
+    <div class="documento">
+
+      <!-- La descripcion completa no se ve en la ficha publica cuando hay caso
+           de estudio: la usan el buscador y las vistas previas al compartir.
+           Se ensenia aparte y con su nombre para que no parezca parte del
+           texto de la pagina. -->
+      <section class="bloque entradilla" [attr.data-estado]="estadoGrupo('descripciones')">
+        <span class="entradilla__rotulo">Resumen · para buscadores y enlaces</span>
+        <p class="parrafo">
+          <ng-container *ngTemplateOutlet="campo; context: { ruta: 'fullDescription', lineas: HUECO_PARRAFO }" />
+        </p>
+      </section>
+
+      <section class="bloque" data-grupo="caso" [attr.data-estado]="estadoGrupo('caso')">
+        @for (s of SECCIONES; track s.clave) {
+          <h2 class="md-h2">{{ s.titulo }}</h2>
+          <p class="parrafo">
+            <ng-container *ngTemplateOutlet="campo; context: { ruta: 'readmeMarkdown.' + s.clave, lineas: HUECO_PARRAFO }" />
+          </p>
+        }
+      </section>
+
+      <section class="bloque" data-grupo="desafios" [attr.data-estado]="estadoGrupo('desafios')">
+        <h2 class="md-h2">Desafíos técnicos</h2>
+
+        @for (c of desafios(); track $index; let i = $index) {
+          <h3 class="md-h3">
+            <ng-container *ngTemplateOutlet="campo; context: { ruta: 'challenges.' + i + '.title', lineas: HUECO_DESAFIO }" />
+          </h3>
+          <p class="parrafo">
+            <ng-container *ngTemplateOutlet="campo; context: { ruta: 'challenges.' + i + '.description', lineas: HUECO_CORTO }" />
+          </p>
+        } @empty {
+          @for (n of DESAFIOS_HUECO; track n) {
+            <h3 class="md-h3"><span class="hueco" aria-hidden="true"><span class="hueco__linea" style="width: 46%"></span></span></h3>
+            <p class="parrafo"><span class="hueco" aria-hidden="true"><span class="hueco__linea" style="width: 100%"></span><span class="hueco__linea" style="width: 72%"></span></span></p>
+          }
+        }
+      </section>
+
+      <p class="pie">
+        El diagrama, el stack y las métricas no salen del readme: se añaden después
+        en <code>projects.json</code>.
+      </p>
+    </div>
+  </div>
+</div>

@@ -50,6 +50,8 @@ test('la barra de guardado se queda a la vista', async ({ page }) => {
   // porque ese area es ahora un contenedor de desplazamiento real.
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/admin/dashboard/projects/new');
+  // La barra vive en el segundo paso: en el primero no hay nada que guardar.
+  await page.getByRole('tab', { name: /Completar la ficha/ }).click();
 
   await page.locator('.dashboard-content').evaluate((e) => { e.scrollTop = 1200; });
   const barra = await page.locator('.barra-guardado').boundingBox();
@@ -62,7 +64,23 @@ test('en un proyecto nuevo se entra por el redactor', async ({ page }) => {
   // El formulario son treinta campos en blanco y casi todos los de prosa salen
   // del borrador: empezar por ahí es empezar por donde hay trabajo hecho.
   await page.goto('/admin/dashboard/projects/new');
+  await expect(page.getByRole('tab', { name: /Redactar con IA/ })).toHaveAttribute('aria-selected', 'true');
   await expect(page.locator('#readmeFuente')).toBeVisible();
+  await expect(page.locator('#name')).toBeHidden();
+});
+
+test('se puede ir al formulario sin redactar, y volver', async ({ page }) => {
+  // La IA es la entrada, no un peaje: un proyecto sin readme tiene que poder
+  // escribirse a mano.
+  await page.goto('/admin/dashboard/projects/new');
+  await page.getByRole('button', { name: 'Seguir sin IA' }).click();
+  await expect(page.locator('#name')).toBeVisible();
+
+  await page.locator('#name').fill('Escrito a mano');
+  await page.getByRole('tab', { name: /Redactar con IA/ }).click();
+  await page.getByRole('tab', { name: /Completar la ficha/ }).click();
+  // Ocultar un paso no lo reinicia.
+  await expect(page.locator('#name')).toHaveValue('Escrito a mano');
 });
 
 test('redactar ya no exige escribir antes el nombre', async ({ page }) => {
@@ -78,4 +96,29 @@ test('redactar ya no exige escribir antes el nombre', async ({ page }) => {
   const aviso = page.locator('.p-toast-detail');
   await expect(aviso).toContainText('readme');
   await expect(aviso).not.toContainText('nombre');
+});
+
+test('el panel tiene su propio interruptor de tema, y se recuerda', async ({ page }) => {
+  // El del sitio vive en la barra de actividad del layout tipo editor, que el
+  // panel no tiene: sin este, en el panel no habia forma de cambiarlo.
+  await page.goto('/admin/dashboard/projects/new');
+  await page.getByRole('radio', { name: /Claro/ }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect(page.getByRole('radio', { name: /Claro/ })).toHaveAttribute('aria-checked', 'true');
+
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+});
+
+test('el indice de la ficha cuenta lo que se va rellenando', async ({ page }) => {
+  await page.goto('/admin/dashboard/projects/new');
+  await page.getByRole('button', { name: 'Seguir sin IA' }).click();
+
+  const cuenta = page.locator('#seccion-descripciones .seccion__cuenta');
+  await expect(cuenta).toHaveText('0/2');
+
+  await page.locator('#shortDescription').fill('Una frase para la tarjeta.');
+  await expect(cuenta).toHaveText('1/2');
+  // Y la tarjeta la ensenia tal como saldra en la lista.
+  await expect(page.locator('.tarjeta__frase')).toHaveText('Una frase para la tarjeta.');
 });
