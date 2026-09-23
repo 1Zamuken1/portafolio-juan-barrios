@@ -95,7 +95,14 @@
             <span>WORKSPACE</span>
           </div>
           <div class="section-list">
-            
+
+            <!-- README, en la raiz del arbol: es la portada del sitio, no un
+                 documento del perfil. -->
+            <a class="list-item" routerLink="/" [class.active]="activeTabId() === '/'">
+              <i class="pi pi-info-circle" style="color: #4ec9b0; font-size: 0.85rem;"></i>
+              README.md
+            </a>
+
             <!-- About Folder -->
             <div class="sidebar-folder">
               <div class="folder-header" (click)="toggleFolder('about')">
@@ -105,10 +112,6 @@
               </div>
               @if (expandedFolders().has('about')) {
                 <div class="folder-contents">
-                  <a class="list-item nested-item" routerLink="/" [class.active]="activeTabId() === '/'">
-                    <i class="pi pi-info-circle" style="color: #4ec9b0; font-size: 0.85rem;"></i>
-                    README.md
-                  </a>
                   <a class="list-item nested-item" routerLink="/about" [class.active]="activeTabId() === '/about'">
                     <i class="pi pi-user" style="color: #e8a94a; font-size: 0.85rem;"></i>
                     profile.md
@@ -248,10 +251,12 @@
           <span class="status-item hide-mobile">Angular 22</span>
           <span class="status-item hide-mobile">UTF-8</span>
           <span class="status-item hide-mobile">TypeScript</span>
-          <span class="status-item status-available">
-            <span class="availability-dot"></span>
-            Abierto a oportunidades
-          </span>
+          @if (perfil()?.estadoVisible) {
+            <span class="status-item status-available">
+              <span class="availability-dot"></span>
+              {{ perfil()!.estado }}
+            </span>
+          }
         </div>
       </footer>
 
@@ -271,16 +276,18 @@
         </div>
       </div>
       <div class="profile-panel-body">
-        <div class="profile-status">
-          <span class="availability-dot"></span>
-          <span>Abierto a oportunidades</span>
-        </div>
+        @if (perfil()?.estadoVisible) {
+          <div class="profile-status">
+            <span class="availability-dot"></span>
+            <span>{{ perfil()!.estado }}</span>
+          </div>
+        }
         <div class="profile-links">
-          <a href="https://github.com/1Zamuken1" target="_blank" rel="noopener noreferrer" class="profile-link">
+          <a [href]="perfil()?.github" target="_blank" rel="noopener noreferrer" class="profile-link">
             <i class="pi pi-github"></i>
             GitHub
           </a>
-          <a href="https://www.linkedin.com/in/juan-barrios-a8a651274/" target="_blank" rel="noopener noreferrer" class="profile-link">
+          <a [href]="perfil()?.linkedin" target="_blank" rel="noopener noreferrer" class="profile-link">
             <i class="pi pi-linkedin"></i>
             LinkedIn
           </a>

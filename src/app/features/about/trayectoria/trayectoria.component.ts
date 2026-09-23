@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { DataService } from '../../../core/services/data.service';
 import { SeoService } from '../../../core/services/seo.service';
 import { Experience } from '../../../shared/models/experience.model';
@@ -19,7 +20,7 @@ import { DocumentoBase } from '../documento-base';
 @Component({
   selector: 'app-trayectoria',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './trayectoria.component.html',
   styleUrls: ['../documento.css']
 })
