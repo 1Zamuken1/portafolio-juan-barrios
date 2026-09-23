@@ -1,6 +1,3 @@
-<p-toast />
-<p-confirmDialog />
-
 <header class="pagina-cabecera">
   <div>
     <h2 class="pagina-titulo">
@@ -14,71 +11,45 @@
     </p>
   </div>
   <div class="pagina-acciones">
-    <button pButton icon="pi pi-plus" label="Nueva tecnología" class="p-button-sm" (click)="createNew()"></button>
+    <p-button label="Nueva tecnología" icon="pi pi-plus" (onClick)="createNew()" />
   </div>
 </header>
 
-<div *ngIf="loading()" class="estado-cargando">
-  <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-  <p>Cargando el stack…</p>
-</div>
-
-<div *ngIf="!loading()">
-  <p-table 
-    [value]="skills()" 
-    [paginator]="true"
-    [rows]="15"
-    [showCurrentPageReport]="true"
-    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} tecnologías"
-    styleClass="p-datatable-sm p-datatable-striped"
-  >
-    <ng-template pTemplate="header">
-      <tr>
-        <th style="width: 60px">ID</th>
-        <th>Nombre</th>
-        <th>Categoría</th>
-        <th>Icono</th>
-        <th>Color</th>
-        <th style="width: 80px">Orden</th>
-        <th style="width: 180px">Acciones</th>
-      </tr>
-    </ng-template>
-
-    <ng-template pTemplate="body" let-skill>
-      <tr>
-        <td>{{ skill.id }}</td>
-        <td><strong>{{ skill.name }}</strong></td>
-        <td>
-          <p-tag [value]="skill.category" [rounded]="true" />
-        </td>
-        <td>
-          <i [class]="skill.icon" [style.color]="skill.color" style="font-size: 1.25rem"></i>
-          <span style="margin-left: 0.5rem; font-size: 0.75rem; opacity: 0.6">{{ skill.icon }}</span>
-        </td>
-        <td>
-          <span class="color-preview" [style.background]="skill.color"></span>
-          <span style="font-size: 0.75rem; opacity: 0.6">{{ skill.color }}</span>
-        </td>
-        <td>{{ skill.displayOrder }}</td>
-        <td>
-          <div class="action-buttons">
-            <button pButton icon="pi pi-pencil" class="p-button-sm p-button-text p-button-info" (click)="editSkill(skill)" pTooltip="Editar"></button>
-            <button pButton icon="pi pi-trash" class="p-button-sm p-button-text p-button-danger" (click)="confirmDelete(skill)" pTooltip="Eliminar"></button>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-
-    <ng-template pTemplate="emptymessage">
-      <tr>
-        <td colspan="7">
-          <div class="estado-vacio">
-            <i class="pi pi-th-large" aria-hidden="true"></i>
-            <p>Todavía no hay tecnologías registradas.</p>
-            <span class="pista">Pulsa «Nueva tecnología» para añadir la primera.</span>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
-</div>
+@if (loading()) {
+  <div class="estado-cargando">
+    <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+    <p>Cargando el stack…</p>
+  </div>
+} @else {
+  <ul class="lista">
+    @for (skill of skills(); track skill.id) {
+      <li class="fila">
+        <!-- El icono con su color de marca, que es como sale en el sitio. -->
+        <span class="fila__marca fila__marca--icono" aria-hidden="true"
+              [style.color]="skill.color" [style.background]="skill.color + '22'">
+          <i [class]="skill.icon"></i>
+        </span>
+        <div class="fila__cuerpo">
+          <span class="fila__titulo">{{ skill.name }}</span>
+          <span class="fila__sub">{{ skill.icon }}</span>
+        </div>
+        <div class="fila__meta">
+          <p-tag [value]="skill.category" severity="secondary" [rounded]="true" />
+          <span class="color-preview" [style.background]="skill.color"></span>{{ skill.color }}
+        </div>
+        <div class="action-buttons">
+          <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="secondary"
+                    [ariaLabel]="'Editar ' + skill.name" (onClick)="editSkill(skill)" />
+          <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger"
+                    [ariaLabel]="'Eliminar ' + skill.name" (onClick)="confirmDelete(skill)" />
+        </div>
+      </li>
+    } @empty {
+      <li class="estado-vacio">
+        <i class="pi pi-th-large" aria-hidden="true"></i>
+        <p>Todavía no hay tecnologías registradas.</p>
+        <span class="pista">Pulsa «Nueva tecnología» para añadir la primera.</span>
+      </li>
+    }
+  </ul>
+}

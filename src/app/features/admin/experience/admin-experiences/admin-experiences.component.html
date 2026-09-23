@@ -1,6 +1,3 @@
-<p-toast />
-<p-confirmDialog />
-
 <header class="pagina-cabecera">
   <div>
     <h2 class="pagina-titulo">
@@ -13,63 +10,38 @@
     </p>
   </div>
   <div class="pagina-acciones">
-    <button pButton icon="pi pi-plus" label="Nueva entrada" class="p-button-sm" (click)="createNew()"></button>
+    <p-button label="Nueva entrada" icon="pi pi-plus" (onClick)="createNew()" />
   </div>
 </header>
 
-<div *ngIf="loading()" class="estado-cargando">
-  <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-  <p>Cargando la trayectoria…</p>
-</div>
-
-<div *ngIf="!loading()">
-  <p-table 
-    [value]="experiences()" 
-    [paginator]="true"
-    [rows]="10"
-    [showCurrentPageReport]="true"
-    currentPageReportTemplate="{first}–{last} de {totalRecords}"
-    styleClass="p-datatable-sm p-datatable-striped"
-  >
-    <ng-template pTemplate="header">
-      <tr>
-        <th style="width: 60px">ID</th>
-        <th>Empresa</th>
-        <th>Rol</th>
-        <th>Período</th>
-        <th style="width: 80px">Orden</th>
-        <th style="width: 110px">Acciones</th>
-      </tr>
-    </ng-template>
-
-    <ng-template pTemplate="body" let-exp>
-      <tr>
-        <td>{{ exp.id }}</td>
-        <td>
-          <strong>{{ exp.company }}</strong>
-        </td>
-        <td>{{ exp.role }}</td>
-        <td>{{ exp.period }}</td>
-        <td>{{ exp.displayOrder }}</td>
-        <td>
-          <div class="action-buttons">
-            <button pButton icon="pi pi-pencil" class="p-button-sm p-button-text p-button-info" (click)="editExperience(exp)" pTooltip="Editar"></button>
-            <button pButton icon="pi pi-trash" class="p-button-sm p-button-text p-button-danger" (click)="confirmDelete(exp)" pTooltip="Eliminar"></button>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-
-    <ng-template pTemplate="emptymessage">
-      <tr>
-        <td colspan="6">
-          <div class="estado-vacio">
-            <i class="pi pi-calendar" aria-hidden="true"></i>
-            <p>Todavía no hay entradas en la trayectoria.</p>
-            <span class="pista">Pulsa «Nueva entrada» para añadir la primera.</span>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
-</div>
+@if (loading()) {
+  <div class="estado-cargando">
+    <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+    <p>Cargando la trayectoria…</p>
+  </div>
+} @else {
+  <ul class="lista">
+    @for (exp of experiences(); track exp.id) {
+      <li class="fila">
+        <span class="fila__marca" aria-hidden="true">{{ exp.displayOrder }}</span>
+        <div class="fila__cuerpo">
+          <span class="fila__titulo">{{ exp.company }}</span>
+          <span class="fila__sub">{{ exp.role }}</span>
+        </div>
+        <div class="fila__meta">{{ exp.period }}</div>
+        <div class="action-buttons">
+          <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="secondary"
+                    [ariaLabel]="'Editar ' + exp.company" (onClick)="editExperience(exp)" />
+          <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger"
+                    [ariaLabel]="'Eliminar ' + exp.company" (onClick)="confirmDelete(exp)" />
+        </div>
+      </li>
+    } @empty {
+      <li class="estado-vacio">
+        <i class="pi pi-calendar" aria-hidden="true"></i>
+        <p>Todavía no hay entradas en la trayectoria.</p>
+        <span class="pista">Pulsa «Nueva entrada» para añadir la primera.</span>
+      </li>
+    }
+  </ul>
+}

@@ -1,5 +1,3 @@
-<p-toast />
-
 <header class="pagina-cabecera">
   <div>
     <h2 class="pagina-titulo">{{ isEditMode ? 'Editar proyecto' : 'Nuevo proyecto' }}</h2>
@@ -10,46 +8,41 @@
   </div>
 </header>
 
-<div *ngIf="loading()" class="estado-cargando">
-  <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-  <p>Cargando el proyecto…</p>
-</div>
-
-@if (!loading()) {
-  <!-- Los dos pasos. Se puede ir y volver cuando se quiera: el formulario y
-       el redactor guardan lo suyo al cambiar, no se reinician. -->
-  <nav class="pasos" role="tablist" aria-label="Pasos de la ficha">
-    <button type="button" role="tab" class="pasos__paso" id="paso-redactar"
-            [attr.aria-selected]="paso() === 1" aria-controls="panel-redactar"
-            (click)="irA(1)">
-      <span class="pasos__numero"><i class="pi pi-sparkles" aria-hidden="true"></i></span>
-      <span class="pasos__texto">
-        <span class="pasos__titulo">Redactar con IA</span>
-        <span class="pasos__lema">del readme a la ficha</span>
-      </span>
-    </button>
-
-    <span class="pasos__union" aria-hidden="true"></span>
-
-    <button type="button" role="tab" class="pasos__paso" id="paso-completar"
-            [attr.aria-selected]="paso() === 2" aria-controls="panel-completar"
-            (click)="irA(2)">
-      <span class="pasos__numero">2</span>
-      <span class="pasos__texto">
-        <span class="pasos__titulo">Completar la ficha</span>
-        <span class="pasos__lema">
-          @if (rellenados().size) { {{ rellenados().size }} campos de la IA por revisar }
-          @else { enlaces, estado, listas }
+@if (loading()) {
+  <div class="estado-cargando">
+    <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+    <p>Cargando el proyecto…</p>
+  </div>
+} @else {
+  <!-- Los dos pasos, como pestañas de Material. Se puede ir y volver cuando
+       se quiera: el formulario y el redactor guardan lo suyo al cambiar. -->
+  <p-tabs class="pasos" [value]="paso()" (valueChange)="alCambiarPaso($event)">
+    <p-tablist>
+      <p-tab [value]="1">
+        <span class="pasos__numero"><i class="pi pi-sparkles" aria-hidden="true"></i></span>
+        <span class="pasos__texto">
+          <span class="pasos__titulo">Redactar con IA</span>
+          <span class="pasos__lema">del readme a la ficha</span>
         </span>
-      </span>
-    </button>
-  </nav>
+      </p-tab>
+      <p-tab [value]="2">
+        <span class="pasos__numero">2</span>
+        <span class="pasos__texto">
+          <span class="pasos__titulo">Completar la ficha</span>
+          <span class="pasos__lema">
+            @if (rellenados().size) { {{ rellenados().size }} campos de la IA por revisar }
+            @else { enlaces, estado, listas }
+          </span>
+        </span>
+      </p-tab>
+    </p-tablist>
+  </p-tabs>
 }
 
 <!-- El redactor va fuera del <form> a proposito: el readme de origen no es un
      campo del proyecto, es material de entrada y no se guarda en ningun sitio.
      Se oculta en vez de desmontarse para que al volver siga ahi lo redactado. -->
-<div id="panel-redactar" role="tabpanel" aria-labelledby="paso-redactar"
+<div id="panel-redactar" role="region" aria-label="Redactar con IA"
      [hidden]="loading() || paso() !== 1">
   <app-redactor-borrador [pista]="pista()" [actual]="actual()" [meta]="meta()"
                          [proyectoId]="projectId"
@@ -58,7 +51,7 @@
 </div>
 
 <form [formGroup]="form" (ngSubmit)="onSubmit()" class="project-form ficha"
-      id="panel-completar" role="tabpanel" aria-labelledby="paso-completar"
+      id="panel-completar" aria-label="Completar la ficha"
       [hidden]="loading() || paso() !== 2">
 
   @if (rellenados().size) {
@@ -66,11 +59,10 @@
       <i class="pi pi-sparkles" aria-hidden="true"></i>
       <span>
         <strong>{{ rellenados().size }} campos los escribió la IA.</strong>
-        Llevan la marca <span class="marca-ia marca-ia--muestra"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>
-        hasta que los toques.
+        Llevan la marca <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>
+        y un filo de color hasta que los toques.
       </span>
-      <button pButton type="button" label="Ver la propuesta" icon="pi pi-arrow-left"
-              class="p-button-text p-button-sm" (click)="irA(1)"></button>
+      <p-button label="Ver la propuesta" icon="pi pi-arrow-left" [text]="true" size="small" (onClick)="irA(1)" />
     </div>
   }
 
@@ -91,14 +83,14 @@
     <nav class="indice__lista">
       @for (s of SECCIONES; track s.id) {
         @let c = cuenta(s.id);
-        <a class="indice__enlace" [class.indice__enlace--activo]="seccionActiva() === s.id"
-           [href]="'#seccion-' + s.id" (click)="$event.preventDefault(); irASeccion(s.id)">
+        <p-button [text]="true" styleClass="indice__enlace" [class.indice__activo]="seccionActiva() === s.id"
+                  [ariaLabel]="s.titulo + ', ' + c.llenos + ' de ' + c.total + ' campos'"
+                  (onClick)="irASeccion(s.id)">
           <i [class]="s.icono" aria-hidden="true"></i>
           <span class="indice__nombre">{{ s.titulo }}</span>
           <span class="indice__anillo" [style.--p]="c.llenos / c.total"
-                [class.indice__anillo--lleno]="c.llenos === c.total"
-                [attr.title]="c.llenos + ' de ' + c.total + ' campos'"></span>
-        </a>
+                [class.indice__anillo--lleno]="c.llenos === c.total" aria-hidden="true"></span>
+        </p-button>
       }
     </nav>
 
@@ -110,272 +102,241 @@
 
   <div class="ficha__cuerpo">
 
-  <section class="form-seccion seccion" id="seccion-identidad">
-    <header class="seccion__cabeza">
-      <span class="seccion__icono" aria-hidden="true"><i class="pi pi-id-card"></i></span>
-      <div class="seccion__titulos">
-        <h3 class="form-seccion-titulo">Identidad</h3>
-        <p class="seccion__lema">Cómo se llama, qué es y dónde va en la lista.</p>
-      </div>
-      @let c_identidad = cuenta('identidad');
-      <span class="seccion__cuenta" [class.seccion__cuenta--llena]="c_identidad.llenos === c_identidad.total">{{ c_identidad.llenos }}/{{ c_identidad.total }}</span>
-    </header>
+    <!-- Cabecera comun de cada seccion: icono, titulo, lema y cuenta. -->
+    <ng-template #cabecera let-id="id" let-icono="icono" let-titulo="titulo" let-lema="lema">
+      @let c = cuenta(id);
+      <header class="seccion__cabeza">
+        <span class="seccion__icono" aria-hidden="true"><i [class]="icono"></i></span>
+        <div class="seccion__titulos">
+          <h3 class="form-seccion-titulo">{{ titulo }}</h3>
+          <p class="seccion__lema">{{ lema }}</p>
+        </div>
+        <span class="seccion__cuenta" [class.seccion__cuenta--llena]="c.llenos === c.total">{{ c.llenos }}/{{ c.total }}</span>
+      </header>
+    </ng-template>
 
-    <div class="form-row">
-      <div class="form-group flex-2" [class.campo-ia]="loRellenoLaIa('name')">
-        <label for="name">Nombre * @if (loRellenoLaIa('name')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
-        <input pInputText id="name" formControlName="name" (input)="marcarComoMio('name')" placeholder="Gastu" />
-      </div>
-      <div class="form-group flex-1">
-        <label for="slug">Slug</label>
-        <input pInputText id="slug" formControlName="slug" placeholder="gastu-django" />
-      </div>
-      <div class="form-group flex-1">
-        <label for="year">Año *</label>
-        <p-inputNumber id="year" formControlName="year" [useGrouping]="false" [min]="2000" [max]="2030" />
-      </div>
-    </div>
-    <p class="campo-ayuda">
-      El slug es la parte final de la URL de la ficha. Si lo cambias en un
-      proyecto ya publicado, el enlace antiguo deja de funcionar.
-    </p>
+    <section class="form-seccion seccion" id="seccion-identidad">
+      <ng-container *ngTemplateOutlet="cabecera; context: { id: 'identidad', icono: 'pi pi-id-card', titulo: 'Identidad', lema: 'Cómo se llama, qué es y dónde va en la lista.' }" />
 
-    <div class="form-row">
-      <div class="form-group flex-1">
-        <label for="status">Estado *</label>
-        <p-select id="status" formControlName="status" [options]="statusOptions" optionLabel="label" optionValue="value" placeholder="Elige un estado" />
+      <div class="form-row">
+        <p-floatlabel variant="in" class="flex-2" [class.campo-ia]="loRellenoLaIa('name')">
+          <input pInputText id="name" formControlName="name" (input)="marcarComoMio('name')" />
+          <label for="name"><span class="obligatorio">Nombre</span>@if (loRellenoLaIa('name')) {<span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>}</label>
+        </p-floatlabel>
+        <p-floatlabel variant="in" class="flex-1">
+          <input pInputText id="slug" formControlName="slug" />
+          <label for="slug">Slug</label>
+        </p-floatlabel>
+        <p-floatlabel variant="in" class="flex-1">
+          <p-inputnumber inputId="year" formControlName="year" [useGrouping]="false" [min]="2000" [max]="2030" [showButtons]="true" />
+          <label for="year" class="obligatorio">Año</label>
+        </p-floatlabel>
       </div>
-      <div class="form-group flex-1">
-        <label for="role">Rol</label>
-        <input pInputText id="role" formControlName="role" placeholder="Full Stack Developer" />
-      </div>
-      <div class="form-group flex-1">
-        <label for="type">Tipo</label>
-        <input pInputText id="type" formControlName="type" placeholder="Aplicación web" />
-      </div>
-      <div class="form-group" style="width: 110px;">
-        <label for="teamSize">Equipo</label>
-        <p-inputNumber id="teamSize" formControlName="teamSize" [min]="1" [max]="50" />
-      </div>
-      <div class="form-group" style="width: 120px;">
-        <label for="displayOrder">Orden</label>
-        <p-inputNumber id="displayOrder" formControlName="displayOrder" [min]="0" [max]="100" />
-      </div>
-    </div>
-  </section>
+      <small class="campo-ayuda">
+        El slug es la parte final de la URL de la ficha. Si lo cambias en un
+        proyecto ya publicado, el enlace antiguo deja de funcionar.
+      </small>
 
-  <section class="form-seccion seccion" id="seccion-descripciones">
-    <header class="seccion__cabeza">
-      <span class="seccion__icono" aria-hidden="true"><i class="pi pi-align-left"></i></span>
-      <div class="seccion__titulos">
-        <h3 class="form-seccion-titulo">Descripciones</h3>
-        <p class="seccion__lema">La frase de la tarjeta y el resumen para buscadores y enlaces.</p>
+      <div class="form-row">
+        <p-floatlabel variant="in" class="flex-1">
+          <p-select inputId="status" formControlName="status" [options]="statusOptions" optionLabel="label" optionValue="value" />
+          <label for="status" class="obligatorio">Estado</label>
+        </p-floatlabel>
+        <p-floatlabel variant="in" class="flex-1">
+          <input pInputText id="role" formControlName="role" />
+          <label for="role">Rol</label>
+        </p-floatlabel>
+        <p-floatlabel variant="in" class="flex-1">
+          <input pInputText id="type" formControlName="type" />
+          <label for="type">Tipo</label>
+        </p-floatlabel>
       </div>
-      @let c_descripciones = cuenta('descripciones');
-      <span class="seccion__cuenta" [class.seccion__cuenta--llena]="c_descripciones.llenos === c_descripciones.total">{{ c_descripciones.llenos }}/{{ c_descripciones.total }}</span>
-    </header>
 
-    <div class="form-group" [class.campo-ia]="loRellenoLaIa('shortDescription')">
-      <label for="shortDescription">Descripción corta * @if (loRellenoLaIa('shortDescription')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
-      <textarea pTextarea id="shortDescription" formControlName="shortDescription" (input)="marcarComoMio('shortDescription')" rows="2" placeholder="La frase que se lee en la tarjeta"></textarea>
-      <p class="campo-ayuda campo-ayuda--fila">
-        <span>Una o dos frases. Es lo único que se ve sin abrir la ficha.</span>
-        <!-- 90 es el tope que se le pide al modelo, medido sobre los
-             proyectos reales. Pasarse no rompe nada, pero en la tarjeta se
-             corta. -->
-        <span class="contador" [class.contador--fuera]="(valor().shortDescription?.length ?? 0) > 90">{{ valor().shortDescription?.length ?? 0 }} / 90</span>
-      </p>
-    </div>
-
-    <div class="form-group" [class.campo-ia]="loRellenoLaIa('fullDescription')">
-      <label for="fullDescription">Descripción completa @if (loRellenoLaIa('fullDescription')) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
-      <textarea pTextarea id="fullDescription" formControlName="fullDescription" (input)="marcarComoMio('fullDescription')" rows="5" placeholder="El detalle que se muestra al abrir la ficha"></textarea>
-    </div>
-  </section>
-
-  <section class="form-seccion seccion" id="seccion-listas">
-    <header class="seccion__cabeza">
-      <span class="seccion__icono" aria-hidden="true"><i class="pi pi-list"></i></span>
-      <div class="seccion__titulos">
-        <h3 class="form-seccion-titulo">Listas</h3>
-        <p class="seccion__lema">Una entrada por línea. No se separan por comas a propósito: el contenido lleva comas y partir por ellas convertía una viñeta en tres.</p>
+      <div class="form-row">
+        <p-floatlabel variant="in" class="flex-1">
+          <p-inputnumber inputId="teamSize" formControlName="teamSize" [min]="1" [max]="50" [showButtons]="true" />
+          <label for="teamSize">Personas en el equipo</label>
+        </p-floatlabel>
+        <p-floatlabel variant="in" class="flex-1">
+          <p-inputnumber inputId="displayOrder" formControlName="displayOrder" [min]="0" [max]="100" [showButtons]="true" />
+          <label for="displayOrder">Orden en la lista</label>
+        </p-floatlabel>
       </div>
-      @let c_listas = cuenta('listas');
-      <span class="seccion__cuenta" [class.seccion__cuenta--llena]="c_listas.llenos === c_listas.total">{{ c_listas.llenos }}/{{ c_listas.total }}</span>
-    </header>
+    </section>
 
-    <div class="form-group">
-      <label for="featuresText">Funcionalidades</label>
-      <textarea pTextarea id="featuresText" formControlName="featuresText" rows="5"
-                placeholder="Autenticacion mixta (Email, Google OAuth)&#10;Exportacion a Excel, PDF y CSV"></textarea>
-    </div>
+    <section class="form-seccion seccion" id="seccion-descripciones">
+      <ng-container *ngTemplateOutlet="cabecera; context: { id: 'descripciones', icono: 'pi pi-align-left', titulo: 'Descripciones', lema: 'La frase de la tarjeta y el resumen para buscadores y enlaces.' }" />
 
-    <div class="form-row">
-      <div class="form-group flex-1">
-        <label for="highlightsText">Destacados</label>
-        <textarea pTextarea id="highlightsText" formControlName="highlightsText" rows="4"
-                  placeholder="Arquitectura modular&#10;Sistema hibrido SQLite/PostgreSQL"></textarea>
+      <div class="form-group">
+        <p-floatlabel variant="in" [class.campo-ia]="loRellenoLaIa('shortDescription')">
+          <textarea pTextarea id="shortDescription" formControlName="shortDescription" appCrecerConTexto="1" (input)="marcarComoMio('shortDescription')"></textarea>
+          <label for="shortDescription"><span class="obligatorio">Descripción corta</span>@if (loRellenoLaIa('shortDescription')) {<span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>}</label>
+        </p-floatlabel>
+        <!-- 90 es el tope que se le pide al modelo, medido sobre los proyectos
+             reales. Pasarse no rompe nada, pero en la tarjeta se corta. -->
+        <small class="campo-ayuda campo-ayuda--fila">
+          <span>Una o dos frases. Es lo único que se ve sin abrir la ficha.</span>
+          <span class="contador" [class.contador--fuera]="(valor().shortDescription?.length ?? 0) > 90">{{ valor().shortDescription?.length ?? 0 }} / 90</span>
+        </small>
       </div>
-      <div class="form-group flex-1">
-        <label for="keywordsText">Palabras clave</label>
-        <textarea pTextarea id="keywordsText" formControlName="keywordsText" rows="4"
-                  placeholder="finanzas&#10;ia&#10;django"></textarea>
-      </div>
-    </div>
-  </section>
 
-  <section class="form-seccion seccion" id="seccion-enlaces">
-    <header class="seccion__cabeza">
-      <span class="seccion__icono" aria-hidden="true"><i class="pi pi-link"></i></span>
-      <div class="seccion__titulos">
-        <h3 class="form-seccion-titulo">Enlaces</h3>
-        <p class="seccion__lema">El repositorio, dónde verlo funcionando y la imagen de la cabecera.</p>
-      </div>
-      @let c_enlaces = cuenta('enlaces');
-      <span class="seccion__cuenta" [class.seccion__cuenta--llena]="c_enlaces.llenos === c_enlaces.total">{{ c_enlaces.llenos }}/{{ c_enlaces.total }}</span>
-    </header>
+      <p-floatlabel variant="in" [class.campo-ia]="loRellenoLaIa('fullDescription')">
+        <textarea pTextarea id="fullDescription" formControlName="fullDescription" appCrecerConTexto="3" (input)="marcarComoMio('fullDescription')"></textarea>
+        <label for="fullDescription">Descripción completa@if (loRellenoLaIa('fullDescription')) {<span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>}</label>
+      </p-floatlabel>
+    </section>
 
-    <!-- Van a links.github y links.live, que es donde vive el dato;
-         githubUrl y liveUrl eran campos heredados y estaban siempre vacios. -->
-    <div class="form-row" formGroupName="links">
-      <div class="form-group flex-1">
-        <label for="linkGithub"><i class="pi pi-github" aria-hidden="true"></i> Repositorio</label>
-        <input pInputText id="linkGithub" formControlName="github" placeholder="https://github.com/..." />
-      </div>
-      <div class="form-group flex-1">
-        <label for="linkLive"><i class="pi pi-external-link" aria-hidden="true"></i> Despliegue</label>
-        <input pInputText id="linkLive" formControlName="live" placeholder="https://..." />
-      </div>
-      <div class="form-group flex-1">
-        <label for="linkDownload"><i class="pi pi-download" aria-hidden="true"></i> Descarga</label>
-        <input pInputText id="linkDownload" formControlName="download"
-               placeholder="https://github.com/usuario/repo/releases/latest" />
-      </div>
-    </div>
+    <section class="form-seccion seccion" id="seccion-listas">
+      <ng-container *ngTemplateOutlet="cabecera; context: { id: 'listas', icono: 'pi pi-list', titulo: 'Listas', lema: 'Una entrada por línea. No se separan por comas a propósito: el contenido lleva comas y partir por ellas convertía una viñeta en tres.' }" />
 
-    <p class="campo-ayuda">
-      La ficha muestra el despliegue si existe y, si no, la descarga. Para una
-      release de GitHub conviene apuntar a <code>/releases/latest</code> y no al
-      <code>.exe</code> de una versión concreta: así no hay que volver aquí cada
-      vez que publiques una nueva.
-    </p>
+      <p-floatlabel variant="in">
+        <textarea pTextarea id="featuresText" formControlName="featuresText" appCrecerConTexto="3"></textarea>
+        <label for="featuresText">Funcionalidades</label>
+      </p-floatlabel>
 
-    <div class="form-group">
-      <label for="imageUrl"><i class="pi pi-image" aria-hidden="true"></i> Imagen</label>
-      <input pInputText id="imageUrl" formControlName="imageUrl" placeholder="/assets/images/projects/..." />
-    </div>
-  </section>
-
-  <section class="form-seccion seccion" id="seccion-arquitectura">
-    <header class="seccion__cabeza">
-      <span class="seccion__icono" aria-hidden="true"><i class="pi pi-sitemap"></i></span>
-      <div class="seccion__titulos">
-        <h3 class="form-seccion-titulo">Arquitectura</h3>
-        <p class="seccion__lema">Resúmenes de una línea que se muestran en la cabecera de la ficha.</p>
+      <div class="form-row">
+        <p-floatlabel variant="in" class="flex-1">
+          <textarea pTextarea id="highlightsText" formControlName="highlightsText" appCrecerConTexto="3"></textarea>
+          <label for="highlightsText">Destacados</label>
+        </p-floatlabel>
+        <p-floatlabel variant="in" class="flex-1">
+          <textarea pTextarea id="keywordsText" formControlName="keywordsText" appCrecerConTexto="3"></textarea>
+          <label for="keywordsText">Palabras clave</label>
+        </p-floatlabel>
       </div>
-      @let c_arquitectura = cuenta('arquitectura');
-      <span class="seccion__cuenta" [class.seccion__cuenta--llena]="c_arquitectura.llenos === c_arquitectura.total">{{ c_arquitectura.llenos }}/{{ c_arquitectura.total }}</span>
-    </header>
+    </section>
 
-    <div class="form-row">
-      <div class="form-group flex-1">
+    <section class="form-seccion seccion" id="seccion-enlaces">
+      <ng-container *ngTemplateOutlet="cabecera; context: { id: 'enlaces', icono: 'pi pi-link', titulo: 'Enlaces', lema: 'El repositorio, dónde verlo funcionando y la imagen de la cabecera.' }" />
+
+      <!-- Van a links.github y links.live, que es donde vive el dato;
+           githubUrl y liveUrl eran campos heredados y estaban siempre vacios. -->
+      <div class="form-row" formGroupName="links">
+        <p-floatlabel variant="in" class="flex-1">
+          <input pInputText id="linkGithub" formControlName="github" />
+          <label for="linkGithub"><i class="pi pi-github" aria-hidden="true"></i> Repositorio</label>
+        </p-floatlabel>
+        <p-floatlabel variant="in" class="flex-1">
+          <input pInputText id="linkLive" formControlName="live" />
+          <label for="linkLive"><i class="pi pi-external-link" aria-hidden="true"></i> Despliegue</label>
+        </p-floatlabel>
+      </div>
+      <div formGroupName="links">
+        <p-floatlabel variant="in">
+          <input pInputText id="linkDownload" formControlName="download" />
+          <label for="linkDownload"><i class="pi pi-download" aria-hidden="true"></i> Descarga</label>
+        </p-floatlabel>
+      </div>
+
+      <small class="campo-ayuda">
+        La ficha muestra el despliegue si existe y, si no, la descarga. Para una
+        release de GitHub conviene apuntar a <code>/releases/latest</code> y no al
+        <code>.exe</code> de una versión concreta: así no hay que volver aquí cada
+        vez que publiques una nueva.
+      </small>
+
+      <p-floatlabel variant="in">
+        <input pInputText id="imageUrl" formControlName="imageUrl" />
+        <label for="imageUrl"><i class="pi pi-image" aria-hidden="true"></i> Imagen</label>
+      </p-floatlabel>
+    </section>
+
+    <section class="form-seccion seccion" id="seccion-arquitectura">
+      <ng-container *ngTemplateOutlet="cabecera; context: { id: 'arquitectura', icono: 'pi pi-sitemap', titulo: 'Arquitectura', lema: 'Resúmenes de una línea que se muestran en la cabecera de la ficha.' }" />
+
+      <p-floatlabel variant="in">
+        <input pInputText id="coreArchitecture" formControlName="coreArchitecture" />
         <label for="coreArchitecture">Núcleo</label>
-        <input pInputText id="coreArchitecture" formControlName="coreArchitecture" placeholder="Django Apps + Services Layer" />
+      </p-floatlabel>
+      <div class="form-row">
+        <p-floatlabel variant="in" class="flex-1">
+          <input pInputText id="databaseArchitecture" formControlName="databaseArchitecture" />
+          <label for="databaseArchitecture">Base de datos</label>
+        </p-floatlabel>
+        <p-floatlabel variant="in" class="flex-1">
+          <input pInputText id="aiArchitecture" formControlName="aiArchitecture" />
+          <label for="aiArchitecture">IA</label>
+        </p-floatlabel>
       </div>
-      <div class="form-group flex-1">
-        <label for="databaseArchitecture">Base de datos</label>
-        <input pInputText id="databaseArchitecture" formControlName="databaseArchitecture" placeholder="SQLite / PostgreSQL" />
-      </div>
-      <div class="form-group flex-1">
-        <label for="aiArchitecture">IA</label>
-        <input pInputText id="aiArchitecture" formControlName="aiArchitecture" placeholder="Gemini Flash + Groq Fallback" />
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="form-seccion seccion" id="seccion-caso">
-    <header class="seccion__cabeza">
-      <span class="seccion__icono" aria-hidden="true"><i class="pi pi-book"></i></span>
-      <div class="seccion__titulos">
-        <h3 class="form-seccion-titulo">Caso de estudio</h3>
-        <p class="seccion__lema">Las cinco secciones del readme de la ficha, en el orden en que se leen.</p>
-      </div>
-      @let c_caso = cuenta('caso');
-      <span class="seccion__cuenta" [class.seccion__cuenta--llena]="c_caso.llenos === c_caso.total">{{ c_caso.llenos }}/{{ c_caso.total }}</span>
-    </header>
+    <section class="form-seccion seccion" id="seccion-caso">
+      <ng-container *ngTemplateOutlet="cabecera; context: { id: 'caso', icono: 'pi pi-book', titulo: 'Caso de estudio', lema: 'Las cinco secciones del readme de la ficha, en el orden en que se leen.' }" />
 
-    <div formGroupName="readmeMarkdown" class="caso">
-      @for (s of SECCIONES_CASO; track s.clave; let n = $index) {
-        <div class="form-group caso__parte" [class.campo-ia]="loRellenoLaIa(s.clave)">
-          <label [for]="s.id"><span class="caso__numero">{{ n + 1 }}</span> {{ s.titulo }} @if (loRellenoLaIa(s.clave)) { <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span> }</label>
-          <textarea pTextarea [id]="s.id" [formControlName]="s.clave" (input)="marcarComoMio(s.clave)" rows="3"></textarea>
-        </div>
+      <!-- Cada parte crece con su texto: son parrafos de cuatro o cinco
+           lineas, y en cajas de tres se leian cortados. -->
+      <ol formGroupName="readmeMarkdown" class="caso">
+        @for (s of SECCIONES_CASO; track s.clave; let n = $index) {
+          <li class="caso__parte" [class.campo-ia]="loRellenoLaIa(s.clave)">
+            <span class="caso__numero" aria-hidden="true">{{ n + 1 }}</span>
+            <p-floatlabel variant="in">
+              <textarea pTextarea [id]="s.id" [formControlName]="s.clave" appCrecerConTexto="3"
+                        (input)="marcarComoMio(s.clave)"></textarea>
+              <label [for]="s.id">{{ s.titulo }}@if (loRellenoLaIa(s.clave)) {<span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>}</label>
+            </p-floatlabel>
+          </li>
+        }
+      </ol>
+    </section>
+
+    <section class="form-seccion seccion" id="seccion-desafios">
+      <ng-container *ngTemplateOutlet="cabecera; context: { id: 'desafios', icono: 'pi pi-flag', titulo: 'Desafíos', lema: 'Problemas técnicos concretos y cómo se abordaron. Entre tres y cuatro.' }" />
+
+      <!-- Cada uno son dos campos y no una linea con separador: ya se aprendio
+           con las comas que meter un delimitador dentro del contenido acaba
+           partiendo lo que no debia. -->
+      @if (loRellenoLaIa('challenges')) {
+        <p class="seccion__ia">
+          <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>
+          Los escribió la IA; la marca se va al editar cualquiera.
+        </p>
       }
-    </div>
-  </section>
 
-  <section class="form-seccion seccion" id="seccion-desafios">
-    <header class="seccion__cabeza">
-      <span class="seccion__icono" aria-hidden="true"><i class="pi pi-flag"></i></span>
-      <div class="seccion__titulos">
-        <h3 class="form-seccion-titulo">Desafíos</h3>
-        <p class="seccion__lema">Problemas técnicos concretos y cómo se abordaron. Entre tres y cuatro.</p>
+      <div formArrayName="challenges" class="desafios">
+        @for (c of challenges.controls; track c; let i = $index) {
+          <div class="challenge" [formGroupName]="i">
+            <div class="challenge__cabeza">
+              <span class="challenge__numero" aria-hidden="true">{{ i + 1 }}</span>
+              <!-- El titulo tambien crece: "Autenticacion con email y Google"
+                   no cabia en una linea y se leia cortado. -->
+              <p-floatlabel variant="in" class="challenge__titulo" [class.campo-ia]="loRellenoLaIa('challenges')">
+                <textarea pTextarea [id]="'challengeTitle' + i" formControlName="title" appCrecerConTexto="1" (input)="marcarComoMio('challenges')"></textarea>
+                <label [for]="'challengeTitle' + i">Título@if (loRellenoLaIa('challenges')) {<span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>}</label>
+              </p-floatlabel>
+              <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" styleClass="challenge__quitar"
+                        [ariaLabel]="'Quitar el desafio ' + (i + 1)" (onClick)="quitarChallenge(i)" />
+            </div>
+            <p-floatlabel variant="in" class="challenge__descripcion">
+              <textarea pTextarea [id]="'challengeDesc' + i" formControlName="description" appCrecerConTexto="2" (input)="marcarComoMio('challenges')"></textarea>
+              <label [for]="'challengeDesc' + i">Descripción</label>
+            </p-floatlabel>
+          </div>
+        }
       </div>
-      @let c_desafios = cuenta('desafios');
-      <span class="seccion__cuenta" [class.seccion__cuenta--llena]="c_desafios.llenos === c_desafios.total">{{ c_desafios.llenos }}/{{ c_desafios.total }}</span>
-    </header>
 
-    <!-- Cada uno son dos campos y no una linea con separador: ya se aprendio
-         con las comas que meter un delimitador dentro del contenido acaba
-         partiendo lo que no debia. -->
-    @if (loRellenoLaIa('challenges')) {
-      <p class="seccion__ia">
-        <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>
-        Los escribió la IA; la marca se va al editar cualquiera.
-      </p>
-    }
+      <p-button label="Añadir desafío" icon="pi pi-plus" [outlined]="true" severity="secondary"
+                styleClass="anadir" (onClick)="agregarChallenge()" />
+    </section>
 
-    <div formArrayName="challenges" class="desafios">
-      <div class="challenge" *ngFor="let c of challenges.controls; let i = index" [formGroupName]="i">
-        <span class="challenge__numero" aria-hidden="true">{{ i + 1 }}</span>
-        <div class="form-group challenge__titulo">
-          <label [for]="'challengeTitle' + i">Título</label>
-          <input pInputText [id]="'challengeTitle' + i" formControlName="title" (input)="marcarComoMio('challenges')"
-                 placeholder="Implementacion de autenticacion hibrida" />
-        </div>
-        <div class="form-group challenge__descripcion">
-          <label [for]="'challengeDesc' + i">Descripción</label>
-          <textarea pTextarea [id]="'challengeDesc' + i" formControlName="description" rows="2" (input)="marcarComoMio('challenges')"
-                    placeholder="En que consistia la dificultad y como se resolvio"></textarea>
-        </div>
-        <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-danger challenge__quitar"
-                (click)="quitarChallenge(i)" [attr.aria-label]="'Quitar el desafio ' + (i + 1)"></button>
-      </div>
+    <p class="campo-ayuda nota-final">
+      <i class="pi pi-info-circle" aria-hidden="true"></i>
+      <span>
+        El diagrama de arquitectura, el stack estructurado y las métricas no se
+        editan aquí: se escriben en <code>src/assets/data/projects.json</code> y se
+        suben con <code>pnpm run mirror:push</code>. Guardar desde este formulario
+        no los altera.
+      </span>
+    </p>
+
+    <div class="barra-guardado">
+      <span class="barra-guardado-estado">
+        <span class="barra-guardado-punto" [class.barra-guardado-punto--listo]="form.valid" aria-hidden="true"></span>
+        @if (form.valid) { Lista para guardar. } @else { Faltan campos obligatorios. }
+        Guardar escribe en la base de datos, no publica el sitio.
+      </span>
+      <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="cancel()" />
+      <p-button type="submit" [label]="isEditMode ? 'Guardar cambios' : 'Crear proyecto'"
+                [loading]="saving()" [disabled]="form.invalid" />
     </div>
-
-    <button type="button" class="anadir" (click)="agregarChallenge()">
-      <i class="pi pi-plus" aria-hidden="true"></i> Añadir desafío
-    </button>
-  </section>
-
-  <p class="campo-ayuda nota-final">
-    <i class="pi pi-info-circle" aria-hidden="true"></i>
-    <span>
-      El diagrama de arquitectura, el stack estructurado y las métricas no se
-      editan aquí: se escriben en <code>src/assets/data/projects.json</code> y se
-      suben con <code>pnpm run mirror:push</code>. Guardar desde este formulario
-      no los altera.
-    </span>
-  </p>
-
-  <div class="barra-guardado">
-    <span class="barra-guardado-estado">
-      <span class="barra-guardado-punto" [class.barra-guardado-punto--listo]="form.valid" aria-hidden="true"></span>
-      @if (form.valid) { Lista para guardar. } @else { Faltan campos obligatorios. }
-      Guardar escribe en la base de datos, no publica el sitio.
-    </span>
-    <button pButton type="button" label="Cancelar" class="p-button-text" (click)="cancel()"></button>
-    <button pButton type="submit" [label]="isEditMode ? 'Guardar cambios' : 'Crear proyecto'" [loading]="saving()" [disabled]="form.invalid"></button>
-  </div>
   </div>
 </form>

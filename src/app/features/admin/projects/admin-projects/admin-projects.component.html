@@ -1,6 +1,3 @@
-<p-toast />
-<p-confirmDialog />
-
 <header class="pagina-cabecera">
   <div>
     <h2 class="pagina-titulo">
@@ -13,68 +10,41 @@
     </p>
   </div>
   <div class="pagina-acciones">
-    <button pButton icon="pi pi-plus" label="Nuevo proyecto" class="p-button-sm" (click)="createNew()"></button>
+    <p-button label="Nuevo proyecto" icon="pi pi-sparkles" styleClass="boton-ia" (onClick)="createNew()" />
   </div>
 </header>
 
-<div *ngIf="loading()" class="estado-cargando">
-  <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-  <p>Cargando proyectos…</p>
-</div>
-
-<div *ngIf="!loading()">
-  <p-table 
-    [value]="projects()" 
-    [paginator]="true"
-    [rows]="10"
-    [showCurrentPageReport]="true"
-    currentPageReportTemplate="{first}–{last} de {totalRecords}"
-    styleClass="p-datatable-sm p-datatable-striped"
-  >
-    <ng-template pTemplate="header">
-      <tr>
-        <th style="width: 60px">ID</th>
-        <th>Nombre</th>
-        <th>Estado</th>
-        <th style="width: 80px">Año</th>
-        <th style="width: 80px">Orden</th>
-        <th style="width: 110px">Acciones</th>
-      </tr>
-    </ng-template>
-
-    <ng-template pTemplate="body" let-project>
-      <tr>
-        <td>{{ project.id }}</td>
-        <td>
-          <div class="project-name-cell">
-            <strong>{{ project.name }}</strong>
-            <small class="text-secondary">{{ project.shortDescription | slice:0:60 }}...</small>
-          </div>
-        </td>
-        <td>
-          <p-tag [value]="project.status" [severity]="getStatusSeverity(project.status)" [rounded]="true" />
-        </td>
-        <td>{{ project.year }}</td>
-        <td>{{ project.displayOrder }}</td>
-        <td>
-          <div class="action-buttons">
-            <button pButton icon="pi pi-pencil" class="p-button-sm p-button-text p-button-info" (click)="editProject(project)" pTooltip="Editar"></button>
-            <button pButton icon="pi pi-trash" class="p-button-sm p-button-text p-button-danger" (click)="confirmDelete(project)" pTooltip="Eliminar"></button>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-
-    <ng-template pTemplate="emptymessage">
-      <tr>
-        <td colspan="6">
-          <div class="estado-vacio">
-            <i class="pi pi-folder-open" aria-hidden="true"></i>
-            <p>Todavía no hay proyectos.</p>
-            <span class="pista">Pulsa «Nuevo proyecto» para crear el primero.</span>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
-</div>
+@if (loading()) {
+  <div class="estado-cargando">
+    <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+    <p>Cargando proyectos…</p>
+  </div>
+} @else {
+  <ul class="lista">
+    @for (project of projects(); track project.id) {
+      <li class="fila">
+        <span class="fila__marca" aria-hidden="true">{{ project.displayOrder }}</span>
+        <div class="fila__cuerpo">
+          <span class="fila__titulo">{{ project.name }}</span>
+          <span class="fila__sub">{{ project.shortDescription }}</span>
+        </div>
+        <div class="fila__meta">
+          <p-tag [value]="project.status" [severity]="tonoEstado(project.status)" [rounded]="true" />
+          <span>{{ project.year }}</span>
+        </div>
+        <div class="action-buttons">
+          <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="secondary"
+                    [ariaLabel]="'Editar ' + project.name" (onClick)="editProject(project)" />
+          <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger"
+                    [ariaLabel]="'Eliminar ' + project.name" (onClick)="confirmDelete(project)" />
+        </div>
+      </li>
+    } @empty {
+      <li class="estado-vacio">
+        <i class="pi pi-folder-open" aria-hidden="true"></i>
+        <p>Todavía no hay proyectos.</p>
+        <span class="pista">Pulsa «Nuevo proyecto» para crear el primero.</span>
+      </li>
+    }
+  </ul>
+}

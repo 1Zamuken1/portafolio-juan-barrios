@@ -1,9 +1,1 @@
-.project-name-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.project-name-cell small {
-  font-size: 0.75rem;
-}
+/* La lista usa las filas de admin.css; esta vista no tiene nada propio. */

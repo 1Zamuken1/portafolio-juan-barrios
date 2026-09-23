@@ -1,4 +1,4 @@
-<div class="dashboard-layout">
+<div class="dashboard-layout admin-app">
 
   <aside class="sidebar">
     <div class="sidebar-header">
@@ -34,29 +34,29 @@
       <!-- El tema, con las dos opciones a la vista. Un solo icono que cambia
            dice lo que va a pasar, no lo que hay: aqui se ve de un vistazo en
            cual estas. Lo guarda ThemeService, el mismo que usa el sitio. -->
-      <div class="tema" role="radiogroup" aria-label="Tema del panel"
-           [attr.data-tema]="tema.theme()">
-        <span class="tema__deslizador" aria-hidden="true"></span>
-        <button type="button" role="radio" class="tema__opcion"
-                [attr.aria-checked]="tema.isDark()" (click)="tema.theme.set('dark')">
-          <i class="pi pi-moon" aria-hidden="true"></i> Oscuro
-        </button>
-        <button type="button" role="radio" class="tema__opcion"
-                [attr.aria-checked]="!tema.isDark()" (click)="tema.theme.set('light')">
-          <i class="pi pi-sun" aria-hidden="true"></i> Claro
-        </button>
-      </div>
+      <p-selectbutton class="tema" [options]="temas" optionLabel="label" optionValue="value"
+                      [allowEmpty]="false" ariaLabelledBy="tema-rotulo"
+                      [ngModel]="tema.theme()" (ngModelChange)="tema.theme.set($event)">
+        <ng-template #item let-opcion>
+          <i [class]="opcion.icono" aria-hidden="true"></i> {{ opcion.label }}
+        </ng-template>
+      </p-selectbutton>
+      <span id="tema-rotulo" class="sr-only">Tema del panel</span>
 
       <a routerLink="/" class="nav-link">
         <i class="pi pi-external-link" aria-hidden="true"></i> Ver el portafolio
       </a>
-      <button (click)="logout()" class="logout-btn">
-        <i class="pi pi-sign-out" aria-hidden="true"></i> Cerrar sesión
-      </button>
+      <p-button label="Cerrar sesión" icon="pi pi-sign-out" [outlined]="true" severity="secondary"
+                styleClass="salir" (onClick)="logout()" />
     </div>
   </aside>
 
   <main class="dashboard-content">
     <router-outlet></router-outlet>
   </main>
+
+  <!-- Una sola pila de avisos y un solo dialogo para todo el panel: un aviso
+       lanzado justo antes de navegar ya no se va con la vista que lo lanzo. -->
+  <p-toast position="top-right" />
+  <p-confirmdialog styleClass="dialogo-panel" />
 </div>

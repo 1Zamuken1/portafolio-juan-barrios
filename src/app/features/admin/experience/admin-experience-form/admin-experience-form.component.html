@@ -1,5 +1,3 @@
-<p-toast />
-
 <header class="pagina-cabecera">
   <div>
     <h2 class="pagina-titulo">{{ isEditMode ? 'Editar entrada' : 'Nueva entrada' }}</h2>
@@ -10,84 +8,94 @@
   </div>
 </header>
 
-<div *ngIf="loading()" class="estado-cargando">
-  <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-  <p>Cargando la entrada…</p>
-</div>
-
-<form *ngIf="!loading()" [formGroup]="form" (ngSubmit)="onSubmit()" class="admin-form">
-
-  <section class="form-seccion">
-    <h3 class="form-seccion-titulo">Qué y cuándo</h3>
-
-    <div class="form-row">
-      <div class="form-group flex-1">
-        <label for="company">Organización *</label>
-        <input pInputText id="company" formControlName="company" placeholder="SEK, SENA, Proyectos propios…" />
-      </div>
-
-      <div class="form-group flex-1">
-        <label for="role">Rol *</label>
-        <input pInputText id="role" formControlName="role" placeholder="Software Developer" />
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="period">Período *</label>
-      <input pInputText id="period" formControlName="period" placeholder="2026 — Presente" />
-      <p class="campo-ayuda">
-        Texto libre, se muestra tal cual. Manten el mismo formato en todas las
-        entradas para que la columna se lea pareja.
-      </p>
-    </div>
-
-    <div class="form-group">
-      <label for="description">Descripción</label>
-      <textarea pInputTextarea id="description" formControlName="description" rows="3" placeholder="Una o dos frases sobre el contexto"></textarea>
-    </div>
-  </section>
-
-  <section class="form-seccion">
-    <h3 class="form-seccion-titulo">Detalle</h3>
-
-    <div class="form-group">
-      <label for="achievementsStr">Logros</label>
-      <input pInputText id="achievementsStr" formControlName="achievementsStr" placeholder="Primer logro, segundo logro" />
-      <p class="campo-ayuda">
-        Separados por coma. Cada uno sale como un punto de la lista, así que
-        evita comas dentro de un mismo logro.
-      </p>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group flex-1">
-        <label for="technologiesStr">Tecnologías</label>
-        <input pInputText id="technologiesStr" formControlName="technologiesStr" placeholder="Java, Spring Boot, Docker" />
-        <p class="campo-ayuda">Separadas por coma. Salen como etiquetas.</p>
-      </div>
-
-      <div class="form-group flex-1">
-        <label for="icon">Icono *</label>
-        <input pInputText id="icon" formControlName="icon" placeholder="briefcase" />
-        <p class="campo-ayuda">
-          <code>briefcase</code>, <code>code</code> o <code>graduation-cap</code>;
-          cualquier otro valor cae al icono por defecto.
-        </p>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="displayOrder">Orden</label>
-      <p-inputNumber id="displayOrder" formControlName="displayOrder" [showButtons]="true" [min]="0" />
-      <p class="campo-ayuda">Menor número, más arriba. Lo habitual es lo más reciente primero.</p>
-    </div>
-  </section>
-
-  <div class="barra-guardado">
-    <span class="barra-guardado-estado">
-      Guardar escribe en la base de datos, no publica el sitio.
-    </span>
-    <button pButton type="button" label="Cancelar" class="p-button-outlined p-button-secondary" (click)="cancel()"></button>
-    <button pButton type="submit" [label]="isEditMode ? 'Guardar cambios' : 'Crear'" [loading]="saving()" [disabled]="form.invalid"></button>
+@if (loading()) {
+  <div class="estado-cargando">
+    <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+    <p>Cargando la entrada…</p>
   </div>
-</form>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="admin-form">
+
+    <section class="form-seccion panel seccion-simple">
+      <h3 class="form-seccion-titulo">Qué y cuándo</h3>
+
+      <div class="form-row">
+        <p-floatlabel variant="in" class="flex-1">
+          <input pInputText id="company" formControlName="company" />
+          <label for="company" class="obligatorio">Organización</label>
+        </p-floatlabel>
+        <p-floatlabel variant="in" class="flex-1">
+          <input pInputText id="role" formControlName="role" />
+          <label for="role" class="obligatorio">Rol</label>
+        </p-floatlabel>
+      </div>
+
+      <div class="form-group">
+        <p-floatlabel variant="in">
+          <input pInputText id="period" formControlName="period" />
+          <label for="period" class="obligatorio">Período</label>
+        </p-floatlabel>
+        <small class="campo-ayuda">
+          Texto libre, se muestra tal cual. Mantén el mismo formato en todas las
+          entradas para que la columna se lea pareja.
+        </small>
+      </div>
+
+      <p-floatlabel variant="in">
+        <textarea pTextarea id="description" formControlName="description" appCrecerConTexto="2"></textarea>
+        <label for="description">Descripción</label>
+      </p-floatlabel>
+    </section>
+
+    <section class="form-seccion panel seccion-simple">
+      <h3 class="form-seccion-titulo">Detalle</h3>
+
+      <div class="form-group">
+        <p-floatlabel variant="in">
+          <input pInputText id="achievementsStr" formControlName="achievementsStr" />
+          <label for="achievementsStr">Logros</label>
+        </p-floatlabel>
+        <small class="campo-ayuda">
+          Separados por coma. Cada uno sale como un punto de la lista, así que
+          evita comas dentro de un mismo logro.
+        </small>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <p-floatlabel variant="in">
+            <input pInputText id="technologiesStr" formControlName="technologiesStr" />
+            <label for="technologiesStr">Tecnologías</label>
+          </p-floatlabel>
+          <small class="campo-ayuda">Separadas por coma. Salen como etiquetas.</small>
+        </div>
+        <div class="form-group flex-1">
+          <p-floatlabel variant="in">
+            <input pInputText id="icon" formControlName="icon" />
+            <label for="icon" class="obligatorio">Icono</label>
+          </p-floatlabel>
+          <small class="campo-ayuda">
+            <code>briefcase</code>, <code>code</code> o <code>graduation-cap</code>;
+            cualquier otro valor cae al icono por defecto.
+          </small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <p-floatlabel variant="in">
+          <p-inputnumber inputId="displayOrder" formControlName="displayOrder" [showButtons]="true" [min]="0" />
+          <label for="displayOrder">Orden</label>
+        </p-floatlabel>
+        <small class="campo-ayuda">Menor número, más arriba. Lo habitual es lo más reciente primero.</small>
+      </div>
+    </section>
+
+    <div class="barra-guardado">
+      <span class="barra-guardado-estado">
+        Guardar escribe en la base de datos, no publica el sitio.
+      </span>
+      <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="cancel()" />
+      <p-button type="submit" [label]="isEditMode ? 'Guardar cambios' : 'Crear'" [loading]="saving()" [disabled]="form.invalid" />
+    </div>
+  </form>
+}

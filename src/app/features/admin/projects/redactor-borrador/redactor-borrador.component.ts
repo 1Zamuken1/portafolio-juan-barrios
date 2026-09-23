@@ -13,9 +13,13 @@ import {
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { FileUpload, FileUploadModule } from 'primeng/fileupload';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
-import { ButtonModule } from 'primeng/button';
+import { CrecerConTextoDirective } from '../../crecer-con-texto.directive';
 
 import { ReadmeGithubService } from '../../../../core/services/readme-github.service';
 import {
@@ -103,9 +107,13 @@ const enEspera = (): NodoPipeline[] =>
   standalone: true,
   imports: [
     ReactiveFormsModule,
+    ButtonModule,
+    FileUploadModule,
+    InputGroupModule,
+    InputGroupAddonModule,
     InputTextModule,
     TextareaModule,
-    ButtonModule,
+    CrecerConTextoDirective,
     PipelineBorradorComponent,
     VistaFichaComponent
   ],
@@ -148,6 +156,7 @@ export class RedactorBorradorComponent implements OnDestroy {
   arrastrando = signal(false);
 
   protected readonly MINIMO = README_MINIMO;
+  protected readonly MAXIMO_MD = MARKDOWN_MAXIMO;
 
   /** El largo del readme, para avisar antes de pulsar y no despues. */
   largo = signal(0);
@@ -199,6 +208,7 @@ export class RedactorBorradorComponent implements OnDestroy {
   private escenario = viewChild<ElementRef<HTMLElement>>('escenario');
   private crudo = viewChild<ElementRef<HTMLElement>>('crudo');
   private botonAceptar = viewChild('botonAceptar', { read: ElementRef<HTMLElement> });
+  private subida = viewChild<FileUpload>('subida');
 
   constructor() {
     this.readmeFuente.valueChanges.subscribe((t) => this.largo.set(t.trim().length));
@@ -255,16 +265,14 @@ export class RedactorBorradorComponent implements OnDestroy {
   /**
    * Carga un .md del disco en el editor.
    *
-   * Se lee en el navegador y no se sube a ningun sitio: el fichero nunca sale
-   * del equipo, solo su contenido, y solo cuando se pulse Redactar.
+   * Se lee en el navegador y no se sube a ningun sitio: de p-fileupload solo se
+   * usa el boton de elegir. Se vacia enseguida, y no por limpieza: si no,
+   * elegir dos veces el mismo fichero no dispara nada y parece que la segunda
+   * no hizo nada.
    */
-  subirMarkdown(evento: Event): void {
-    const input = evento.target as HTMLInputElement;
-    const fichero = input.files?.[0];
-    // Se limpia siempre, y antes de cualquier return: si no, elegir dos veces
-    // el mismo fichero no dispara el evento y parece que la segunda no hizo
-    // nada.
-    input.value = '';
+  alElegirFichero(evento: { currentFiles?: File[]; files?: File[] }): void {
+    const fichero = evento.currentFiles?.[0] ?? evento.files?.[0];
+    this.subida()?.clear();
     if (fichero) this.leerFichero(fichero);
   }
 
@@ -543,7 +551,7 @@ export class RedactorBorradorComponent implements OnDestroy {
       ? '1 desafío'
       : `${borrador.challenges.length} desafíos`);
 
-    setTimeout(() => this.botonAceptar()?.nativeElement.focus());
+    setTimeout(() => this.botonAceptar()?.nativeElement.querySelector('button')?.focus());
   }
 
   aceptarPropuesta(): void {

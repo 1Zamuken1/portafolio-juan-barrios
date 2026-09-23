@@ -14,36 +14,35 @@
   </div>
 
   <div class="vias">
-    <div class="via-repo">
-      <i class="pi pi-github via-repo__icono" aria-hidden="true"></i>
-      <input pInputText type="text" [formControl]="enlaceRepo"
-             placeholder="github.com/usuario/repo"
-             (keydown.enter)="traerDeGithub()" aria-label="Enlace del repositorio" />
-      <button pButton type="button" label="Traer" icon="pi pi-download"
-              class="p-button-text via-repo__boton" [loading]="trayendo()"
-              (click)="traerDeGithub()"></button>
-    </div>
+    <p-inputgroup class="via-repo">
+      <p-inputgroup-addon><i class="pi pi-github" aria-hidden="true"></i></p-inputgroup-addon>
+      <input pInputText [formControl]="enlaceRepo" placeholder="github.com/usuario/repo"
+             aria-label="Enlace del repositorio" (keydown.enter)="traerDeGithub()" />
+      <p-inputgroup-addon class="via-repo__traer">
+        <p-button label="Traer" icon="pi pi-download" [text]="true" size="small"
+                  [loading]="trayendo()" (onClick)="traerDeGithub()" />
+      </p-inputgroup-addon>
+    </p-inputgroup>
 
     <span class="vias__o">o</span>
 
-    <label class="via-subir">
-      <i class="pi pi-upload" aria-hidden="true"></i>
-      Subir un .md
-      <input type="file" accept=".md,.markdown,text/markdown,text/plain"
-             (change)="subirMarkdown($event)" />
-    </label>
+    <!-- El fichero se lee en el navegador y no se sube a ningun sitio: el
+         "upload" de PrimeNG se usa solo para elegirlo. -->
+    <p-fileupload #subida mode="basic" chooseLabel="Subir un .md" chooseIcon="pi pi-upload"
+                  accept=".md,.markdown,text/markdown,text/plain" [auto]="false" [customUpload]="true"
+                  [maxFileSize]="MAXIMO_MD" styleClass="via-subir" (onSelect)="alElegirFichero($event)"
+                  [chooseButtonProps]="{ severity: 'secondary', outlined: true }" />
 
-    <button pButton type="button" class="redactar" label="Redactar borrador"
-            icon="pi pi-sparkles" [loading]="redactando()"
-            (click)="redactar()"></button>
+    <p-button label="Redactar borrador" icon="pi pi-sparkles" styleClass="boton-ia" class="redactar"
+              [loading]="redactando()" (onClick)="redactar()" />
   </div>
 
   <!-- El editor. Se pliega al redactar para dejar sitio a lo de abajo, pero
        sigue ahi: lo que se mando se puede volver a mirar. -->
   <div class="editor" [class.editor--arrastrando]="arrastrando()"
        (dragover)="sobrevolar($event)" (dragleave)="arrastrando.set(false)" (drop)="soltar($event)">
-    <button type="button" class="editor__barra" [attr.aria-expanded]="editorAbierto()"
-            (click)="editorAbierto.set(!editorAbierto())">
+    <p-button [text]="true" severity="secondary" styleClass="editor__barra"
+              [ariaExpanded]="editorAbierto()" (onClick)="editorAbierto.set(!editorAbierto())">
       <i class="pi pi-file editor__icono" aria-hidden="true"></i>
       <span class="editor__nombre">README.md</span>
       @if (origen()) { <span class="editor__origen">{{ origen() }}</span> }
@@ -52,11 +51,11 @@
       </span>
       <i class="pi editor__plegar" [class.pi-chevron-up]="editorAbierto()"
          [class.pi-chevron-down]="!editorAbierto()" aria-hidden="true"></i>
-    </button>
+    </p-button>
 
     @if (editorAbierto()) {
-      <textarea pTextarea id="readmeFuente" [formControl]="readmeFuente" rows="8"
-                aria-label="Readme de origen"
+      <textarea pTextarea id="readmeFuente" class="area-editor" [formControl]="readmeFuente"
+                appCrecerConTexto="8" aria-label="Readme de origen"
                 placeholder="# Mi proyecto&#10;&#10;Pega aquí el readme, o suelta un .md encima…"></textarea>
     }
   </div>
@@ -86,15 +85,14 @@
            primero que hay que poder mirar. -->
       @if (textoModelo()) {
         <div class="salida">
-          <button type="button" class="salida__cabecera"
-                  [attr.aria-expanded]="crudoAbierto()"
-                  (click)="crudoAbierto.set(!crudoAbierto())">
+          <p-button [text]="true" severity="secondary" styleClass="salida__cabecera"
+                    [ariaExpanded]="crudoAbierto()" (onClick)="crudoAbierto.set(!crudoAbierto())">
             <i class="pi pi-code" aria-hidden="true"></i>
             <span>Respuesta en crudo</span>
             <span class="salida__medida">{{ textoModelo().length }} car.</span>
             <i class="pi" [class.pi-chevron-up]="crudoAbierto()"
                [class.pi-chevron-down]="!crudoAbierto()" aria-hidden="true"></i>
-          </button>
+          </p-button>
           @if (crudoAbierto()) {
             <pre class="salida__cuerpo" #crudo>{{ textoModelo() }}@if (redactando()) {<span class="salida__cursor" aria-hidden="true"></span>}</pre>
           }
@@ -117,38 +115,32 @@
           <span class="acciones__latido" aria-hidden="true"></span>
           El modelo está escribiendo. La ficha se llena según llega; nada entra en el formulario.
         </span>
-        <button pButton type="button" label="Cancelar" class="p-button-text p-button-secondary"
-                (click)="cancelar()"></button>
+        <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="cancelar()" />
       }
       @case ('lista') {
         <span class="acciones__estado">
           <i class="pi pi-check-circle" aria-hidden="true"></i>
           Propuesta lista y validada. Todavía no ha entrado nada en el formulario.
         </span>
-        <button pButton type="button" label="Descartar" icon="pi pi-times"
-                class="p-button-text p-button-secondary" (click)="descartar()"></button>
-        <button pButton type="button" #botonAceptar label="Aceptar y completar la ficha"
-                icon="pi pi-arrow-right" iconPos="right" (click)="aceptarPropuesta()"></button>
+        <p-button label="Descartar" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="descartar()" />
+        <p-button #botonAceptar label="Aceptar y completar la ficha" icon="pi pi-arrow-right" iconPos="right"
+                  (onClick)="aceptarPropuesta()" />
       }
       @case ('aplicada') {
         <span class="acciones__estado">
           <i class="pi pi-check-circle" aria-hidden="true"></i>
           Ya está en el formulario, marcado como redactado por la IA.
         </span>
-        <button pButton type="button" label="Descartar" icon="pi pi-refresh"
-                class="p-button-text p-button-secondary" (click)="descartar()"></button>
-        <button pButton type="button" label="Ir a la ficha" icon="pi pi-arrow-right" iconPos="right"
-                (click)="completar.emit()"></button>
+        <p-button label="Descartar" icon="pi pi-refresh" [text]="true" severity="secondary" (onClick)="descartar()" />
+        <p-button label="Ir a la ficha" icon="pi pi-arrow-right" iconPos="right" (onClick)="completar.emit()" />
       }
       @case ('fallo') {
         <span class="acciones__estado">
           <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
           {{ fallo() }}
         </span>
-        <button pButton type="button" label="Descartar" class="p-button-text p-button-secondary"
-                (click)="descartar()"></button>
-        <button pButton type="button" label="Reintentar" icon="pi pi-refresh"
-                (click)="redactar()"></button>
+        <p-button label="Descartar" [text]="true" severity="secondary" (onClick)="descartar()" />
+        <p-button label="Reintentar" icon="pi pi-refresh" styleClass="boton-ia" (onClick)="redactar()" />
       }
       @default {
         <span class="acciones__estado">
@@ -158,8 +150,8 @@
             Trae o pega un readme y pulsa Redactar: la ficha se escribirá aquí.
           }
         </span>
-        <button pButton type="button" label="Seguir sin IA" icon="pi pi-arrow-right" iconPos="right"
-                class="p-button-text" (click)="completar.emit()"></button>
+        <p-button label="Seguir sin IA" icon="pi pi-arrow-right" iconPos="right" [text]="true"
+                  (onClick)="completar.emit()" />
       }
     }
   </footer>

@@ -5,27 +5,15 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../../../core/services/data.service';
 import { AdminSkill } from '../../../../shared/models/skill.model';
 
-// PrimeNG
-import { InputTextModule } from 'primeng/inputtext';
-import { ButtonModule } from 'primeng/button';
-import { SelectModule } from 'primeng/select';
-import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { InputNumberModule } from 'primeng/inputnumber';
+import { PRIMENG_FORMULARIO } from '../../primeng';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 
 @Component({
   selector: 'app-admin-skill-form',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    InputTextModule,
-    ButtonModule,
-    SelectModule,
-    ToastModule,
-    InputNumberModule
-  ],
-  providers: [MessageService],
+  imports: [CommonModule, ReactiveFormsModule, ...PRIMENG_FORMULARIO, InputGroupModule, InputGroupAddonModule],
   templateUrl: './admin-skill-form.component.html',
   styleUrls: ['../../admin.css']
 })
@@ -35,6 +23,13 @@ export class AdminSkillFormComponent implements OnInit {
   skillId: number | null = null;
   loading = signal(false);
   saving = signal(false);
+
+  /** Los tres colores van igual: campo y muestra al lado. */
+  protected readonly colores = [
+    { control: 'color', etiqueta: 'Color de marca', ejemplo: '#DD0031', obligatorio: true },
+    { control: 'brandColorLight', etiqueta: 'Variante clara', ejemplo: '#FF4081', obligatorio: false },
+    { control: 'brandColorDark', etiqueta: 'Variante oscura', ejemplo: '#AA0000', obligatorio: false }
+  ];
 
   categoryOptions = [
     { label: 'Frontend', value: 'Frontend' },
