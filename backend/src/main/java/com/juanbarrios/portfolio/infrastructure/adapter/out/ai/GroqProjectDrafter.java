@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.juanbarrios.portfolio.domain.model.ProjectDraft;
 import com.juanbarrios.portfolio.domain.port.out.AvisoDeEtapa;
 import com.juanbarrios.portfolio.domain.port.out.DrafterNoDisponibleException;
+import com.juanbarrios.portfolio.domain.port.out.RespuestaIlegibleException;
 import com.juanbarrios.portfolio.domain.port.out.ProjectDrafterPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -251,16 +252,28 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
      */
     private String pedirRespuesta(String modelo, String nombre, String readme, String correccion,
                                   AvisoDeEtapa aviso) {
-        Map<String, Object> peticion = Map.of(
-                "model", modelo,
-                // Cero temperatura: esto no es escritura creativa, es extraer
-                // lo que ya dice el readme. Cuanto menos invente, mejor.
-                "temperature", 0.2,
-                "response_format", Map.of("type", "json_object"),
-                "stream", true,
-                "messages", java.util.List.of(
-                        Map.of("role", "system", "content", DraftPrompt.SISTEMA),
-                        Map.of("role", "user", "content", DraftPrompt.usuario(nombre, readme, correccion))));
+        Map<String, Object> peticion = new java.util.LinkedHashMap<>();
+        peticion.put("model", modelo);
+        // Poca temperatura: esto no es escritura creativa, es extraer lo que
+        // ya dice el readme. Cuanto menos invente, mejor.
+        peticion.put("temperature", 0.2);
+        peticion.put("response_format", Map.of("type", "json_object"));
+        peticion.put("stream", true);
+        // Tope holgado: la ficha ronda los tres mil caracteres, pero un modelo
+        // que razona gasta tokens antes de escribirla. Sin tope explicito se
+        // usa el del modelo, y con el de algunos se quedaba a medias.
+        peticion.put("max_completion_tokens", 8192);
+        if (razonaDemasiado(modelo)) {
+            // Los gpt-oss razonan antes de responder, y con el esfuerzo por
+            // defecto un readme largo se les iba entero en el razonamiento: el
+            // flujo llegaba sin una letra de la ficha. Extraer de un readme no
+            // necesita pensarlo mucho. Solo para ellos: otros modelos de la
+            // lista rechazan el parametro.
+            peticion.put("reasoning_effort", "low");
+        }
+        peticion.put("messages", java.util.List.of(
+                Map.of("role", "system", "content", DraftPrompt.SISTEMA),
+                Map.of("role", "user", "content", DraftPrompt.usuario(nombre, readme, correccion))));
 
         try {
             // exchange() y no retrieve(): hace falta el cuerpo como flujo para
@@ -276,6 +289,8 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
                     .exchange((peticionHttp, respuesta) -> leerFlujo(modelo, respuesta, aviso));
 
         } catch (ModeloRetirado | DrafterNoDisponibleException e) {
+            // RespuestaIlegibleException es un DrafterNoDisponibleException y
+            // sube tal cual: el caso de uso la reintenta.
             throw e;
         } catch (Exception e) {
             throw new DrafterNoDisponibleException(
@@ -347,12 +362,10 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
             // generado", que es exactamente el tipo de mensaje que ya costo una
             // hora con el modelo retirado.
             if (primera.startsWith("data:")) {
-                String completo = ensamblarSse(primera, lector, json, porTrozo);
+                Diagnostico visto = new Diagnostico();
+                String completo = ensamblarSse(primera, lector, json, porTrozo, visto);
                 if (completo.isEmpty()) {
-                    throw new DrafterNoDisponibleException(
-                            "Groq mando un flujo sin texto dentro: ninguna linea traia "
-                                    + "choices[0].delta.content. La primera fue:\n  "
-                                    + recortar(primera));
+                    throw new RespuestaIlegibleException(visto.porQueVinoVacio());
                 }
                 return completo;
             }
@@ -436,6 +449,42 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
      */
     static String ensamblarSse(String primeraLinea, BufferedReader lector, ObjectMapper json,
                                Consumer<String> porTrozo) throws IOException {
+        return ensamblarSse(primeraLinea, lector, json, porTrozo, new Diagnostico());
+    }
+
+    /**
+     * Lo que se vio pasar por el flujo, para poder decir por que no trajo texto.
+     *
+     * <p>Antes, un flujo sin texto se contaba enseniando su primera linea, que
+     * es siempre la misma: el saludo con el rol y el contenido vacio. No decia
+     * nada. Lo que de verdad explica un flujo vacio esta en las demas: si el
+     * modelo se paro por falta de espacio, si todo lo que escribio fue
+     * razonamiento, o si Groq metio un error a mitad.
+     */
+    static final class Diagnostico {
+        int lineas;
+        int razonamiento;
+        String motivoDeParada;
+        String ultima;
+
+        String porQueVinoVacio() {
+            if ("length".equals(motivoDeParada)) {
+                return "El modelo se quedo sin espacio antes de escribir la ficha"
+                        + (razonamiento > 0 ? " (se le fue en " + razonamiento + " caracteres de razonamiento)" : "")
+                        + ". Groq cerro con finish_reason=length.";
+            }
+            if (razonamiento > 0) {
+                return "El modelo razono " + razonamiento + " caracteres pero no escribio la ficha"
+                        + (motivoDeParada != null ? " (finish_reason=" + motivoDeParada + ")" : "") + ".";
+            }
+            return "Groq mando un flujo de " + lineas + " lineas sin texto dentro"
+                    + (motivoDeParada != null ? " (finish_reason=" + motivoDeParada + ")" : "")
+                    + ". La ultima fue:\n  " + recortar(ultima == null ? "" : ultima);
+        }
+    }
+
+    static String ensamblarSse(String primeraLinea, BufferedReader lector, ObjectMapper json,
+                               Consumer<String> porTrozo, Diagnostico visto) throws IOException {
 
         StringBuilder completo = new StringBuilder();
 
@@ -453,8 +502,29 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
             if (dato.isEmpty()) continue;
             if ("[DONE]".equals(dato)) break;
 
-            String trozo = json.readTree(dato)
-                    .path("choices").path(0).path("delta").path("content").asText("");
+            visto.lineas++;
+            visto.ultima = linea;
+            JsonNode nodo = json.readTree(dato);
+
+            // Groq mete los errores dentro del flujo cuando ya ha empezado a
+            // responder: por ejemplo json_validate_failed, si lo que genero el
+            // modelo no era JSON en modo json_object. Antes se saltaban como
+            // cualquier linea sin texto y el fallo salia como "flujo vacio".
+            JsonNode error = nodo.has("error") ? nodo.path("error") : nodo.path("x_groq").path("error");
+            if (!error.isMissingNode() && !error.isNull()) {
+                String codigo = error.path("code").asText("");
+                String mensaje = error.path("message").asText(error.toString());
+                throw new RespuestaIlegibleException(
+                        "Groq corto la respuesta con un error"
+                                + (codigo.isEmpty() ? "" : " (" + codigo + ")") + ": " + mensaje);
+            }
+
+            JsonNode opcion = nodo.path("choices").path(0);
+            String parada = opcion.path("finish_reason").asText("");
+            if (!parada.isEmpty() && !"null".equals(parada)) visto.motivoDeParada = parada;
+            visto.razonamiento += opcion.path("delta").path("reasoning").asText("").length();
+
+            String trozo = opcion.path("delta").path("content").asText("");
 
             // El primer fragmento solo trae el rol y el ultimo solo el motivo de
             // parada: los dos llegan sin contenido y no son texto. Los modelos
@@ -469,14 +539,20 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
         return completo.toString();
     }
 
+    /** Los modelos que razonan antes de responder y admiten reasoning_effort. */
+    static boolean razonaDemasiado(String modelo) {
+        return modelo != null && modelo.startsWith("openai/gpt-oss");
+    }
+
     /** Convierte el texto generado en un borrador. */
     private ProjectDraft parsear(String contenido) {
         String limpio = quitarVallas(contenido);
         try {
             return json.readValue(limpio, ProjectDraft.class);
         } catch (Exception e) {
-            throw new DrafterNoDisponibleException(
-                    "El modelo no devolvio un borrador con la forma esperada.", e);
+            throw new RespuestaIlegibleException(
+                    "El modelo no devolvio un borrador con la forma esperada: "
+                            + e.getClass().getSimpleName(), e);
         }
     }
 
