@@ -1,6 +1,6 @@
 [
   {
-    "id": 1,
+    "id": 7,
     "company": "SEK",
     "role": "Software Developer",
     "period": "2026 — Presente",
@@ -24,7 +24,7 @@
     "displayOrder": 1
   },
   {
-    "id": 2,
+    "id": 8,
     "company": "Proyectos propios",
     "role": "Desarrollo independiente",
     "period": "2024 — 2026",
@@ -49,7 +49,7 @@
     "displayOrder": 2
   },
   {
-    "id": 3,
+    "id": 9,
     "company": "SENA",
     "role": "Tecnólogo en Análisis y Desarrollo de Software",
     "period": "2024 — 2026",
