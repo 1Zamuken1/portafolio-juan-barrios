@@ -36,10 +36,4 @@ for (const f of fichas) {
       expect(grupo[0], `"${grupo}" empieza en minuscula`).toBe(grupo[0].toUpperCase());
     }
   });
-
-  test(`${f.slug}: las metricas no repiten lo que ya dice la cabecera`, () => {
-    for (const clave of Object.keys(f.rawMetrics ?? {})) {
-      expect(vocabulario.metricasRepetidas).not.toContain(clave.toLowerCase());
-    }
-  });
 }

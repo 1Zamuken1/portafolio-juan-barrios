@@ -20,6 +20,5 @@
     { "titulo": "Reportes", "sinonimos": ["reporting", "reports", "informes"] },
     { "titulo": "Rendimiento", "sinonimos": ["performance"] },
     { "titulo": "Interfaz", "sinonimos": ["user interface", "ui", "interfaz de usuario"] }
-  ],
-  "metricasRepetidas": ["estado", "status", "equipo", "team"]
+  ]
 }

@@ -218,7 +218,7 @@ Lo que en su día se discutió aquí y hoy funciona:
 
 Lo que se dejó fuera a propósito y sigue pendiente de decidir:
 
-~~Normalizar el vocabulario de `structuredStack`, `structuredFeatures` y `rawMetrics`~~ — hecho el 24 de septiembre. Hay un vocabulario cerrado en `src/assets/data/vocabulario.json`, los cuatro proyectos migrados y el redactor genera el stack y los grupos. Las métricas se normalizaron (claves en español, sin repetir Estado ni Equipo, que ya salen en la cabecera), pero el redactor no las genera: son cifras.
+~~Normalizar el vocabulario de `structuredStack`, `structuredFeatures` y `rawMetrics`~~ — hecho el 24 de septiembre. Hay un vocabulario cerrado en `src/assets/data/vocabulario.json`, los cuatro proyectos migrados y el redactor genera el stack y los grupos. Las claves de las métricas se tradujeron al español, pero el redactor no las genera: son cifras. **Las fichas hechas a mano no se tocan más allá de renombrar claves**: se restauraron las métricas Estado y Equipo y Hibernate volvió a la base de datos, que la migración había cambiado por su cuenta.
 
 ## 6. Limitaciones conocidas
 
