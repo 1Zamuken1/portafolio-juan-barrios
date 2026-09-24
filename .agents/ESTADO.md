@@ -64,7 +64,7 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayecto
 
 **`ng test` no tiene target en `angular.json`**, así que `e2e/` es también donde viven los tests unitarios del frontend: las funciones puras se importan y se prueban sin navegador. Es el patrón a seguir mientras no se monte Karma. Las suites del panel entran poniendo un token en `localStorage` —el guard solo mira que exista— y `pipeline-borrador` simula el NDJSON con `page.route`, así que se prueban sin backend y sin gastar cuota de Groq.
 
-**Backend**, 15 clases de test, 57 tests (`mvn test` en Docker, ver el aviso de abajo):
+**Backend**, 15 clases de test, 61 tests (`mvn test` en Docker, ver el aviso de abajo):
 
 | Test | Qué protege |
 |---|---|
@@ -79,7 +79,7 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayecto
 | `DraftProjectUseCaseTest` | que un borrador incompleto no llegue al formulario, que sin nombre se redacte igual, y que un borrador que no pasa las cotas se pida **una** vez más con el motivo y no más |
 | `DraftControllerTest` | que no se pueda gastar cuota de Groq sin autenticar, por **ninguna** de las dos rutas |
 | `GroqProjectDrafterTest` | que una clave sin definir se distinga de un fallo de red |
-| `EnsamblarSseTest` | el lector del flujo: prefijos, líneas de mantenimiento, trozos sin contenido, centinela |
+| `EnsamblarSseTest` | el lector del flujo: prefijos, líneas de mantenimiento, trozos sin contenido, centinela, errores dentro del flujo y el diagnóstico de un flujo que solo razonó |
 | `RespuestaDeUnaPiezaTest` | que si Groq no manda un flujo, se lea igual y el error diga qué llegó |
 
 Casi todos nacieron de un fallo real, no de una previsión. Están descritos en el apartado 3.
@@ -141,6 +141,7 @@ Cinco causas encadenadas costaron una sesión entera. Cada una tapaba a la sigui
 | Hijos de una columna flex con desplazamiento, que se encogen antes de que salga la barra | en una ventana baja, la caja de la respuesta en crudo medía 2px: se veía el borde y el botón quedaba debajo, sin poder pulsarse | `flex-shrink: 0` en los hijos; lo destapó un test que no podía hacer clic |
 | Tope de retraso calculado sobre el total pendiente | «pendiente ÷ 5 s» recalculado en cada latido frena exponencialmente: la vista nunca se ponía al día con un bloque grande | el tope se mide por trozo, con la hora a la que llegó; lo cazó `reproductor.spec.ts` |
 | El prompt pedía «no inventes» y a la vez de 3 a 4 desafíos | con un readme que no cuenta problemas, el modelo obedeció lo primero y devolvió la lista vacía; se tiraba el borrador entero | el prompt dice que la regla vale para los datos y no para la estructura, y cómo deducir los desafíos; si aun así no pasa las cotas, un reintento con el motivo |
+| El lector del flujo se saltaba toda línea sin texto, también los errores | «Groq mando un flujo sin texto dentro», enseñando la primera línea: el saludo de rol, que es siempre igual y no explica nada | el lector apunta `finish_reason`, cuánto razonó el modelo y los `error` dentro del flujo, y el mensaje dice la causa; una respuesta ilegible (vacía, cortada razonando, no-JSON) se reintenta una vez; los `gpt-oss` van con `reasoning_effort: low` y `max_completion_tokens` |
 | La espera de Render caía en la burbuja del readme | «Readme · 137,8 s» por leer un texto que tarda cero: era el backend despertando | estación «Servidor» propia, y un `GET /api/health` al abrir el redactor para que vaya despertando mientras se pega el readme |
 | Sin plazo explícito para las respuestas en streaming | Spring usa el del contenedor (~30 s); al vencer intenta pintar una página de error sobre una respuesta ya enviada: «Cannot render error page... response has already been committed» | `spring.mvc.async.request-timeout=180s` |
 | Un error vaciaba el reproductor de golpe | los pasos que sí habían ido bien salían terminados en milisegundos | el error respeta su turno y lo pendiente se acelera con un plazo fijo; el primer intento recalculaba «pendiente ÷ plazo» en cada latido y volvió a frenar exponencialmente, como el tope de retraso |
