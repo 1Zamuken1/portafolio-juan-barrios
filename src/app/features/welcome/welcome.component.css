@@ -313,7 +313,7 @@
 }
 
 .badge:hover {
-  box-shadow: var(--pv-brillo), var(--pv-elev-2);
+  box-shadow: var(--pv-brillo), var(--pv-elev-2), 0 0 14px color-mix(in srgb, var(--marca, #b362ff) 45%, transparent);
 }
 
 .stack-category {
@@ -326,8 +326,9 @@
 }
 
 .stack-category:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--pv-brillo), var(--pv-elev-2), 0 0 18px var(--card-glow);
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--pv-liquido-brillo) 60%, transparent);
+  box-shadow: var(--pv-brillo), var(--pv-elev-3), 0 0 24px var(--card-glow);
 }
 
 .stack-chip {
@@ -347,8 +348,8 @@
 }
 
 .md-link:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--pv-brillo), var(--pv-elev-2);
+  transform: translateY(-2px);
+  box-shadow: var(--pv-brillo), var(--pv-elev-2), 0 0 0 3px color-mix(in srgb, var(--syntax-accent) 18%, transparent);
 }
 
 .md-link:active {

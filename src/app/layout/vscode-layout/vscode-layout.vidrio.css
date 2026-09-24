@@ -20,14 +20,33 @@
 }
 
 /* ---- Las luces de detras ----
-   Fijas: el cromo no se mueve y el editor tapa el centro, asi que solo se
-   ven por los bordes, a traves del vidrio. */
+   El editor tapa el centro, asi que solo se ven por los bordes, a traves del
+   vidrio. Derivan muy despacio (un ciclo de 40 s): es ese movimiento lo que
+   hace que el vidrio se lea como vidrio y no como un color mas claro. En una
+   capa propia para no repintar el contenedor entero. */
 .vscode-app-container {
+  position: relative;
+  isolation: isolate;
+}
+
+.vscode-app-container::before {
+  content: '';
+  position: absolute;
+  inset: -15%;
+  z-index: -1;
+  pointer-events: none;
   background:
-    radial-gradient(36rem 26rem at 0% 0%, var(--pv-luz-1), transparent 70%),
-    radial-gradient(30rem 20rem at 100% 0%, var(--pv-luz-2), transparent 70%),
-    radial-gradient(44rem 16rem at 40% 100%, var(--pv-luz-3), transparent 70%),
-    var(--vscode-bg);
+    radial-gradient(30rem 24rem at 8% 12%, var(--pv-luz-1), transparent 70%),
+    radial-gradient(26rem 22rem at 18% 88%, var(--pv-luz-2), transparent 70%),
+    radial-gradient(28rem 16rem at 92% 6%, var(--pv-luz-2), transparent 70%),
+    radial-gradient(40rem 14rem at 60% 100%, var(--pv-luz-3), transparent 70%);
+  animation: luces-deriva 40s ease-in-out infinite alternate;
+}
+
+@keyframes luces-deriva {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(3%, -4%, 0) scale(1.05); }
+  to { transform: translate3d(-3%, 3%, 0) scale(1); }
 }
 
 .editor-area {
@@ -65,7 +84,8 @@
 
 .icon-item.active {
   border-left: none;
-  box-shadow: var(--pv-brillo);
+  background: var(--pv-velo-activo), var(--vscode-primary-dim);
+  box-shadow: var(--pv-brillo), var(--pv-elev-1);
 }
 
 .icon-item.active::before {
@@ -74,10 +94,10 @@
   left: -0.25rem;
   top: 22%;
   bottom: 22%;
-  width: 3px;
-  border-radius: 3px;
+  width: 4px;
+  border-radius: 4px;
   background: var(--pv-liquido);
-  box-shadow: 0 0 10px var(--pv-liquido-brillo);
+  box-shadow: 0 0 8px var(--pv-liquido-brillo), 0 0 18px var(--pv-liquido-brillo);
 }
 
 /* ---- Tooltips ----
@@ -119,6 +139,7 @@
 .list-item.active {
   position: relative;
   border-left: none;
+  background: var(--pv-velo-activo);
   box-shadow: var(--pv-brillo);
 }
 
@@ -128,10 +149,10 @@
   left: 0;
   top: 18%;
   bottom: 18%;
-  width: 2px;
-  border-radius: 2px;
+  width: 3px;
+  border-radius: 3px;
   background: var(--pv-liquido);
-  box-shadow: 0 0 8px var(--pv-liquido-brillo);
+  box-shadow: 0 0 6px var(--pv-liquido-brillo), 0 0 14px var(--pv-liquido-brillo);
 }
 
 /* ---- Pestanas ----
@@ -148,7 +169,9 @@
 .tab:active { background: var(--pv-capa-press); }
 
 .tab.active {
-  background: var(--vscode-bg);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--pv-liquido-brillo) 22%, transparent), transparent 70%),
+    var(--vscode-bg);
   border-top: none;
 }
 
@@ -158,9 +181,9 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 3px;
   background: var(--pv-liquido-h);
-  box-shadow: 0 0 8px var(--pv-liquido-brillo);
+  box-shadow: 0 0 8px var(--pv-liquido-brillo), 0 2px 16px var(--pv-liquido-brillo);
 }
 
 .tab-close { border-radius: 999px; }
@@ -169,7 +192,24 @@
 .tab-sidebar-toggle { border-radius: 0.375rem; }
 .tab-sidebar-toggle:hover { background: var(--pv-capa-hover); }
 
-/* ---- Barra de estado ---- */
+/* ---- Barra de estado ----
+   Un hilo del liquido a todo lo ancho, como remate del editor. */
+.status-bar {
+  position: relative;
+}
+
+.status-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--pv-liquido-h);
+  opacity: 0.7;
+  box-shadow: 0 0 10px var(--pv-liquido-brillo);
+}
+
 .status-item {
   border-radius: 999px;
   padding: 0 0.45rem;
@@ -206,4 +246,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .icon-item:active { transform: none; }
+  .vscode-app-container::before { animation: none; }
 }

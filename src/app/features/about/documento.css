@@ -297,8 +297,9 @@
 
 .doc-nav a:hover {
   background: var(--pv-superficie), var(--card-bg);
-  transform: translateY(-2px);
-  box-shadow: var(--pv-brillo), var(--pv-elev-2);
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--pv-liquido-brillo) 60%, transparent);
+  box-shadow: var(--pv-brillo), var(--pv-elev-3);
 }
 
 .doc-nav a:active {

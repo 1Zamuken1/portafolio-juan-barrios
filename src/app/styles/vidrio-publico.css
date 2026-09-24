@@ -19,26 +19,28 @@
    variables CSS atraviesan la encapsulacion de los componentes. */
 
 :root {
-  --pv-vidrio: rgba(22, 21, 46, 0.58);
-  --pv-vidrio-alto: rgba(30, 29, 62, 0.76);
-  --pv-vidrio-borde: rgba(196, 181, 253, 0.13);
-  --pv-brillo: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --pv-vidrio: rgba(22, 21, 46, 0.4);
+  --pv-vidrio-alto: rgba(30, 29, 62, 0.68);
+  --pv-vidrio-borde: rgba(196, 181, 253, 0.22);
+  --pv-brillo: inset 0 1px 0 rgba(255, 255, 255, 0.11);
   --pv-desenfoque: blur(18px) saturate(150%);
 
   /* Las luces de detras del cromo. Sin algo detras, un vidrio es solo un
      color algo mas claro: son las que hacen que se lea como vidrio. */
-  --pv-luz-1: rgba(179, 98, 255, 0.2);
-  --pv-luz-2: rgba(158, 255, 255, 0.07);
-  --pv-luz-3: rgba(250, 208, 0, 0.05);
+  --pv-luz-1: rgba(179, 98, 255, 0.42);
+  --pv-luz-2: rgba(158, 255, 255, 0.2);
+  --pv-luz-3: rgba(250, 208, 0, 0.12);
 
   /* El mismo liquido que la pipeline del panel. */
   --pv-liquido: linear-gradient(180deg, #b362ff, #9effff);
   --pv-liquido-h: linear-gradient(90deg, #b362ff, #9effff);
-  --pv-liquido-brillo: rgba(179, 98, 255, 0.55);
+  --pv-liquido-brillo: rgba(179, 98, 255, 0.8);
+  /* El velo del activo: el liquido, muy diluido, de izquierda a derecha. */
+  --pv-velo-activo: linear-gradient(90deg, rgba(179, 98, 255, 0.28), rgba(158, 255, 255, 0.06) 70%, transparent);
 
   /* Una tarjeta sobre el fondo plano del editor no tiene nada que
      desenfocar: se simula con un degradado y un filo de luz arriba. */
-  --pv-superficie: linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+  --pv-superficie: linear-gradient(145deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.02) 60%, rgba(179, 98, 255, 0.05));
 
   --pv-capa-hover: rgba(255, 255, 255, 0.06);
   --pv-capa-press: rgba(255, 255, 255, 0.12);
@@ -53,21 +55,22 @@
 /* En claro el sitio es Solarized Light: el violeta #6C71C4 y el cian #2AA198
    hacen el papel del morado y el turquesa de Shades of Purple. */
 :root[data-theme='light'] {
-  --pv-vidrio: rgba(247, 245, 239, 0.62);
-  --pv-vidrio-alto: rgba(251, 250, 247, 0.84);
-  --pv-vidrio-borde: rgba(63, 83, 90, 0.12);
+  --pv-vidrio: rgba(247, 245, 239, 0.45);
+  --pv-vidrio-alto: rgba(251, 250, 247, 0.78);
+  --pv-vidrio-borde: rgba(63, 83, 90, 0.16);
   --pv-brillo: inset 0 1px 0 rgba(255, 255, 255, 0.75);
   --pv-desenfoque: blur(18px) saturate(160%);
 
-  --pv-luz-1: rgba(108, 113, 196, 0.16);
-  --pv-luz-2: rgba(42, 161, 152, 0.1);
-  --pv-luz-3: rgba(181, 137, 0, 0.08);
+  --pv-luz-1: rgba(108, 113, 196, 0.32);
+  --pv-luz-2: rgba(42, 161, 152, 0.22);
+  --pv-luz-3: rgba(181, 137, 0, 0.16);
 
   --pv-liquido: linear-gradient(180deg, #6c71c4, #2aa198);
   --pv-liquido-h: linear-gradient(90deg, #6c71c4, #2aa198);
-  --pv-liquido-brillo: rgba(108, 113, 196, 0.4);
+  --pv-liquido-brillo: rgba(108, 113, 196, 0.6);
+  --pv-velo-activo: linear-gradient(90deg, rgba(108, 113, 196, 0.2), rgba(42, 161, 152, 0.05) 70%, transparent);
 
-  --pv-superficie: linear-gradient(145deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.35));
+  --pv-superficie: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.4) 60%, rgba(108, 113, 196, 0.06));
 
   --pv-capa-hover: rgba(63, 83, 90, 0.05);
   --pv-capa-press: rgba(63, 83, 90, 0.1);
