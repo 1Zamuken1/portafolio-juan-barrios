@@ -36,7 +36,7 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayecto
 
 ### Tests
 
-**Frontend**, 156 tests en 21 ficheros (`pnpm run e2e`):
+**Frontend**, 159 tests en 21 ficheros (`pnpm run e2e`):
 
 | Suite | Qué protege |
 |---|---|
@@ -64,7 +64,7 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayecto
 
 **`ng test` no tiene target en `angular.json`**, así que `e2e/` es también donde viven los tests unitarios del frontend: las funciones puras se importan y se prueban sin navegador. Es el patrón a seguir mientras no se monte Karma. Las suites del panel entran poniendo un token en `localStorage` —el guard solo mira que exista— y `pipeline-borrador` simula el NDJSON con `page.route`, así que se prueban sin backend y sin gastar cuota de Groq.
 
-**Backend**, 15 clases de test (`./mvnw test`):
+**Backend**, 15 clases de test, 57 tests (`mvn test` en Docker, ver el aviso de abajo):
 
 | Test | Qué protege |
 |---|---|
@@ -76,7 +76,7 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayecto
 | `DialectoNoFijadoTest` | que cada perfil declare su dialecto |
 | `ErroresVisiblesTest` | que un fallo no salga como 403 |
 | `HealthControllerTest` | que la comprobación de salud no dependa de la base |
-| `DraftProjectUseCaseTest` | que un borrador incompleto no llegue al formulario, y que sin nombre se redacte igual |
+| `DraftProjectUseCaseTest` | que un borrador incompleto no llegue al formulario, que sin nombre se redacte igual, y que un borrador que no pasa las cotas se pida **una** vez más con el motivo y no más |
 | `DraftControllerTest` | que no se pueda gastar cuota de Groq sin autenticar, por **ninguna** de las dos rutas |
 | `GroqProjectDrafterTest` | que una clave sin definir se distinga de un fallo de red |
 | `EnsamblarSseTest` | el lector del flujo: prefijos, líneas de mantenimiento, trozos sin contenido, centinela |
@@ -84,7 +84,13 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayecto
 
 Casi todos nacieron de un fallo real, no de una previsión. Están descritos en el apartado 3.
 
-> ⚠️ **No hay JDK en la máquina donde se ha trabajado la última sesión.** Los cambios de Java se han escrito sin poder compilarlos ni ejecutar sus tests en local: se verifican en CI y, si pasan, en Render. Eso ya costó un despliegue roto (ver apartado 3). Instalar un JDK es la mejora de flujo con mejor relación esfuerzo/beneficio ahora mismo.
+> **El backend se compila y se prueba en local con Docker, sin JDK.** En la máquina de desarrollo no hay JDK, y durante meses los cambios de Java salieron sin compilar y se verificaban en CI o, peor, en Render: eso ya costó un despliegue roto. Docker Desktop sí está instalado, así que la imagen de Maven hace de JDK. Desde la raíz del repo (el repo entero, no solo `backend/`: `MirrorRoundTripTest` y `HealthControllerTest` leen `src/assets/data/projects.json` y `render.yaml`):
+>
+> ```bash
+> MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W):/repo" -v portafolio-m2:/root/.m2 -w /repo/backend maven:3.9-eclipse-temurin-17 mvn -q -B test
+> ```
+>
+> El volumen `portafolio-m2` guarda las dependencias entre ejecuciones. Hay que arrancar Docker Desktop antes. **Un cambio de Java no se sube sin pasar por aquí.**
 
 ---
 
@@ -134,6 +140,10 @@ Cinco causas encadenadas costaron una sesión entera. Cada una tapaba a la sigui
 | `marcarFallo` pintaba en rojo todos los nodos en curso | al cortarse la redaccion salian dos burbujas diciendo cada una «aqui es donde se corto» | un solo nodo se lleva el fallo; el resto pasa a «no se llego» |
 | Hijos de una columna flex con desplazamiento, que se encogen antes de que salga la barra | en una ventana baja, la caja de la respuesta en crudo medía 2px: se veía el borde y el botón quedaba debajo, sin poder pulsarse | `flex-shrink: 0` en los hijos; lo destapó un test que no podía hacer clic |
 | Tope de retraso calculado sobre el total pendiente | «pendiente ÷ 5 s» recalculado en cada latido frena exponencialmente: la vista nunca se ponía al día con un bloque grande | el tope se mide por trozo, con la hora a la que llegó; lo cazó `reproductor.spec.ts` |
+| El prompt pedía «no inventes» y a la vez de 3 a 4 desafíos | con un readme que no cuenta problemas, el modelo obedeció lo primero y devolvió la lista vacía; se tiraba el borrador entero | el prompt dice que la regla vale para los datos y no para la estructura, y cómo deducir los desafíos; si aun así no pasa las cotas, un reintento con el motivo |
+| La espera de Render caía en la burbuja del readme | «Readme · 137,8 s» por leer un texto que tarda cero: era el backend despertando | estación «Servidor» propia, y un `GET /api/health` al abrir el redactor para que vaya despertando mientras se pega el readme |
+| Sin plazo explícito para las respuestas en streaming | Spring usa el del contenedor (~30 s); al vencer intenta pintar una página de error sobre una respuesta ya enviada: «Cannot render error page... response has already been committed» | `spring.mvc.async.request-timeout=180s` |
+| Un error vaciaba el reproductor de golpe | los pasos que sí habían ido bien salían terminados en milisegundos | el error respeta su turno y lo pendiente se acelera con un plazo fijo; el primer intento recalculaba «pendiente ÷ plazo» en cada latido y volvió a frenar exponencialmente, como el tope de retraso |
 | `placeholder` dentro de `p-floatlabel` | PrimeNG sube la etiqueta si el campo tiene ejemplo: un slug vacío parecía escrito con «gastu-django» | sin `placeholder` en esos campos; el formato va en la ayuda |
 | Tokens del panel declarados solo dentro de `.admin-app` | el preset de PrimeNG los referencia desde `:root`, donde no existían: sus componentes se habrían quedado sin color | los `--admin-*` se declaran en la raíz |
 | `grid-template-columns: 1fr` en móvil | `1fr` no baja del ancho mínimo de su contenido, y la dirección de la vista previa no se parte: la columna se salía de la pantalla | `minmax(0, 1fr)` y `min-width: 0` en las columnas |
@@ -152,6 +162,8 @@ Y dos pérdidas de datos desde el panel de administración, ambas recuperadas co
 - **Un arreglo que no se mira no está comprobado.** El primer intento de fijar la barra lateral fue `position: sticky`, y no funcionó. No se vio leyendo el CSS —ahí parecía correcto— sino midiendo la cadena de ancestros en el navegador: la causa estaba en `body`, tres niveles por encima y en otro fichero.
 - **Angular no avisa cuando una regla CSS no alcanza a su objetivo.** La encapsulación añade un atributo a cada selector, y si el elemento lo dibuja una librería no lo lleva: la regla no falla, no se queja, simplemente no se aplica. Ya pasó con el tema claro del blueprint y volvió a pasar con los campos de PrimeNG.
 - **Una prueba intermitente es una prueba mal escrita hasta que se demuestre lo contrario.** Una del panel falló dos veces y las dos se achacó a arrastre de la tanda; era un `count()` sin reintento preguntando antes de que el formulario se repintara.
+- **Recalcular una velocidad como «lo que falta ÷ el plazo» en cada latido no llega nunca.** Pasó dos veces en el mismo fichero, con el tope de retraso y con la prisa de un error: cada latido reparte lo que queda en el plazo entero, así que se va frenando. Un plazo se fija una vez, como una hora, y se divide lo que falta entre lo que queda de él.
+- **Dos instrucciones del prompt que se contradicen las resuelve el modelo, y no como querías.** «No inventes» y «siempre 3 o 4 desafíos» chocan con un readme que no cuenta problemas; ganó la primera y la lista salió vacía. Cuando una regla es de datos y otra de forma, hay que decirlo.
 - **Una petición de estilo no es una petición de dependencias.** «Material design» se pidió como filosofía de diseño y se leyó como «quitar PrimeNG»: se rehizo el panel entero con componentes propios que hubo que deshacer. Ante un cambio que borra una dependencia o reescribe muchas vistas, se confirma el alcance antes de empezar, no después.
 - **`ng serve` puede quedarse con una versión vieja de un componente.** Tras cambiar a la vez la plantilla de un padre y las entradas de un hijo, el servidor de desarrollo sirvió la plantilla nueva contra la clase antigua: `ASSERTION ERROR: ... does not have an input with a public name of "texto"` en la consola, la vista del hijo congelada y nada más. Los tests pasaban porque Playwright arranca su propio servidor. Si algo se ve roto en `ng serve` y los tests pasan, primero la consola, y después reiniciar el servidor.
 - **Si dos cosas pueden estar trabajando a la vez, hay que decidir cuál falla.** Marcar todas las que estuvieran en curso hacía que el diagrama dijera dos veces «aquí se cortó», que es la contradicción que la declaración única de estados existe para impedir.
@@ -162,7 +174,7 @@ Y dos pérdidas de datos desde el panel de administración, ambas recuperadas co
 
 ### Inmediato
 
-- **Instalar un JDK en la máquina de desarrollo.** Sin él, cada cambio del backend sale sin compilar y se verifica en CI o, peor, en Render. Ya costó un despliegue.
+- ~~Instalar un JDK~~ — resuelto con Docker (ver arriba). Instalar un JDK de verdad seguiría siendo más rápido, pero ya no es un bloqueo.
 - **Adelantar `develop` a `master`** con `git merge --ff-only master`.
 - **Comprobar si el `.exe` de SGVA Assistant sigue apuntando a `/releases/latest`** después de la próxima publicación.
 
