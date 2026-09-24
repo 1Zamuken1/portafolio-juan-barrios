@@ -200,11 +200,23 @@ Medido por primera vez el 22 de septiembre de 2026 con `pnpm run medir`. Portada
 
 La diferencia es casi toda la fuente de iconos: devicon entero eran 777 kB —el 70 % de la página— para dibujar unas decenas de glifos.
 
-Lo que queda por mirar, en orden de peso:
+El 24 de septiembre, segunda tanda. Build servido en local, mismas condiciones, `master` frente a la rama:
 
-- `chunk-PFHGLGNV.js`, **70 kB**. Sin identificar; probablemente GSAP o el visor.
-- **Inter, 47 kB** desde Google Fonts. Autohospedarla quita dos `preconnect` y una dependencia externa.
-- **PrimeIcons, 34 kB**. Mismo caso que devicon: se puede recortar con `scripts/subset-iconos.mjs` extendiéndolo.
+| | Antes | Después |
+|---|---|---|
+| Descargado (sin comprimir) | 812 kB | **592 kB** |
+| Largest Contentful Paint | 1528 ms | 1124 ms |
+| HTML de la portada | 88 kB | **57 kB** |
+| Carga inicial del build (transferida) | 134 kB | **107 kB** |
+
+- **El «chunk sin identificar» era PrimeNG.** `providePrimeNG` estaba en `app.config` y metía el preset de Aura (104 kB) y la base de PrimeNG en el `main.js` del portafolio, que no usa ni un componente de PrimeNG. Ahora lo proveen las rutas de `/admin` (`features/admin/admin.routes.ts`), con un inicializador de entorno: `providePrimeNG()` usa uno de aplicación, que en una ruta no se ejecuta, y el tema dejaba de aplicarse sin error. `e2e/primeng-panel.spec.ts` vigila las dos cosas.
+- **Inter, autohospedada** (`src/app/styles/fuentes.css`, `public/fonts/inter-*.woff2`): fuera la hoja de Google Fonts y sus dos `preconnect`. Sin precarga: ver el comentario de `index.html`.
+- **PrimeIcons, recortado** con `scripts/subset-iconos.mjs`: de 34 kB a 11 kB, y `styles.css` pierde sus 315 reglas. El recorte encontró dos iconos que no existían: `pi-code-branch` en la barra de estado (corregido) y `pi-mouse` en un nodo del diagrama de SGVA Assistant (se deja: ficha hecha a mano).
+- **`iconos.css` entra en el CSS del build**: una petición menos, las fuentes salen con hash (cacheables) y se acabó el aviso de «Unable to locate stylesheet» en cada build.
+
+Las mediciones de esta máquina tienen mucho ruido: el mismo build dio entre 750 y 2100 ms de FCP. Compara siempre en la misma sesión y con varias pasadas.
+
+**JetBrains Mono no se carga en ningún sitio**, aunque es la fuente de todo el editor: se ve la monoespaciada del sistema (Consolas en Windows). Cargarla son unos 40 kB; es una decisión de diseño, no de rendimiento.
 
 ## 5. Propuestas ya construidas
 

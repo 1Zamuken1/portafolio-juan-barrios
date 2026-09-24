@@ -43,6 +43,11 @@ const SALIDA = join(RAIZ, 'public', 'fonts');
 const DATOS = join(RAIZ, 'src', 'assets', 'data');
 const DEVICON = join(RAIZ, 'node_modules', 'devicon');
 const FA = join(RAIZ, 'node_modules', '@fortawesome', 'fontawesome-free');
+const PRIMEICONS = join(RAIZ, 'node_modules', 'primeicons');
+/** La lista de iconos que el redactor puede proponer para el diagrama: van en
+ *  la fuente aunque todavia no los use ninguna ficha. */
+const ICONOS_DIAGRAMA = join(RAIZ, 'backend', 'src', 'main', 'java', 'com', 'juanbarrios',
+  'portfolio', 'domain', 'service', 'MaquetadorDeDiagrama.java');
 
 // ── recoleccion ──────────────────────────────────────────────────────────────
 
@@ -69,6 +74,16 @@ function textoDelProyecto() {
   return partes.join('\n');
 }
 
+/** Lo mismo mas el CSS y la lista del diagrama: para PrimeIcons. Hay clases
+ *  pi- en hojas de estilo, y el redactor puede proponer cualquier icono de su
+ *  lista sin que ninguna ficha lo use todavia. */
+function textoParaPrimeIcons() {
+  const partes = [textoDelProyecto()];
+  for (const f of ficheros(join(RAIZ, 'src', 'app'), ['.css'])) partes.push(readFileSync(f, 'utf-8'));
+  partes.push(readFileSync(ICONOS_DIAGRAMA, 'utf-8'));
+  return partes.join('\n');
+}
+
 const texto = textoDelProyecto();
 
 const clasesDevicon = [...new Set([...texto.matchAll(/devicon-[a-z0-9-]+/g)].map((m) => m[0]))].sort();
@@ -76,6 +91,14 @@ const clasesFa = [...new Set([...texto.matchAll(/\bfa-([a-z0-9-]+)/g)].map((m) =
   // fa-solid y compania nombran la familia, no un icono.
   .filter((n) => !['solid', 'regular', 'brands', 'classic', 'fw', 'spin', 'pulse'].includes(n))
   .sort();
+
+// Las utilidades de PrimeIcons nombran un comportamiento, no un icono. spinner
+// va siempre: lo usa PrimeNG por dentro para los estados de carga.
+const UTILIDADES_PI = new Set(['fw', 'spin']);
+const clasesPi = [...new Set([
+  'spinner',
+  ...[...textoParaPrimeIcons().matchAll(/\bpi-([a-z0-9-]+)/g)].map((m) => m[1])
+])].filter((n) => !UTILIDADES_PI.has(n)).sort();
 
 // ── devicon ──────────────────────────────────────────────────────────────────
 
@@ -124,6 +147,42 @@ for (const nombre of clasesFa) {
   const familia = estilos.has('solid') ? 'solid' : estilos.has('brands') ? 'brands' : 'regular';
   glifoFa.set(nombre, { cp: parseInt(meta.unicode, 16), familia });
 }
+
+// ── primeicons ───────────────────────────────────────────────────────────────
+
+const cssPi = readFileSync(join(PRIMEICONS, 'primeicons.css'), 'utf-8');
+
+/** Nombre -> codepoint, de las reglas `.pi-x:before { content: "\e9xx"; }`. */
+const glifoPi = new Map();
+for (const regla of cssPi.matchAll(
+  /((?:\.pi-[a-z0-9-]+:before\s*,?\s*)+)\{\s*content:\s*"\\([0-9a-fA-F]+)";?\s*\}/g)) {
+  for (const sel of regla[1].matchAll(/\.pi-([a-z0-9-]+):before/g)) {
+    glifoPi.set(sel[1], parseInt(regla[2], 16));
+  }
+}
+
+/** La base de PrimeIcons (.pi, .pi-fw, .pi-spin y su animacion), copiada tal
+ *  cual: todo lo que va entre su @font-face y el primer icono. */
+const basePi = cssPi.slice(cssPi.indexOf('.pi {'), cssPi.search(/\.pi-[a-z0-9-]+:before\s*\{\s*content/))
+  .replace(/\s+/g, ' ').trim();
+
+// Una clase que no existe no dibuja nada. En el codigo es un error y se para;
+// en los datos se avisa y se sigue: las fichas hechas a mano no se tocan desde
+// aqui, y un icono roto en una no debe impedir regenerar la fuente de todas.
+const piSinGlifo = clasesPi.filter((n) => !glifoPi.has(n));
+const textoCodigo = [
+  ...ficheros(join(RAIZ, 'src', 'app'), ['.ts', '.html', '.css']).map((f) => readFileSync(f, 'utf-8')),
+  readFileSync(ICONOS_DIAGRAMA, 'utf-8')
+].join('\n');
+const piRotosEnCodigo = piSinGlifo.filter((n) => new RegExp(`\\bpi-${n}\\b`).test(textoCodigo));
+if (piRotosEnCodigo.length) {
+  throw new Error(
+    'Estas clases de PrimeIcons no existen y no dibujarian nada:\n  pi-' + piRotosEnCodigo.join('\n  pi-') +
+    '\n\nCorrigelas antes de generar la fuente. Las que existen estan en\n' +
+    'node_modules/primeicons/primeicons.css.');
+}
+const piRotosEnDatos = piSinGlifo.filter((n) => !piRotosEnCodigo.includes(n));
+clasesPi.splice(0, clasesPi.length, ...clasesPi.filter((n) => glifoPi.has(n)));
 
 // ── recorte ──────────────────────────────────────────────────────────────────
 
@@ -186,6 +245,11 @@ for (const [familia, cps] of Object.entries(porFamilia)) {
     cps);
 }
 
+// primeicons
+const cpsPi = [...new Set(clasesPi.map((n) => glifoPi.get(n)))];
+const bytesPi = recortar(
+  join(PRIMEICONS, 'fonts', 'primeicons.ttf'), join(SALIDA, 'primeicons-subset.woff2'), cpsPi);
+
 // ── css ──────────────────────────────────────────────────────────────────────
 
 const familiaFa = { solid: 'Font Awesome 6 Free', brands: 'Font Awesome 6 Brands', regular: 'Font Awesome 6 Free' };
@@ -200,6 +264,7 @@ const lineas = [
   ' *',
   ` * devicon: ${conGlifo.length} clases, ${cpsDevicon.length} glifos.`,
   ` * font awesome: ${glifoFa.size} iconos.`,
+  ` * primeicons: ${clasesPi.length} iconos.`,
   ' */',
   '',
   '/* ── devicon ── */',
@@ -239,6 +304,15 @@ for (const [nombre, { cp }] of [...glifoFa].sort()) {
   lineas.push(`.fa-${nombre}:before{content:"\\${cp.toString(16)}"}`);
 }
 
+lineas.push('', '/* ── primeicons ── */',
+  '@font-face{font-family:"primeicons";src:url("primeicons-subset.woff2") format("woff2");' +
+    'font-weight:normal;font-style:normal;font-display:block}',
+  basePi,
+  '');
+for (const n of clasesPi) {
+  lineas.push(`.pi-${n}:before{content:"\\${glifoPi.get(n).toString(16)}"}`);
+}
+
 const css = lineas.join('\n') + '\n';
 writeFileSync(join(SALIDA, 'iconos.css'), css, 'utf-8');
 
@@ -249,6 +323,10 @@ const sinMeta = clasesFa.filter((n) => !glifoFa.has(n));
 console.log('\nIconos encontrados en datos y codigo');
 console.log('─'.repeat(52));
 console.log(`  devicon        ${String(conGlifo.length).padStart(3)} clases, ${cpsDevicon.length} glifos`);
+console.log(`  primeicons     ${String(clasesPi.length).padStart(3)} iconos`);
+if (piRotosEnDatos.length) {
+  console.log(`  AVISO: en los datos hay iconos de PrimeIcons que no existen y no se dibujan: ${piRotosEnDatos.map((n) => 'pi-' + n).join(', ')}`);
+}
 console.log(`  font awesome   ${String(glifoFa.size).padStart(3)} iconos ` +
   `(${porFamilia.solid.length} solid, ${porFamilia.brands.length} brands, ${porFamilia.regular.length} regular)`);
 if (sinMeta.length) console.log(`  AVISO: sin metadatos en Font Awesome: ${sinMeta.join(', ')}`);
@@ -260,4 +338,5 @@ for (const [familia, bytes] of Object.entries(bytesFa)) {
   console.log(`  fa-${familia}-subset.woff2`.padEnd(25) + kB(bytes) +
     `   (de ${kB(statSync(join(FA, 'webfonts', ficherosFa[familia])).size)})`);
 }
+console.log(`  primeicons-subset.woff2${kB(bytesPi)}   (de ${kB(statSync(join(PRIMEICONS, 'fonts', 'primeicons.woff2')).size)} en woff2)`);
 console.log(`  iconos.css             ${kB(Buffer.byteLength(css))}`);

@@ -29,26 +29,25 @@
 
   <link rel="icon" type="image/png" href="favicon.png">
 
-  <!-- Google Fonts - Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Inter se sirve desde el sitio (src/app/styles/fuentes.css), y los iconos
+       --devicon, Font Awesome y PrimeIcons, recortados a los que el proyecto usa
+       por scripts/subset-iconos.mjs-- van en public/fonts/iconos.css, que entra
+       en el CSS del build (angular.json) en vez de ir en un <link> aparte: una
+       peticion menos, y el optimizador de CSS critico deja de avisar de que no
+       encuentra esa hoja.
 
-  <!-- Iconos: devicon y Font Awesome, recortados a los que este proyecto usa.
-       Lo genera scripts/subset-iconos.mjs y se sirve desde aqui, no desde un
-       CDN. Antes eran dos hojas externas y la fuente completa de devicon, que
-       son 777 kB por visita --el 70% del peso de la portada-- para dibujar
-       unas decenas de iconos de los 1201 que trae.
+       Antes eran hojas externas --Google Fonts, dos CDN de iconos-- y la fuente
+       completa de devicon: 777 kB por visita, el 70% del peso de la portada,
+       para unas decenas de iconos. Tambien se acabo el devicon@latest sin
+       fijar: cualquier cambio que publicaran entraba en el sitio sin tocar
+       nada aqui.
 
-       Tambien se acabo el devicon@latest sin fijar: cualquier cambio que
-       publicaran entraba en el sitio sin tocar nada aqui.
-
-       NO se precarga la fuente. Se probo y costaba 60 ms de First Contentful
-       Paint: un preload es de prioridad alta y compite con el CSS y el JS
-       criticos. Como son 13,6 kB y el CSS de aqui al lado ya la referencia,
-       llega igual de rapido sin robarle sitio al primer pintado. Medido con
-       `pnpm run medir`, bloqueando esa peticion para comparar. -->
-  <link rel="stylesheet" href="fonts/iconos.css">
+       Ninguna fuente se precarga. Con la de iconos se probo y costaba 60 ms de
+       First Contentful Paint: un preload es de prioridad alta y compite con el
+       CSS y el JS criticos. Con Inter se volvio a probar y el ruido de la
+       medicion (el mismo build, entre 750 y 2100 ms de FCP) era mayor que
+       cualquier diferencia; y con font-display: swap el texto se pinta al
+       momento con la fuente de respaldo, asi que no hay nada que adelantar. -->
 </head>
 <body>
   <app-root></app-root>
