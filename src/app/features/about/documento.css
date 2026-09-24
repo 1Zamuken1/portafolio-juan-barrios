@@ -281,3 +281,34 @@
     text-align: left;
   }
 }
+
+/* ================================================
+   Vidrio y elevacion (ver styles/vidrio-publico.css)
+   ================================================
+   La navegacion entre documentos es para pulsar, no para leer. */
+.doc-nav a {
+  background: var(--pv-superficie);
+  border-color: var(--pv-vidrio-borde);
+  border-radius: 0.75rem;
+  box-shadow: var(--pv-brillo), var(--pv-elev-1);
+  transition: border-color 0.2s var(--pv-curva), box-shadow 0.25s var(--pv-curva),
+    transform 0.25s var(--pv-curva), background 0.2s var(--pv-curva);
+}
+
+.doc-nav a:hover {
+  background: var(--pv-superficie), var(--card-bg);
+  transform: translateY(-2px);
+  box-shadow: var(--pv-brillo), var(--pv-elev-2);
+}
+
+.doc-nav a:active {
+  transform: scale(0.98);
+  box-shadow: var(--pv-brillo), var(--pv-elev-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .doc-nav a:hover,
+  .doc-nav a:active {
+    transform: none;
+  }
+}

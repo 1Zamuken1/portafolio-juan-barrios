@@ -227,3 +227,73 @@
 .md-h1::before { content: '# '; opacity: 0.55; }
 .md-h2::before { content: '## '; opacity: 0.55; }
 .md-h3::before { content: '### '; opacity: 0.55; }
+
+/* ================================================
+   Vidrio y elevacion (ver styles/vidrio-publico.css)
+   ================================================
+   Solo la cabecera: el badge, los metadatos y los botones estan sobre la
+   imagen del proyecto, asi que el desenfoque tiene algo detras. Las
+   secciones del caso de estudio no se tocan: son para leer. */
+.project-type-badge {
+  background: var(--pv-vidrio-alto);
+  -webkit-backdrop-filter: var(--pv-desenfoque);
+  backdrop-filter: var(--pv-desenfoque);
+  border-color: var(--pv-vidrio-borde);
+  box-shadow: var(--pv-brillo);
+}
+
+.hero-metadata-grid {
+  background: var(--pv-vidrio-alto);
+  -webkit-backdrop-filter: var(--pv-desenfoque);
+  backdrop-filter: var(--pv-desenfoque);
+  border-color: var(--pv-vidrio-borde);
+  border-radius: 12px;
+  box-shadow: var(--pv-brillo), var(--pv-elev-2);
+}
+
+/* Botones con forma y capas de estado de Material: pildora, un velo al
+   pasar y otro al pulsar, y elevacion que sube con el hover. */
+.btn {
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+  padding: 6px 18px;
+  transition: background 0.2s var(--pv-curva), box-shadow 0.2s var(--pv-curva),
+    transform 0.2s var(--pv-curva), border-color 0.2s var(--pv-curva);
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.btn:hover::after { opacity: 0.08; }
+.btn:active::after { opacity: 0.16; }
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  box-shadow: var(--pv-elev-1);
+}
+
+.btn-primary:hover {
+  box-shadow: var(--pv-elev-2);
+}
+
+.btn-outline {
+  -webkit-backdrop-filter: var(--pv-desenfoque);
+  backdrop-filter: var(--pv-desenfoque);
+  box-shadow: var(--pv-brillo);
+}
+
+.btn-outline:hover {
+  box-shadow: var(--pv-brillo), var(--pv-elev-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn:active { transform: none; }
+}

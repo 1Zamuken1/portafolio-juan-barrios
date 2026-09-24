@@ -39,3 +39,29 @@
   outline: 2px solid var(--text-accent);
   outline-offset: 2px;
 }
+
+/* Vidrio: un selector segmentado de pildora, con la opcion activa elevada. */
+.vista-selector {
+  background: var(--pv-vidrio);
+  border-color: var(--pv-vidrio-borde);
+  border-radius: 999px;
+  box-shadow: var(--pv-brillo);
+}
+
+.vista-boton {
+  border-radius: 999px;
+  transition: background 0.2s var(--pv-curva), color 0.2s ease, box-shadow 0.2s var(--pv-curva);
+}
+
+.vista-boton:hover {
+  background: var(--pv-capa-hover);
+}
+
+.vista-boton:active {
+  background: var(--pv-capa-press);
+}
+
+.vista-boton.activa {
+  background: var(--pv-superficie), var(--bg-tertiary);
+  box-shadow: var(--pv-brillo), var(--pv-elev-1);
+}

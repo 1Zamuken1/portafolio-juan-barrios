@@ -20,7 +20,7 @@ interface EditorTab {
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterLink],
   templateUrl: './vscode-layout.component.html',
-  styleUrls: ['./vscode-layout.component.css']
+  styleUrls: ['./vscode-layout.component.css', './vscode-layout.vidrio.css']
 })
 export class VscodeLayoutComponent implements OnInit, OnDestroy {
   private dataService = inject(DataService);

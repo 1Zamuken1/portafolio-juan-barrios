@@ -430,3 +430,14 @@
     display: none;
   }
 }
+
+/* El boton de encuadre flota sobre el plano: un poco de desenfoque y
+   elevacion al pasar. La tinta y el angulo recto del plano se quedan. */
+.bp-btn {
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.bp-btn:hover {
+  box-shadow: var(--pv-elev-2);
+}

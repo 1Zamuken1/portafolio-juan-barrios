@@ -1,0 +1,129 @@
+/* ================================================
+   Vidrio y elevacion del portafolio publico
+   ================================================
+
+   El distintivo propio sobre la estetica de VSCode, con una regla: va donde
+   se interactua mucho y se lee poco. El cromo del editor (barra de
+   actividad, explorador, pestanas, barra de estado), lo que flota
+   (tooltips, panel de perfil, explorador en movil) y los controles cortos
+   (botones, badges, tarjetas del stack, navegacion entre paginas).
+
+   El texto largo --el caso de estudio, la trayectoria, el readme de la
+   portada-- se queda opaco a proposito: el vidrio baja el contraste y lo
+   que se lee durante minutos es justo donde eso cansa.
+
+   De Material se toma la elevacion por niveles y las capas de estado (un
+   velo al pasar y otro mas fuerte al pulsar), no los componentes.
+
+   Los tokens van en la raiz, como los del panel (admin-tema.css): las
+   variables CSS atraviesan la encapsulacion de los componentes. */
+
+:root {
+  --pv-vidrio: rgba(22, 21, 46, 0.58);
+  --pv-vidrio-alto: rgba(30, 29, 62, 0.76);
+  --pv-vidrio-borde: rgba(196, 181, 253, 0.13);
+  --pv-brillo: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --pv-desenfoque: blur(18px) saturate(150%);
+
+  /* Las luces de detras del cromo. Sin algo detras, un vidrio es solo un
+     color algo mas claro: son las que hacen que se lea como vidrio. */
+  --pv-luz-1: rgba(179, 98, 255, 0.2);
+  --pv-luz-2: rgba(158, 255, 255, 0.07);
+  --pv-luz-3: rgba(250, 208, 0, 0.05);
+
+  /* El mismo liquido que la pipeline del panel. */
+  --pv-liquido: linear-gradient(180deg, #b362ff, #9effff);
+  --pv-liquido-h: linear-gradient(90deg, #b362ff, #9effff);
+  --pv-liquido-brillo: rgba(179, 98, 255, 0.55);
+
+  /* Una tarjeta sobre el fondo plano del editor no tiene nada que
+     desenfocar: se simula con un degradado y un filo de luz arriba. */
+  --pv-superficie: linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+
+  --pv-capa-hover: rgba(255, 255, 255, 0.06);
+  --pv-capa-press: rgba(255, 255, 255, 0.12);
+
+  --pv-elev-1: 0 1px 2px rgba(5, 4, 20, 0.5), 0 1px 3px rgba(5, 4, 20, 0.3);
+  --pv-elev-2: 0 6px 18px -4px rgba(5, 4, 20, 0.55), 0 2px 6px rgba(5, 4, 20, 0.3);
+  --pv-elev-3: 0 18px 50px -12px rgba(5, 4, 20, 0.75), 0 4px 12px rgba(5, 4, 20, 0.35);
+
+  --pv-curva: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* En claro el sitio es Solarized Light: el violeta #6C71C4 y el cian #2AA198
+   hacen el papel del morado y el turquesa de Shades of Purple. */
+:root[data-theme='light'] {
+  --pv-vidrio: rgba(247, 245, 239, 0.62);
+  --pv-vidrio-alto: rgba(251, 250, 247, 0.84);
+  --pv-vidrio-borde: rgba(63, 83, 90, 0.12);
+  --pv-brillo: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  --pv-desenfoque: blur(18px) saturate(160%);
+
+  --pv-luz-1: rgba(108, 113, 196, 0.16);
+  --pv-luz-2: rgba(42, 161, 152, 0.1);
+  --pv-luz-3: rgba(181, 137, 0, 0.08);
+
+  --pv-liquido: linear-gradient(180deg, #6c71c4, #2aa198);
+  --pv-liquido-h: linear-gradient(90deg, #6c71c4, #2aa198);
+  --pv-liquido-brillo: rgba(108, 113, 196, 0.4);
+
+  --pv-superficie: linear-gradient(145deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.35));
+
+  --pv-capa-hover: rgba(63, 83, 90, 0.05);
+  --pv-capa-press: rgba(63, 83, 90, 0.1);
+
+  --pv-elev-1: 0 1px 2px rgba(63, 83, 90, 0.08), 0 1px 3px rgba(63, 83, 90, 0.06);
+  --pv-elev-2: 0 8px 22px -6px rgba(63, 83, 90, 0.18), 0 2px 6px rgba(63, 83, 90, 0.06);
+  --pv-elev-3: 0 22px 50px -14px rgba(63, 83, 90, 0.28), 0 4px 12px rgba(63, 83, 90, 0.08);
+}
+
+/* Quien pide menos transparencia la tiene: el vidrio pasa a opaco y sin
+   desenfoque. Las luces se apagan, que sin vidrio solo serian manchas. */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --pv-vidrio: #16152e;
+    --pv-vidrio-alto: #1e1d3e;
+    --pv-desenfoque: none;
+    --pv-luz-1: transparent;
+    --pv-luz-2: transparent;
+    --pv-luz-3: transparent;
+  }
+  :root[data-theme='light'] {
+    --pv-vidrio: #f3f0e7;
+    --pv-vidrio-alto: #fbfaf7;
+    --pv-desenfoque: none;
+    --pv-luz-1: transparent;
+    --pv-luz-2: transparent;
+    --pv-luz-3: transparent;
+  }
+}
+
+/* ---- Botones de contacto del perfil ----
+   Viven en markdown-theme.css, que es global: se retocan aqui con el mismo
+   selector, que al cargarse despues gana. */
+.markdown-body .contact-link {
+  position: relative;
+  border-radius: 999px;
+  padding: 6px 14px;
+  border-color: var(--pv-vidrio-borde);
+  box-shadow: var(--pv-brillo);
+  transition: transform 0.2s var(--pv-curva), box-shadow 0.2s var(--pv-curva),
+    border-color 0.2s var(--pv-curva), color 0.2s var(--pv-curva);
+}
+
+.markdown-body .contact-link:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--pv-brillo), var(--pv-elev-2);
+}
+
+.markdown-body .contact-link:active {
+  transform: scale(0.97);
+  box-shadow: var(--pv-brillo), var(--pv-elev-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .markdown-body .contact-link:hover,
+  .markdown-body .contact-link:active {
+    transform: none;
+  }
+}

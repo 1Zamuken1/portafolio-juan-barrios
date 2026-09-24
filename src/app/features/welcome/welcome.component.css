@@ -302,3 +302,64 @@
   border-color: color-mix(in srgb, var(--syntax-heading) 70%, transparent);
   background: color-mix(in srgb, var(--syntax-heading) 18%, transparent);
 }
+
+/* ================================================
+   Vidrio y elevacion (ver styles/vidrio-publico.css)
+   ================================================
+   Solo en lo que se toca: badges, tarjetas del stack y enlaces. Las lineas
+   del readme siguen siendo texto plano. */
+.badge {
+  box-shadow: var(--pv-brillo);
+}
+
+.badge:hover {
+  box-shadow: var(--pv-brillo), var(--pv-elev-2);
+}
+
+.stack-category {
+  background: var(--pv-superficie), var(--card-bg);
+  border-color: var(--pv-vidrio-borde);
+  border-radius: 0.75rem;
+  box-shadow: var(--pv-brillo), var(--pv-elev-1);
+  transition: border-color 0.2s var(--pv-curva), box-shadow 0.25s var(--pv-curva),
+    transform 0.25s var(--pv-curva);
+}
+
+.stack-category:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--pv-brillo), var(--pv-elev-2), 0 0 18px var(--card-glow);
+}
+
+.stack-chip {
+  border-radius: 999px;
+}
+
+.stack-chip:hover {
+  box-shadow: var(--pv-elev-1);
+}
+
+.md-link {
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  box-shadow: var(--pv-brillo);
+  transition: color 0.15s, border-color 0.15s, background 0.15s,
+    transform 0.2s var(--pv-curva), box-shadow 0.2s var(--pv-curva);
+}
+
+.md-link:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--pv-brillo), var(--pv-elev-2);
+}
+
+.md-link:active {
+  transform: scale(0.97);
+  box-shadow: var(--pv-brillo), var(--pv-elev-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stack-category:hover,
+  .md-link:hover,
+  .md-link:active {
+    transform: none;
+  }
+}
