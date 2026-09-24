@@ -1304,7 +1304,7 @@
       "Panel de administración con Tailwind CSS"
     ],
     "year": 2026,
-    "status": "Draft",
+    "status": "Completed",
     "coreArchitecture": "Django MVC + services layer",
     "databaseArchitecture": "SQLite / PostgreSQL (Supabase)",
     "highlights": [
@@ -1472,6 +1472,7 @@
         "gridSize": 40,
         "showGrid": true
       }
-    }
+    },
+    "teamSize": 4
   }
 ]
