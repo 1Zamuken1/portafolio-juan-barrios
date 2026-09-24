@@ -243,7 +243,7 @@
 }
 
 .hero-metadata-grid {
-  background: var(--pv-vidrio-alto);
+  background: var(--pv-superficie), var(--pv-vidrio-alto);
   -webkit-backdrop-filter: var(--pv-desenfoque);
   backdrop-filter: var(--pv-desenfoque);
   border-color: var(--pv-vidrio-borde);
@@ -281,7 +281,8 @@
 }
 
 .btn-primary:hover {
-  box-shadow: var(--pv-elev-2);
+  transform: translateY(-2px);
+  box-shadow: var(--pv-elev-3), 0 0 18px color-mix(in srgb, var(--btn-primary-bg) 55%, transparent);
 }
 
 .btn-outline {
@@ -291,7 +292,8 @@
 }
 
 .btn-outline:hover {
-  box-shadow: var(--pv-brillo), var(--pv-elev-2);
+  transform: translateY(-2px);
+  box-shadow: var(--pv-brillo), var(--pv-elev-3);
 }
 
 @media (prefers-reduced-motion: reduce) {
