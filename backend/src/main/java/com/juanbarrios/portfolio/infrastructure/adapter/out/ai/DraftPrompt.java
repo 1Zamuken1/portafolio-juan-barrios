@@ -51,7 +51,13 @@ final class DraftPrompt {
               },
               "challenges": [
                 { "title": "string", "description": "string" }
-              ]
+              ],
+              "features": ["string"],
+              "highlights": ["string"],
+              "keywords": ["string"],
+              "coreArchitecture": "string",
+              "databaseArchitecture": "string",
+              "aiArchitecture": "string"
             }
 
             QUE VA EN CADA CAMPO:
@@ -88,6 +94,30 @@ final class DraftPrompt {
               texto no nombra. El titulo va en menos de 60 caracteres y la
               descripcion explica en una o dos frases en que consistia la
               dificultad y como se abordo.
+
+            LISTAS Y ARQUITECTURA. Aqui la regla 3 manda del todo: estos campos
+            son OPCIONALES. Si el readme no lo dice, deja la lista vacia [] o la
+            cadena vacia "". Vacio es una respuesta correcta; inventado no. No
+            pongas "N/A", "Ninguno" ni nada parecido: vacio.
+
+            - features: las funcionalidades que el readme describe, entre 4 y 8
+              si las hay. Una frase corta cada una, menos de 90 caracteres, sin
+              punto final. Ejemplo: "Exportacion a Excel, PDF y CSV".
+            - highlights: entre 3 y 6 rasgos tecnicos que hacen destacar el
+              proyecto: una decision de arquitectura, una integracion, una
+              optimizacion. Menos de 90 caracteres cada uno. No repitas las
+              features con otras palabras.
+            - keywords: entre 4 y 8 palabras clave de una o dos palabras: el
+              dominio del proyecto y las tecnologias principales, con su
+              grafia habitual. Ejemplo: ["finanzas", "IA", "Django",
+              "PostgreSQL"].
+            - coreArchitecture: la arquitectura en una linea de menos de 45
+              caracteres. Ejemplo: "Django Apps + Services Layer".
+            - databaseArchitecture: los motores de datos que nombra el readme,
+              en una linea. Ejemplo: "SQLite / PostgreSQL". "" si no hay.
+            - aiArchitecture: los modelos o APIs de IA que nombra el readme, en
+              una linea. Ejemplo: "Gemini Flash + Groq Fallback". "" si el
+              proyecto no usa IA.
 
             Las cinco secciones de readmeMarkdown son texto corrido en markdown.
             No pongas titulos dentro: el sitio ya los dibuja por su cuenta.

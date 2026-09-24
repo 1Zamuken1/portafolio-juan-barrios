@@ -360,10 +360,27 @@ export class AdminProjectFormComponent implements OnInit {
     (borrador.challenges ?? []).forEach((c) =>
       this.agregarChallenge(c.title, c.description));
 
+    // Las listas y la arquitectura solo entran si el borrador trae algo.
+    // Vacias quieren decir "el readme no lo dice", y borrar con eso lo que ya
+    // hubiera escrito seria perder un dato por no tener otro.
+    const extra: Record<string, string> = {};
+    const lineas: [keyof ProjectDraft, string][] = [
+      ['features', 'featuresText'], ['highlights', 'highlightsText'], ['keywords', 'keywordsText']
+    ];
+    for (const [origen, destino] of lineas) {
+      const lista = borrador[origen] as string[] | undefined;
+      if (lista?.length) extra[destino] = aLineas(lista);
+    }
+    for (const campo of ['coreArchitecture', 'databaseArchitecture', 'aiArchitecture'] as const) {
+      const texto = borrador[campo]?.trim();
+      if (texto) extra[campo] = texto;
+    }
+    this.form.patchValue(extra);
+
     this.rellenados.set(new Set([
       'name', 'shortDescription', 'fullDescription',
       'objective', 'architecture', 'mainFeatures', 'technologies', 'learnings',
-      'challenges'
+      'challenges', ...Object.keys(extra)
     ]));
 
     this.cambiarDePaso(2);

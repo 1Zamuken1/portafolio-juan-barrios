@@ -189,19 +189,19 @@
     <section class="form-seccion seccion" id="seccion-listas">
       <ng-container *ngTemplateOutlet="cabecera; context: { id: 'listas', icono: 'pi pi-list', titulo: 'Listas', lema: 'Una entrada por línea. No se separan por comas a propósito: el contenido lleva comas y partir por ellas convertía una viñeta en tres.' }" />
 
-      <p-floatlabel variant="in">
-        <textarea pTextarea id="featuresText" formControlName="featuresText" appCrecerConTexto="3"></textarea>
-        <label for="featuresText">Funcionalidades</label>
+      <p-floatlabel variant="in" [class.campo-ia]="loRellenoLaIa('featuresText')">
+        <textarea pTextarea id="featuresText" formControlName="featuresText" (input)="marcarComoMio('featuresText')" appCrecerConTexto="3"></textarea>
+        <label for="featuresText">Funcionalidades@if (loRellenoLaIa('featuresText')) {<span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>}</label>
       </p-floatlabel>
 
       <div class="form-row">
-        <p-floatlabel variant="in" class="flex-1">
-          <textarea pTextarea id="highlightsText" formControlName="highlightsText" appCrecerConTexto="3"></textarea>
-          <label for="highlightsText">Destacados</label>
+        <p-floatlabel variant="in" class="flex-1" [class.campo-ia]="loRellenoLaIa('highlightsText')">
+          <textarea pTextarea id="highlightsText" formControlName="highlightsText" (input)="marcarComoMio('highlightsText')" appCrecerConTexto="3"></textarea>
+          <label for="highlightsText">Destacados@if (loRellenoLaIa('highlightsText')) {<span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>}</label>
         </p-floatlabel>
-        <p-floatlabel variant="in" class="flex-1">
-          <textarea pTextarea id="keywordsText" formControlName="keywordsText" appCrecerConTexto="3"></textarea>
-          <label for="keywordsText">Palabras clave</label>
+        <p-floatlabel variant="in" class="flex-1" [class.campo-ia]="loRellenoLaIa('keywordsText')">
+          <textarea pTextarea id="keywordsText" formControlName="keywordsText" (input)="marcarComoMio('keywordsText')" appCrecerConTexto="3"></textarea>
+          <label for="keywordsText">Palabras clave@if (loRellenoLaIa('keywordsText')) {<span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>}</label>
         </p-floatlabel>
       </div>
     </section>
@@ -244,18 +244,18 @@
     <section class="form-seccion seccion" id="seccion-arquitectura">
       <ng-container *ngTemplateOutlet="cabecera; context: { id: 'arquitectura', icono: 'pi pi-sitemap', titulo: 'Arquitectura', lema: 'Resúmenes de una línea que se muestran en la cabecera de la ficha.' }" />
 
-      <p-floatlabel variant="in">
-        <input pInputText id="coreArchitecture" formControlName="coreArchitecture" />
-        <label for="coreArchitecture">Núcleo</label>
+      <p-floatlabel variant="in" [class.campo-ia]="loRellenoLaIa('coreArchitecture')">
+        <input pInputText id="coreArchitecture" formControlName="coreArchitecture" (input)="marcarComoMio('coreArchitecture')" />
+        <label for="coreArchitecture">Núcleo@if (loRellenoLaIa('coreArchitecture')) {<span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>}</label>
       </p-floatlabel>
       <div class="form-row">
-        <p-floatlabel variant="in" class="flex-1">
-          <input pInputText id="databaseArchitecture" formControlName="databaseArchitecture" />
-          <label for="databaseArchitecture">Base de datos</label>
+        <p-floatlabel variant="in" class="flex-1" [class.campo-ia]="loRellenoLaIa('databaseArchitecture')">
+          <input pInputText id="databaseArchitecture" formControlName="databaseArchitecture" (input)="marcarComoMio('databaseArchitecture')" />
+          <label for="databaseArchitecture">Base de datos@if (loRellenoLaIa('databaseArchitecture')) {<span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>}</label>
         </p-floatlabel>
-        <p-floatlabel variant="in" class="flex-1">
-          <input pInputText id="aiArchitecture" formControlName="aiArchitecture" />
-          <label for="aiArchitecture">IA</label>
+        <p-floatlabel variant="in" class="flex-1" [class.campo-ia]="loRellenoLaIa('aiArchitecture')">
+          <input pInputText id="aiArchitecture" formControlName="aiArchitecture" (input)="marcarComoMio('aiArchitecture')" />
+          <label for="aiArchitecture">IA@if (loRellenoLaIa('aiArchitecture')) {<span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>}</label>
         </p-floatlabel>
       </div>
     </section>

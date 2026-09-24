@@ -11,7 +11,23 @@ export interface FichaVista {
   fullDescription?: string;
   readmeMarkdown?: Partial<Record<SeccionCaso, string>>;
   challenges?: { title?: string; description?: string }[];
+  features?: string[];
+  highlights?: string[];
+  keywords?: string[];
+  coreArchitecture?: string;
+  databaseArchitecture?: string;
+  aiArchitecture?: string;
 }
+
+/** Las tres listas del borrador. */
+export type ListaFicha = 'features' | 'highlights' | 'keywords';
+
+/** Los tres resumenes de arquitectura, con el rotulo con que salen en la ficha. */
+export const ARQUITECTURA: ReadonlyArray<{ clave: 'coreArchitecture' | 'databaseArchitecture' | 'aiArchitecture'; titulo: string }> = [
+  { clave: 'coreArchitecture', titulo: 'Arquitectura' },
+  { clave: 'databaseArchitecture', titulo: 'Base de datos' },
+  { clave: 'aiArchitecture', titulo: 'IA' }
+];
 
 export type SeccionCaso = 'objective' | 'architecture' | 'mainFeatures' | 'technologies' | 'learnings';
 
@@ -61,6 +77,15 @@ export function aFichaVista(valor: unknown): FichaVista {
     }
   }
 
+  for (const clave of ['features', 'highlights', 'keywords'] as const) {
+    const l = valor[clave];
+    if (Array.isArray(l)) ficha[clave] = l.filter((x): x is string => typeof x === 'string');
+  }
+  for (const { clave } of ARQUITECTURA) {
+    const t = cadena(valor[clave]);
+    if (t !== undefined) ficha[clave] = t;
+  }
+
   const lista = valor['challenges'];
   if (Array.isArray(lista)) {
     ficha.challenges = lista.filter(esObjeto).map((c) => ({
@@ -79,7 +104,13 @@ export function fichaDeBorrador(b: ProjectDraft): FichaVista {
     shortDescription: b.shortDescription,
     fullDescription: b.fullDescription,
     readmeMarkdown: { ...b.readmeMarkdown },
-    challenges: b.challenges.map((c) => ({ ...c }))
+    challenges: b.challenges.map((c) => ({ ...c })),
+    features: [...(b.features ?? [])],
+    highlights: [...(b.highlights ?? [])],
+    keywords: [...(b.keywords ?? [])],
+    coreArchitecture: b.coreArchitecture ?? '',
+    databaseArchitecture: b.databaseArchitecture ?? '',
+    aiArchitecture: b.aiArchitecture ?? ''
   };
 }
 

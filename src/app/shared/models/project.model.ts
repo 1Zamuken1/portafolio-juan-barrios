@@ -73,6 +73,14 @@ export interface ProjectDraft {
     learnings: string;
   };
   challenges: { title: string; description: string }[];
+  /** Las listas y los resumenes de arquitectura. Opcionales: vacios quieren
+   *  decir que el readme no lo dice, y entonces el formulario no se toca. */
+  features?: string[];
+  highlights?: string[];
+  keywords?: string[];
+  coreArchitecture?: string;
+  databaseArchitecture?: string;
+  aiArchitecture?: string;
 }
 
 export type { BlueprintNode, BlueprintEdge, BlueprintLayout };

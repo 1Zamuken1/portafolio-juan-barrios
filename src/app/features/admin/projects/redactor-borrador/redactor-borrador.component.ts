@@ -69,7 +69,9 @@ const NODOS: ReadonlyArray<{ clave: string; titulo: string; icono: string }> = [
   { clave: 'nombre', titulo: 'Nombre', icono: 'pi pi-tag' },
   { clave: 'descripciones', titulo: 'Descripciones', icono: 'pi pi-align-left' },
   { clave: 'caso', titulo: 'Caso de estudio', icono: 'pi pi-book' },
-  { clave: 'desafios', titulo: 'Desafíos', icono: 'pi pi-flag' }
+  { clave: 'desafios', titulo: 'Desafíos', icono: 'pi pi-flag' },
+  { clave: 'listas', titulo: 'Listas', icono: 'pi pi-list' },
+  { clave: 'arquitectura', titulo: 'Arquitectura', icono: 'pi pi-sitemap' }
 ];
 
 const RUTAS_CASO = SECCIONES_CASO.map((s) => `readmeMarkdown.${s.clave}`);
@@ -84,8 +86,13 @@ const TAMANO_ESPERADO: Record<string, number> = {
   nombre: 24,
   descripciones: 70 + 250,
   caso: 300 + 300 + 220 + 250 + 260,
-  desafios: 3.5 * 200
+  desafios: 3.5 * 200,
+  listas: 6 * 70 + 5 * 80 + 7 * 10,
+  arquitectura: 30 + 20 + 30
 };
+
+/** Las salidas que vienen despues de los desafios, en el orden del JSON. */
+const TRAS_DESAFIOS = ['features', 'highlights', 'keywords', 'coreArchitecture', 'databaseArchitecture', 'aiArchitecture'];
 
 const enEspera = (): NodoPipeline[] =>
   NODOS.map((n) => ({ ...n, estado: 'espera' as EstadoNodo, detalle: '' }));
@@ -468,7 +475,7 @@ export class RedactorBorradorComponent implements OnDestroy {
         this.intento = 2;
         this.textoModelo.set('');
         this.nodos.update((ns) => ns.map((n) =>
-          ['parseo', 'validacion', 'nombre', 'descripciones', 'caso', 'desafios'].includes(n.clave)
+          ['parseo', 'validacion', 'nombre', 'descripciones', 'caso', 'desafios', 'listas', 'arquitectura'].includes(n.clave)
             ? { ...n, estado: 'espera' as EstadoNodo, detalle: '', progreso: 0, desde: undefined, duracion: undefined }
             : n));
         this.abrir('modelo', `Segundo intento: ${linea.detalle}`);
@@ -480,6 +487,8 @@ export class RedactorBorradorComponent implements OnDestroy {
         // esta cerrado tambien.
         this.revisarSalidas();
         this.cerrarSiFalta('desafios');
+        this.cerrarSiFalta('listas');
+        this.cerrarSiFalta('arquitectura');
         this.abrir('parseo');
         break;
 
@@ -551,12 +560,37 @@ export class RedactorBorradorComponent implements OnDestroy {
       `${secciones} de ${RUTAS_CASO.length} secciones`,
       Object.values(f.readmeMarkdown ?? {}).reduce((n, t) => n + (t?.length ?? 0), 0));
 
+    // La lista de desafios se da por cerrada cuando aparece la clave de
+    // detras: el modelo escribe en el orden pedido y un array no tiene comilla
+    // de cierre que mirar. Si no viene nada detras, la cierra el final.
+    const valorObj = (valor ?? {}) as Record<string, unknown>;
+    const hayDetras = (claves: string[]) => claves.some((c) => c in valorObj);
+
     const desafios = f.challenges?.length ?? 0;
     this.salida('desafios',
       f.challenges !== undefined,
-      false,
+      hayDetras(TRAS_DESAFIOS),
       desafios === 1 ? '1 desafío' : `${desafios} desafíos`,
       (f.challenges ?? []).reduce((n, c) => n + (c.title?.length ?? 0) + (c.description?.length ?? 0), 0));
+
+    const listas = [f.features, f.highlights, f.keywords];
+    this.salida('listas',
+      listas.some((l) => l !== undefined),
+      hayDetras(TRAS_DESAFIOS.slice(3)),
+      this.contarListas(f.features, f.highlights, f.keywords),
+      listas.reduce((n, l) => n + (l ?? []).reduce((m, x) => m + x.length, 0), 0));
+
+    const arq = ['coreArchitecture', 'databaseArchitecture', 'aiArchitecture'];
+    this.salida('arquitectura',
+      hayDetras(arq),
+      arq.every((r) => cerrada(r)),
+      arq.filter((r) => cerrada(r)).length + ' de 3 resúmenes',
+      (f.coreArchitecture ?? '').length + (f.databaseArchitecture ?? '').length + (f.aiArchitecture ?? '').length);
+  }
+
+  private contarListas(features?: string[], highlights?: string[], keywords?: string[]): string {
+    const n = (l?: string[]) => l?.length ?? 0;
+    return `${n(features)} funciones · ${n(highlights)} rasgos · ${n(keywords)} claves`;
   }
 
   private salida(clave: string, empezada: boolean, terminada: boolean, detalle: string, escritos: number): void {
@@ -608,6 +642,15 @@ export class RedactorBorradorComponent implements OnDestroy {
     this.cerrar('desafios', borrador.challenges.length === 1
       ? '1 desafío'
       : `${borrador.challenges.length} desafíos`);
+
+    const listas = [borrador.features, borrador.highlights, borrador.keywords];
+    this.cerrar('listas', listas.every((l) => !l?.length)
+      ? 'El readme no las da'
+      : this.contarListas(borrador.features, borrador.highlights, borrador.keywords));
+
+    const arq = [borrador.coreArchitecture, borrador.databaseArchitecture, borrador.aiArchitecture]
+      .filter((t): t is string => !!t?.trim());
+    this.cerrar('arquitectura', arq.length ? arq.join(' · ') : 'El readme no la nombra');
 
     setTimeout(() => this.botonAceptar()?.nativeElement.querySelector('button')?.focus());
   }
