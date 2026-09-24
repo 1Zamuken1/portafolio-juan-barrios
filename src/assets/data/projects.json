@@ -138,7 +138,9 @@
       "Motores de IA": 2,
       "Bases de datos": 2,
       "Formatos de exportación": 3,
-      "Métodos de autenticación": 2
+      "Métodos de autenticación": 2,
+      "Equipo": 4,
+      "Estado": "Producción"
     },
     "architectureLayout": {
       "orientation": "freeform",
@@ -539,7 +541,8 @@
       "Plataforma": "Electron",
       "Formatos de exportación": 2,
       "Persistencia": "JSON Cache",
-      "Modo de optimización": "Low Performance"
+      "Modo de optimización": "Low Performance",
+      "Estado": "Active Development"
     },
     "architectureLayout": {
       "orientation": "freeform",
@@ -843,7 +846,8 @@
       "Frameworks detectados": 4,
       "Motores de auditoría": 5,
       "Modos de renderizado": 2,
-      "Formatos de exportación": 2
+      "Formatos de exportación": 2,
+      "Estado": "Publicado"
     },
     "architectureLayout": {
       "orientation": "freeform",
@@ -1097,8 +1101,7 @@
         "Spring Boot",
         "Spring Security",
         "Spring Data JPA",
-        "JWT",
-        "Hibernate"
+        "JWT"
       ],
       "frontend": [
         "Angular 20",
@@ -1106,7 +1109,8 @@
         "Chart.js"
       ],
       "database": [
-        "MySQL"
+        "MySQL",
+        "Hibernate"
       ],
       "authentication": [
         "JWT",
@@ -1149,7 +1153,8 @@
     "rawMetrics": {
       "Endpoints REST": 12,
       "Roles de usuario": 2,
-      "Calificación en SonarQube": "A"
+      "Calificación en SonarQube": "A",
+      "Estado": "Completado"
     },
     "architectureLayout": {
       "orientation": "freeform",

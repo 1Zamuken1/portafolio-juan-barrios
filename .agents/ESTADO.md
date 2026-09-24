@@ -182,8 +182,8 @@ Y dos pérdidas de datos desde el panel de administración, ambas recuperadas co
 
 ### Deuda conocida
 
-- **Tests unitarios del router del visor.** La lógica creció mucho —esquiva obstáculos, reparte carriles, ordena puertos—. `blueprint-router.spec.ts` ya cubre parte de las reglas desde `e2e/`, sin navegador; queda el resto.
-- **Coreografía scroll ↔ URL en `ProjectsComponent`.** Dos banderas y temporizadores de 1 s coordinando el scroll y el fragmento. Funciona, pero es el punto más frágil del frontend.
+- ~~Tests unitarios del router del visor~~ — hecho el 24 de septiembre. La orquestación salió del componente a `services/blueprint-router.ts` (funciones puras `colocarNodos` y `trazarConectores`), y `e2e/blueprint-diagramas.spec.ts` la prueba sobre los cuatro diagramas publicados y uno con la forma del maquetador de la IA. Comprueba que cada conector sale y llega al borde de su caja, no cruza otra caja, no comparte punto de anclaje con otro conector y sigue siendo ortogonal tras el reparto. Las piezas sueltas siguen en `blueprint-router.spec.ts`.
+- ~~Coreografía scroll ↔ URL en `ProjectsComponent`~~ — resuelta. Las banderas con temporizadores ya se habían sustituido por `CoordinadorScroll`, que abre y cierra cada operación de forma explícita. El 24 de septiembre salieron los dos temporizadores que quedaban como mecanismo: el `setTimeout` de 50 ms antes de montar GSAP pasa a `afterNextRender`, y el cierre del montaje, a un `ScrollTrigger.refresh()` síncrono. Y apareció un fallo real: al llegar por un enlace a una sección (`/projects/1#features`), el router ya había llevado la vista allí, el desplazamiento no movía nada y el navegador no mandaba `scrollend`. La coordinación se quedaba abierta 2 s y el scroll a mano de ese rato no llegaba a la URL. Ahora se cierra en el acto. `e2e/ficha-scroll.spec.ts` lo prueba en el navegador. La red de 2 s sigue, solo para navegadores sin `scrollend`.
 - **`knowledge-pillars` está huérfano.** Solo lo usaba `legacy-ring`, que se borró. Tiene contenido —«lo que aplico hoy» frente a «lo que estoy incorporando»— que no está en ningún otro sitio: o vuelve a `profile.md` o se borra, pero merece una decisión.
 - **Contenido de las fichas hechas a mano con datos que el readme no sostiene.** Salió al compararlas con las del redactor: Gastu Django habla de un «Circuit Breaker» y de «Llama 3», y da el agente de IA por integrado cuando el readme lo lista como pendiente; Salsamentaría dice «E-commerce B2B», «rating A» y «quality gates en CI». Puede que sean ciertos y el readme se haya quedado corto, pero hoy la ficha y el readme dicen cosas distintas.
 - **La barra de guardado sólo está en las fichas.** Las listas no la necesitan, pero conviene no olvidar que el patrón existe si se añade otra vista con formulario largo.
@@ -200,11 +200,23 @@ Medido por primera vez el 22 de septiembre de 2026 con `pnpm run medir`. Portada
 
 La diferencia es casi toda la fuente de iconos: devicon entero eran 777 kB —el 70 % de la página— para dibujar unas decenas de glifos.
 
-Lo que queda por mirar, en orden de peso:
+El 24 de septiembre, segunda tanda. Build servido en local, mismas condiciones, `master` frente a la rama:
 
-- `chunk-PFHGLGNV.js`, **70 kB**. Sin identificar; probablemente GSAP o el visor.
-- **Inter, 47 kB** desde Google Fonts. Autohospedarla quita dos `preconnect` y una dependencia externa.
-- **PrimeIcons, 34 kB**. Mismo caso que devicon: se puede recortar con `scripts/subset-iconos.mjs` extendiéndolo.
+| | Antes | Después |
+|---|---|---|
+| Descargado (sin comprimir) | 812 kB | **592 kB** |
+| Largest Contentful Paint | 1528 ms | 1124 ms |
+| HTML de la portada | 88 kB | **57 kB** |
+| Carga inicial del build (transferida) | 134 kB | **107 kB** |
+
+- **El «chunk sin identificar» era PrimeNG.** `providePrimeNG` estaba en `app.config` y metía el preset de Aura (104 kB) y la base de PrimeNG en el `main.js` del portafolio, que no usa ni un componente de PrimeNG. Ahora lo proveen las rutas de `/admin` (`features/admin/admin.routes.ts`), con un inicializador de entorno: `providePrimeNG()` usa uno de aplicación, que en una ruta no se ejecuta, y el tema dejaba de aplicarse sin error. `e2e/primeng-panel.spec.ts` vigila las dos cosas.
+- **Inter, autohospedada** (`src/app/styles/fuentes.css`, `public/fonts/inter-*.woff2`): fuera la hoja de Google Fonts y sus dos `preconnect`. Sin precarga: ver el comentario de `index.html`.
+- **PrimeIcons, recortado** con `scripts/subset-iconos.mjs`: de 34 kB a 11 kB, y `styles.css` pierde sus 315 reglas. El recorte encontró dos iconos que no existían: `pi-code-branch` en la barra de estado (corregido) y `pi-mouse` en un nodo del diagrama de SGVA Assistant (se deja: ficha hecha a mano).
+- **`iconos.css` entra en el CSS del build**: una petición menos, las fuentes salen con hash (cacheables) y se acabó el aviso de «Unable to locate stylesheet» en cada build.
+
+Las mediciones de esta máquina tienen mucho ruido: el mismo build dio entre 750 y 2100 ms de FCP. Compara siempre en la misma sesión y con varias pasadas.
+
+**JetBrains Mono no se carga en ningún sitio**, aunque es la fuente de todo el editor: se ve la monoespaciada del sistema (Consolas en Windows). Cargarla son unos 40 kB; es una decisión de diseño, no de rendimiento.
 
 ## 5. Propuestas ya construidas
 
@@ -218,7 +230,7 @@ Lo que en su día se discutió aquí y hoy funciona:
 
 Lo que se dejó fuera a propósito y sigue pendiente de decidir:
 
-~~Normalizar el vocabulario de `structuredStack`, `structuredFeatures` y `rawMetrics`~~ — hecho el 24 de septiembre. Hay un vocabulario cerrado en `src/assets/data/vocabulario.json`, los cuatro proyectos migrados y el redactor genera el stack y los grupos. Las métricas se normalizaron (claves en español, sin repetir Estado ni Equipo, que ya salen en la cabecera), pero el redactor no las genera: son cifras.
+~~Normalizar el vocabulario de `structuredStack`, `structuredFeatures` y `rawMetrics`~~ — hecho el 24 de septiembre. Hay un vocabulario cerrado en `src/assets/data/vocabulario.json`, los cuatro proyectos migrados y el redactor genera el stack y los grupos. Las claves de las métricas se tradujeron al español, pero el redactor no las genera: son cifras. **Las fichas hechas a mano no se tocan más allá de renombrar claves**: se restauraron las métricas Estado y Equipo y Hibernate volvió a la base de datos, que la migración había cambiado por su cuenta.
 
 ## 6. Limitaciones conocidas
 

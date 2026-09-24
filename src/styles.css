@@ -1,5 +1,8 @@
-/* PrimeIcons */
-@import 'primeicons/primeicons.css';
+/* Fuentes propias */
+@import 'app/styles/fuentes.css';
+
+/* PrimeIcons ya no se importa entero: va recortado en public/fonts/iconos.css
+   (scripts/subset-iconos.mjs), con devicon y Font Awesome. */
 
 /* Custom Design System */
 @import 'app/styles/variables.css';

@@ -5,7 +5,8 @@
  * Lo vigila e2e/iconos.spec.ts.
  *
  * devicon: 33 clases, 32 glifos.
- * font awesome: 15 iconos.
+ * font awesome: 11 iconos.
+ * primeicons: 83 iconos.
  */
 
 /* ── devicon ── */
@@ -89,18 +90,102 @@
 .far,.fa-regular{font-family:"Font Awesome 6 Free";font-weight:400}
 .fab,.fa-brands{font-family:"Font Awesome 6 Brands";font-weight:400}
 
-.fa-angular:before{content:"\f420"}
 .fa-arrow-down:before{content:"\f063"}
 .fa-arrow-right:before{content:"\f061"}
 .fa-arrow-up:before{content:"\f062"}
 .fa-aws:before{content:"\f375"}
 .fa-briefcase:before{content:"\f0b1"}
 .fa-building:before{content:"\f1ad"}
-.fa-check:before{content:"\f00c"}
 .fa-cloud:before{content:"\f0c2"}
-.fa-code:before{content:"\f121"}
 .fa-dharmachakra:before{content:"\f655"}
 .fa-docker:before{content:"\f395"}
 .fa-graduation-cap:before{content:"\f19d"}
-.fa-hand-pointer:before{content:"\f25a"}
 .fa-infinity:before{content:"\f534"}
+
+/* ── primeicons ── */
+@font-face{font-family:"primeicons";src:url("primeicons-subset.woff2") format("woff2");font-weight:normal;font-style:normal;font-display:block}
+.pi { font-family: 'primeicons'; speak: none; font-style: normal; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; display: inline-block; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; } .pi:before { --webkit-backface-visibility:hidden; backface-visibility: hidden; } .pi-fw { width: 1.28571429em; text-align: center; } .pi-spin { -webkit-animation: fa-spin 2s infinite linear; animation: fa-spin 2s infinite linear; } @media (prefers-reduced-motion: reduce) { .pi-spin { -webkit-animation-delay: -1ms; animation-delay: -1ms; -webkit-animation-duration: 1ms; animation-duration: 1ms; -webkit-animation-iteration-count: 1; animation-iteration-count: 1; -webkit-transition-delay: 0s; transition-delay: 0s; -webkit-transition-duration: 0s; transition-duration: 0s; } } @-webkit-keyframes fa-spin { 0% { -webkit-transform: rotate(0deg); transform: rotate(0deg); } 100% { -webkit-transform: rotate(359deg); transform: rotate(359deg); } } @keyframes fa-spin { 0% { -webkit-transform: rotate(0deg); transform: rotate(0deg); } 100% { -webkit-transform: rotate(359deg); transform: rotate(359deg); } }
+
+.pi-align-left:before{content:"\e947"}
+.pi-angle-right:before{content:"\e932"}
+.pi-arrow-left:before{content:"\e91a"}
+.pi-arrow-right:before{content:"\e91b"}
+.pi-arrows-h:before{content:"\e9ec"}
+.pi-bars:before{content:"\e91d"}
+.pi-bell:before{content:"\e97c"}
+.pi-bolt:before{content:"\e9db"}
+.pi-book:before{content:"\e9ba"}
+.pi-box:before{content:"\e9d9"}
+.pi-briefcase:before{content:"\e97d"}
+.pi-calendar:before{content:"\e927"}
+.pi-chart-bar:before{content:"\e96d"}
+.pi-chart-line:before{content:"\e98b"}
+.pi-check:before{content:"\e909"}
+.pi-check-circle:before{content:"\e90a"}
+.pi-check-square:before{content:"\e98c"}
+.pi-chevron-down:before{content:"\e902"}
+.pi-chevron-left:before{content:"\e900"}
+.pi-chevron-right:before{content:"\e901"}
+.pi-chevron-up:before{content:"\e903"}
+.pi-circle:before{content:"\e9dc"}
+.pi-circle-fill:before{content:"\e9dd"}
+.pi-clock:before{content:"\e940"}
+.pi-cloud:before{content:"\e945"}
+.pi-code:before{content:"\e9e7"}
+.pi-cog:before{content:"\e94a"}
+.pi-database:before{content:"\e9e3"}
+.pi-desktop:before{content:"\e993"}
+.pi-dollar:before{content:"\e96b"}
+.pi-download:before{content:"\e956"}
+.pi-envelope:before{content:"\e979"}
+.pi-exclamation-circle:before{content:"\e989"}
+.pi-exclamation-triangle:before{content:"\e922"}
+.pi-external-link:before{content:"\e93c"}
+.pi-file:before{content:"\e958"}
+.pi-file-excel:before{content:"\e98e"}
+.pi-file-export:before{content:"\e9f8"}
+.pi-file-pdf:before{content:"\e98d"}
+.pi-flag:before{content:"\e9c4"}
+.pi-folder:before{content:"\e963"}
+.pi-folder-open:before{content:"\e964"}
+.pi-github:before{content:"\e9b5"}
+.pi-globe:before{content:"\e94f"}
+.pi-graduation-cap:before{content:"\ea34"}
+.pi-home:before{content:"\e925"}
+.pi-id-card:before{content:"\e9aa"}
+.pi-image:before{content:"\e972"}
+.pi-info-circle:before{content:"\e924"}
+.pi-key:before{content:"\e981"}
+.pi-link:before{content:"\e9c1"}
+.pi-linkedin:before{content:"\e9cb"}
+.pi-list:before{content:"\e967"}
+.pi-lock:before{content:"\e95f"}
+.pi-map-marker:before{content:"\e968"}
+.pi-minus:before{content:"\e90f"}
+.pi-mobile:before{content:"\e982"}
+.pi-moon:before{content:"\e9c7"}
+.pi-pencil:before{content:"\e942"}
+.pi-plus:before{content:"\e90d"}
+.pi-question-circle:before{content:"\e959"}
+.pi-refresh:before{content:"\e938"}
+.pi-search:before{content:"\e908"}
+.pi-send:before{content:"\e9ca"}
+.pi-server:before{content:"\e9e4"}
+.pi-share-alt:before{content:"\e97a"}
+.pi-shield:before{content:"\e9b9"}
+.pi-shopping-cart:before{content:"\e980"}
+.pi-sign-out:before{content:"\e971"}
+.pi-sitemap:before{content:"\e96e"}
+.pi-sparkles:before{content:"\ea31"}
+.pi-spinner:before{content:"\e926"}
+.pi-star:before{content:"\e937"}
+.pi-sun:before{content:"\e9c8"}
+.pi-table:before{content:"\e969"}
+.pi-tag:before{content:"\e95e"}
+.pi-th-large:before{content:"\e918"}
+.pi-times:before{content:"\e90b"}
+.pi-trash:before{content:"\e93d"}
+.pi-undo:before{content:"\e994"}
+.pi-upload:before{content:"\e934"}
+.pi-user:before{content:"\e939"}
+.pi-users:before{content:"\e941"}

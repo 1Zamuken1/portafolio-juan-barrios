@@ -73,7 +73,8 @@
               }
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "public/fonts/iconos.css"
             ]
           },
           "configurations": {

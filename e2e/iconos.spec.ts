@@ -135,7 +135,7 @@ test.describe('iconos', () => {
     const generado = () => readFileSync(join(RAIZ, 'public', 'fonts', 'iconos.css'), 'utf-8');
 
     test('las fuentes recortadas estan en el repositorio', () => {
-      for (const f of ['devicon-subset.woff2', 'fa-solid-subset.woff2', 'fa-brands-subset.woff2']) {
+      for (const f of ['devicon-subset.woff2', 'fa-solid-subset.woff2', 'fa-brands-subset.woff2', 'primeicons-subset.woff2']) {
         const ruta = join(RAIZ, 'public', 'fonts', f);
         expect(existsSync(ruta), `falta ${f}: ejecuta node scripts/subset-iconos.mjs`).toBe(true);
         // Una fuente vacia pasaria la comprobacion de existencia y no dibujaria nada.
@@ -168,6 +168,27 @@ test.describe('iconos', () => {
 
       const faltan = [...usados].filter((n) => !css.includes(`.fa-${n}:before{content:`));
       expect(faltan, regenerar(faltan)).toEqual([]);
+    });
+
+    test('cada icono de PrimeIcons usado en el codigo tiene su regla en el CSS generado', () => {
+      // PrimeIcons dejo de importarse entero: un icono nuevo que no este en el
+      // recorte no se dibuja. Se miran plantillas, codigo y hojas de estilo, y
+      // la lista de iconos que el redactor puede proponer para el diagrama.
+      const css = generado();
+      const usados = new Set<string>();
+      const textos = [
+        ...ficheros(join(RAIZ, 'src', 'app'), ['.ts', '.html', '.css']).map((f) => readFileSync(f, 'utf-8')),
+        readFileSync(join(RAIZ, 'backend', 'src', 'main', 'java', 'com', 'juanbarrios', 'portfolio',
+          'domain', 'service', 'MaquetadorDeDiagrama.java'), 'utf-8')
+      ];
+      for (const t of textos) {
+        for (const m of t.matchAll(/pi-([a-z0-9-]+)/g)) {
+          if (!['fw', 'spin'].includes(m[1])) usados.add(m[1]);
+        }
+      }
+
+      const faltan = [...usados].filter((n) => !css.includes(`.pi-${n}:before{content:`));
+      expect(faltan, regenerar(faltan.map((n) => 'pi-' + n))).toEqual([]);
     });
   });
 });
