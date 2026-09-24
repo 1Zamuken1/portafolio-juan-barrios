@@ -59,13 +59,52 @@ class MaquetadorDeDiagramaTest {
         assertEquals(1220, porId.get("mysql").x());
     }
 
+    /** El de GastuApp tal como lo propuso la IA la primera vez. */
+    private static final List<BlueprintNode> GASTU = List.of(
+            nodo("client", "client"), nodo("api", "application"), nodo("orm", "persistence"),
+            nodo("db", "database"), nodo("google", "external"), nodo("gemini", "external"));
+    private static final List<BlueprintEdge> GASTU_ARISTAS = List.of(
+            arista("client", "api"), arista("api", "orm"), arista("orm", "db"),
+            arista("api", "google"), arista("api", "gemini"));
+
+    private static java.util.Map<String, BlueprintNode> porId(MaquetadorDeDiagrama.Diagrama d) {
+        return d.nodos().stream().collect(java.util.stream.Collectors.toMap(BlueprintNode::id, n -> n));
+    }
+
     @Test
-    @DisplayName("una columna mas corta se centra respecto a la mas alta")
-    void lasColumnasCortasSeCentran() {
-        var d = MaquetadorDeDiagrama.maquetar(SALSAMENTARIA, List.of());
-        var spa = d.nodos().get(0);
-        // La mas alta tiene 2 filas (80 y 240): la de una sola va en medio.
-        assertEquals(160, spa.y());
+    @DisplayName("una cadena sale recta: la base de datos, a la altura del ORM que la usa")
+    void unaCadenaSaleRecta() {
+        // Lo que paso con GastuApp: centrando cada columna, la base de datos
+        // quedo a la altura de Google OAuth y la linea ORM -> DB bajaba en
+        // escalon pegada a otra caja.
+        var n = porId(MaquetadorDeDiagrama.maquetar(GASTU, GASTU_ARISTAS));
+        assertEquals(n.get("orm").y(), n.get("db").y());
+    }
+
+    @Test
+    @DisplayName("una pieza que reparte a varias queda en medio de ellas")
+    void quienRepartQuedaEnMedio() {
+        var n = porId(MaquetadorDeDiagrama.maquetar(GASTU, GASTU_ARISTAS));
+        int media = (n.get("orm").y() + n.get("google").y() + n.get("gemini").y()) / 3;
+        assertEquals(media, n.get("api").y());
+        assertEquals(n.get("api").y(), n.get("client").y(), "y el cliente, en linea con la API");
+    }
+
+    @Test
+    @DisplayName("lo de arriba del todo empieza en el margen")
+    void loDeArribaEmpiezaEnElMargen() {
+        var d = MaquetadorDeDiagrama.maquetar(GASTU, GASTU_ARISTAS);
+        assertEquals(80, d.nodos().stream().mapToInt(BlueprintNode::y).min().orElseThrow());
+        var sin = MaquetadorDeDiagrama.maquetar(SALSAMENTARIA, List.of());
+        assertEquals(80, sin.nodos().stream().mapToInt(BlueprintNode::y).min().orElseThrow());
+    }
+
+    @Test
+    @DisplayName("con aristas tampoco se pisa ninguna caja")
+    void conAristasNingunaSePisa() {
+        var d = MaquetadorDeDiagrama.maquetar(GASTU, GASTU_ARISTAS);
+        Set<String> sitios = new HashSet<>();
+        for (BlueprintNode x : d.nodos()) assertTrue(sitios.add(x.x() + "," + x.y()), x.id());
     }
 
     @Test

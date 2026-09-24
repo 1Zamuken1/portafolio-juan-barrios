@@ -25,9 +25,16 @@ import java.util.TreeSet;
  * <p>La maqueta es la de los cuatro diagramas hechos a mano: columnas de
  * izquierda a derecha segun la capa --lo que usa la persona, la aplicacion,
  * la persistencia y los datos--, 380 px entre columnas y 160 entre filas, con
- * cajas de 250 x 96. Las columnas mas cortas se centran respecto a la mas
- * alta, que es lo que hace que el diagrama se lea como un flujo y no como una
- * tabla.
+ * cajas de 250 x 96.
+ *
+ * <p>Dentro de cada columna, cada caja va a la altura de las cajas con las que
+ * se conecta: primero de izquierda a derecha, a la altura media de quien la
+ * llama, y despues de derecha a izquierda, a la altura media de a quien
+ * llama. Asi una cadena ORM -> base de datos sale recta, y una pieza que
+ * reparte a tres queda en medio de las tres. La primera version centraba cada
+ * columna respecto a la mas alta, y con GastuApp dejo la base de datos a la
+ * altura de Google OAuth en vez de la del ORM que la usa, con la linea
+ * bajando en escalon junto a otra caja.
  *
  * <p>Los iconos se limitan a {@link #ICONOS}. El sitio sirve una fuente de
  * devicon recortada a los glifos que usa (scripts/subset-iconos.mjs): una
@@ -97,32 +104,55 @@ public final class MaquetadorDeDiagrama {
         Map<Integer, Integer> compacta = new HashMap<>();
         for (int c : usadas) compacta.put(c, compacta.size());
 
+        Map<String, Integer> columna = new HashMap<>();
+        for (BlueprintNode n : nodos) columna.put(n.id(), compacta.get(COLUMNA.get(n.group())));
+
+        // Vecinos a cada lado, sin mirar el sentido de la flecha: lo que
+        // importa para colocar es con quien se une, no quien llama.
+        Map<String, List<String>> izquierda = new HashMap<>();
+        Map<String, List<String>> derecha = new HashMap<>();
+        for (BlueprintEdge e : aristas) {
+            int a = columna.get(e.from()), b = columna.get(e.to());
+            if (a == b) continue;
+            String menor = a < b ? e.from() : e.to(), mayor = a < b ? e.to() : e.from();
+            derecha.computeIfAbsent(menor, k -> new ArrayList<>()).add(mayor);
+            izquierda.computeIfAbsent(mayor, k -> new ArrayList<>()).add(menor);
+        }
+
         // Dentro de una columna, primero la capa principal y luego la que la
         // comparte (automation bajo application, external bajo persistence),
         // y en cada capa el orden en que las propuso el modelo.
-        Map<Integer, List<BlueprintNode>> porColumna = new HashMap<>();
-        for (BlueprintNode n : nodos) {
-            porColumna.computeIfAbsent(compacta.get(COLUMNA.get(n.group())), k -> new ArrayList<>()).add(n);
-        }
-        porColumna.values().forEach(l -> l.sort(Comparator.comparingInt(n -> GRUPOS.indexOf(n.group()))));
+        int columnas = usadas.size();
+        List<List<BlueprintNode>> porColumna = new ArrayList<>();
+        for (int c = 0; c < columnas; c++) porColumna.add(new ArrayList<>());
+        for (BlueprintNode n : nodos) porColumna.get(columna.get(n.id())).add(n);
+        porColumna.forEach(l -> l.sort(Comparator.comparingInt(n -> GRUPOS.indexOf(n.group()))));
 
-        int filasMax = porColumna.values().stream().mapToInt(List::size).max().orElse(1);
+        Map<String, Integer> y = new HashMap<>();
+        // Ida: cada columna, a la altura de quien tiene a la izquierda.
+        for (int c = 0; c < columnas; c++) {
+            colocarColumna(porColumna.get(c), izquierda, y);
+        }
+        // Vuelta: a la altura de quien tiene a la derecha. La ultima columna
+        // ya quedo bien en la ida.
+        for (int c = columnas - 2; c >= 0; c--) {
+            colocarColumna(porColumna.get(c), derecha, y);
+        }
+
+        // Lo de arriba del todo, al margen.
+        int minimo = y.values().stream().mapToInt(Integer::intValue).min().orElse(MARGEN);
+        y.replaceAll((id, v) -> v - minimo + MARGEN);
+        int maximo = y.values().stream().mapToInt(Integer::intValue).max().orElse(MARGEN);
 
         Map<String, int[]> celda = new HashMap<>();
         List<BlueprintNode> colocados = new ArrayList<>();
         for (BlueprintNode n : nodos) {
-            int col = compacta.get(COLUMNA.get(n.group()));
-            List<BlueprintNode> columna = porColumna.get(col);
-            int fila = columna.indexOf(n);
-            // Media fila de desplazamiento por cada fila que le falta a esta
-            // columna respecto a la mas alta: asi queda centrada.
-            int y = MARGEN + fila * PASO_Y + (filasMax - columna.size()) * PASO_Y / 2;
-            int x = MARGEN + col * PASO_X;
-            celda.put(n.id(), new int[]{col, fila});
+            int col = columna.get(n.id());
+            celda.put(n.id(), new int[]{col, y.get(n.id())});
             colocados.add(new BlueprintNode(
                     n.id(), n.label().trim(), recortar(n.description()), icono(n),
                     n.group(), "secondary".equals(n.type()) ? "secondary" : "primary",
-                    x, y, ANCHO, ALTO));
+                    MARGEN + col * PASO_X, y.get(n.id()), ANCHO, ALTO));
         }
 
         List<BlueprintEdge> conPuertos = new ArrayList<>();
@@ -138,12 +168,59 @@ public final class MaquetadorDeDiagrama {
                     null, null, null, null));
         }
 
-        int ancho = redondear(2 * MARGEN + (usadas.size() - 1) * PASO_X + ANCHO);
-        int alto = redondear(2 * MARGEN + (filasMax - 1) * PASO_Y + ALTO);
+        int ancho = redondear(2 * MARGEN + (columnas - 1) * PASO_X + ANCHO);
+        int alto = redondear(maximo + ALTO + MARGEN);
         BlueprintLayout layout = new BlueprintLayout("freeform",
                 new BlueprintCanvas(ancho, alto, REJILLA, true));
 
         return new Diagrama(colocados, conPuertos, layout);
+    }
+
+    /**
+     * Coloca una columna a la altura media de sus vecinos del lado dado.
+     *
+     * Las cajas sin vecino colocado de ese lado se quedan donde estaban (o,
+     * la primera vez, debajo de las demas). Despues se respeta el orden y se
+     * separan: dos cajas no pueden quedar a menos de una fila.
+     */
+    private static void colocarColumna(List<BlueprintNode> columna, Map<String, List<String>> vecinos,
+                                       Map<String, Integer> y) {
+        Map<String, Double> deseada = new HashMap<>();
+        double siguiente = y.isEmpty() ? MARGEN : Double.NaN;
+        for (BlueprintNode n : columna) {
+            double media = vecinos.getOrDefault(n.id(), List.of()).stream()
+                    .filter(y::containsKey).mapToInt(y::get).average().orElse(Double.NaN);
+            if (!Double.isNaN(media)) deseada.put(n.id(), media);
+            else if (y.containsKey(n.id())) deseada.put(n.id(), (double) y.get(n.id()));
+        }
+        // Las que no tienen a donde ir, detras de la ultima que si.
+        double fondo = deseada.values().stream().mapToDouble(Double::doubleValue).max()
+                .orElse(Double.isNaN(siguiente) ? MARGEN : siguiente);
+        boolean hayAlguna = !deseada.isEmpty();
+        for (BlueprintNode n : columna) {
+            if (!deseada.containsKey(n.id())) {
+                fondo = hayAlguna ? fondo + PASO_Y : fondo;
+                deseada.put(n.id(), fondo);
+                hayAlguna = true;
+            }
+        }
+
+        List<BlueprintNode> orden = new ArrayList<>(columna);
+        orden.sort(Comparator.comparingDouble(n -> deseada.get(n.id())));
+        // Si varias quieren el mismo sitio, se reparten alrededor de el en vez
+        // de colgar todas por debajo.
+        int anterior = Integer.MIN_VALUE;
+        List<Integer> puestas = new ArrayList<>();
+        for (BlueprintNode n : orden) {
+            int v = (int) Math.round(deseada.get(n.id()) / REJILLA) * REJILLA;
+            if (anterior != Integer.MIN_VALUE && v < anterior + PASO_Y) v = anterior + PASO_Y;
+            puestas.add(v);
+            anterior = v;
+        }
+        double desvio = 0;
+        for (int i = 0; i < orden.size(); i++) desvio += puestas.get(i) - deseada.get(orden.get(i).id());
+        int subir = (int) Math.round(desvio / orden.size() / REJILLA) * REJILLA;
+        for (int i = 0; i < orden.size(); i++) y.put(orden.get(i).id(), puestas.get(i) - subir);
     }
 
     private static String icono(BlueprintNode n) {
