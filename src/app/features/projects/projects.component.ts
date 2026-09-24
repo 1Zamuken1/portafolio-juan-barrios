@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, inject, signal, computed, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, ElementRef, ViewChild, PLATFORM_ID, Injector, afterNextRender } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { CoordinadorScroll } from './coordinador-scroll';
 import { metadatosFicha } from './metadatos-ficha';
@@ -21,12 +21,13 @@ gsap.registerPlugin(ScrollTrigger);
   templateUrl: './projects.component.html',
   styleUrl: './projects.component.css'
 })
-export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
+export class ProjectsComponent implements OnInit, OnDestroy {
   private dataService = inject(DataService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private seo = inject(SeoService);
   private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private injector = inject(Injector);
 
   project = signal<Project | null>(null);
   protected metadatos = computed(() => {
@@ -48,7 +49,7 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   /** Cierra el desplazamiento en curso cuando el navegador dice que acabo. */
   private cerrarDesplazamiento?: () => void;
-  private respaldoDesplazamiento: any;
+  private respaldoDesplazamiento?: ReturnType<typeof setTimeout>;
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -65,11 +66,6 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
         });
       }
     });
-  }
-
-  ngAfterViewInit(): void {
-    // Watch for project changes to re-init animations
-    // We use a small delay so the DOM is rendered
   }
 
   ngOnDestroy(): void {
@@ -101,13 +97,18 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
         this.coordinador.reiniciar();
         const terminarMontaje = this.coordinador.iniciarDesplazamiento();
 
-        setTimeout(() => {
+        // Despues del proximo pintado, que es cuando las secciones de la ficha
+        // nueva estan en el DOM. Antes era un setTimeout de 50 ms, una
+        // suposicion sobre cuanto tardaba Angular en pintar.
+        afterNextRender(() => {
           this.initAnimations();
           this.setupFragmentListener();
-          // Los onEnter iniciales se disparan durante el refresco de
-          // ScrollTrigger; con un turno de reloj han pasado todos.
-          setTimeout(terminarMontaje, 0);
-        }, 50);
+          // El refresco fuerza ya los onEnter de las secciones que estan a la
+          // vista, dentro del montaje; asi se puede cerrar aqui mismo, sin
+          // esperar un turno de reloj.
+          ScrollTrigger.refresh();
+          terminarMontaje();
+        }, { injector: this.injector });
       },
       error: (err) => {
         console.error('Error loading project:', err);
@@ -400,12 +401,20 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
    * que iba pasando; si tardaba menos, el scroll del usuario no actualizaba la
    * URL durante el resto del segundo.
    *
-   * El temporizador sigue ahi pero como red, no como mecanismo: `scrollend` no
-   * llega si el contenedor ya estaba en la posicion pedida, y sin esa red la
-   * coordinacion se quedaria abierta para siempre.
+   * Si el contenedor ya esta donde se pide --pasa al llegar por un enlace,
+   * porque el router ya ha llevado la vista a la seccion-- no hay scroll y el
+   * navegador no manda `scrollend`: se da por terminado en el acto. Antes se
+   * quedaba abierto hasta la red de 2 s, y el scroll a mano de ese rato no
+   * llegaba a la URL.
+   *
+   * El temporizador sigue como red para el caso que queda: un navegador sin
+   * `scrollend`.
    */
   private desplazarHasta(scroller: HTMLElement, top: number): void {
     this.terminarDesplazamiento();
+
+    const destino = Math.max(0, Math.min(top, scroller.scrollHeight - scroller.clientHeight));
+    if (Math.abs(scroller.scrollTop - destino) < 1) return;
 
     const cerrar = this.coordinador.iniciarDesplazamiento();
     this.cerrarDesplazamiento = cerrar;
