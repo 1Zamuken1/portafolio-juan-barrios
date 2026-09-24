@@ -26,16 +26,11 @@
           @if (project()!.teamSize) {
             <!-- Advanced Hero Metadata -->
             <div class="hero-metadata-grid">
-              <div class="hero-meta-item"><span>Rol:</span> {{ project()!.role }}</div>
-              <div class="hero-meta-item"><span>Proyecto:</span> {{ project()!.type }}</div>
-              <div class="hero-meta-item"><span>Año:</span> {{ project()!.year }}</div>
-              <div class="hero-meta-item"><span>Estado:</span> {{ project()!.status }}</div>
-              <div class="hero-meta-item"><span>Equipo:</span> {{ project()!.teamSize }} desarrolladores</div>
-              <div class="hero-meta-item"><span>Backend:</span> {{ project()!.structuredStack?.['backend']?.join(' / ') || 'N/A' }}</div>
-              <div class="hero-meta-item"><span>Frontend:</span> {{ project()!.structuredStack?.['frontend']?.join(' + ') || 'N/A' }}</div>
-              <div class="hero-meta-item"><span>Base de datos:</span> {{ project()!.databaseArchitecture }}</div>
-              <div class="hero-meta-item"><span>IA:</span> {{ project()!.aiArchitecture }}</div>
-              <div class="hero-meta-item"><span>Arquitectura:</span> {{ project()!.coreArchitecture }}</div>
+              <!-- Un dato que no hay no se enseña: una etiqueta sin nada detrás
+                   se lee como un fallo, y un "N/A" como un dato. -->
+              @for (m of metadatos(); track m.etiqueta) {
+                <div class="hero-meta-item"><span>{{ m.etiqueta }}:</span> {{ m.valor }}</div>
+              }
             </div>
           }
           <p class="project-subtitle advanced-subtitle">{{ project()!.shortDescription }}</p>

@@ -8,6 +8,7 @@ import {
   viewChild
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
+import { BlueprintViewerComponent } from '../../../../shared/components/blueprint-viewer/blueprint-viewer.component';
 import { ARQUITECTURA, FichaVista, ListaFicha, MetaFicha, SECCIONES_CASO, SeccionCaso } from './ficha-vista';
 
 /**
@@ -25,7 +26,7 @@ import { ARQUITECTURA, FichaVista, ListaFicha, MetaFicha, SECCIONES_CASO, Seccio
 export type ModoVista = 'vacia' | 'actual' | 'redactando' | 'lista' | 'aplicada' | 'fallo';
 
 /** Los cuatro grupos de la vista, los mismos que las burbujas de salida. */
-export type GrupoFicha = 'nombre' | 'descripciones' | 'caso' | 'desafios' | 'listas' | 'arquitectura';
+export type GrupoFicha = 'nombre' | 'descripciones' | 'caso' | 'desafios' | 'listas' | 'arquitectura' | 'diagrama';
 
 const ETIQUETA_MODO: Record<ModoVista, string> = {
   vacia: 'Vista previa',
@@ -43,7 +44,8 @@ const RUTAS: Record<GrupoFicha, (ruta: string) => boolean> = {
   caso: (r) => r.startsWith('readmeMarkdown.'),
   desafios: (r) => r.startsWith('challenges.'),
   listas: (r) => /^(features|highlights|keywords)\./.test(r),
-  arquitectura: (r) => r.endsWith('Architecture')
+  arquitectura: (r) => r.endsWith('Architecture') || r.startsWith('links.'),
+  diagrama: (r) => r.startsWith('architectureNodes.')
 };
 
 /**
@@ -61,7 +63,7 @@ const RUTAS: Record<GrupoFicha, (ruta: string) => boolean> = {
 @Component({
   selector: 'app-vista-ficha',
   standalone: true,
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, BlueprintViewerComponent],
   templateUrl: './vista-ficha.component.html',
   styleUrl: './vista-ficha.component.css'
 })
@@ -127,6 +129,7 @@ export class VistaFichaComponent {
     const [raiz, hijo, campo] = ruta.split('.');
 
     if (raiz === 'readmeMarkdown') return f.readmeMarkdown?.[hijo as SeccionCaso] ?? '';
+    if (raiz === 'links') return f.github ?? '';
     if (raiz === 'features' || raiz === 'highlights' || raiz === 'keywords') {
       return f[raiz as ListaFicha]?.[+hijo] ?? '';
     }
@@ -144,6 +147,8 @@ export class VistaFichaComponent {
   }
 
   protected desafios = computed(() => this.ficha().challenges ?? []);
+
+  protected piezas = computed(() => (this.ficha().piezas ?? []).filter((p) => p.label));
 
   protected lista(clave: ListaFicha): string[] {
     return this.ficha()[clave] ?? [];

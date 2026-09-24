@@ -1,8 +1,19 @@
 package com.juanbarrios.portfolio.application.usecase;
 
+import com.juanbarrios.portfolio.domain.model.BlueprintEdge;
+import com.juanbarrios.portfolio.domain.model.BlueprintNode;
 import com.juanbarrios.portfolio.domain.model.Challenge;
 import com.juanbarrios.portfolio.domain.model.ProjectDraft;
+import com.juanbarrios.portfolio.domain.model.ProjectLinks;
 import com.juanbarrios.portfolio.domain.model.ReadmeMarkdown;
+import com.juanbarrios.portfolio.domain.service.MaquetadorDeDiagrama;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import com.juanbarrios.portfolio.domain.port.out.AvisoDeEtapa;
 import com.juanbarrios.portfolio.domain.port.out.ProjectDrafterPort;
 import com.juanbarrios.portfolio.domain.port.out.RespuestaIlegibleException;
@@ -53,6 +64,19 @@ public class DraftProjectUseCase {
     private static final int ENTRADA_MAX = 160;
     private static final int PALABRA_MAX = 40;
     private static final int ARQUITECTURA_MAX = 100;
+
+    // El diagrama tambien es opcional: sin piezas en el readme, no hay
+    // diagrama. Los hechos a mano tienen entre 6 y 11 nodos; por debajo de 3
+    // no es un diagrama y por encima de 12 no se lee en la ficha.
+    private static final int NODOS_MIN = 3;
+    private static final int NODOS_MAX = 12;
+    private static final int ARISTAS_MAX = 20;
+    private static final int ETIQUETA_MAX = 32;
+    private static final int DESCRIPCION_NODO_MAX = 60;
+
+    /** La URL de un repositorio de GitHub: owner y repo, y nada detras que importe. */
+    private static final Pattern REPO = Pattern.compile(
+            "^https?://(?:www\\.)?github\\.com/([A-Za-z0-9._-]+)/([A-Za-z0-9._-]+?)(?:\\.git)?/?$");
 
     /**
      * Un readme mas corto que esto no da material para redactar nada: el modelo
@@ -124,6 +148,8 @@ public class DraftProjectUseCase {
             borrador = drafter.draft(nombreLimpio, readmeLimpio, aviso, primero.getMessage());
             validar(borrador);
         }
+        borrador = conEnlaceDelReadme(borrador, readmeLimpio);
+        borrador = conDiagramaColocado(borrador);
         aviso.avisar("validacion", "Los " + camposValidados(borrador)
                 + " campos caben dentro de las cotas del portafolio");
         return borrador;
@@ -139,8 +165,40 @@ public class DraftProjectUseCase {
      */
     private int camposValidados(ProjectDraft b) {
         // name, shortDescription, fullDescription y las cinco secciones del
-        // readme; cada challenge son dos mas.
-        return 8 + b.challenges().size() * 2;
+        // readme; cada challenge son dos mas, y cada nodo del diagrama uno.
+        int nodos = b.architectureNodes() == null ? 0 : b.architectureNodes().size();
+        return 8 + b.challenges().size() * 2 + nodos;
+    }
+
+    /**
+     * Deja el enlace al repositorio solo si esta escrito en el readme.
+     *
+     * No se pide otra vez si falla: un enlace que no esta en el texto se lo ha
+     * inventado el modelo, y la respuesta correcta es no tenerlo, no gastar
+     * otra llamada en buscarlo. Se compara contra el readme y no contra un
+     * patron porque una URL de GitHub bien formada puede ser igual de falsa.
+     */
+    private ProjectDraft conEnlaceDelReadme(ProjectDraft b, String readme) {
+        String propuesto = b.links() == null || b.links().github() == null ? "" : b.links().github().trim();
+        Matcher m = REPO.matcher(propuesto);
+        if (!m.matches()) return b.links() == null ? b : b.conEnlaces(null);
+
+        String limpio = "https://github.com/" + m.group(1) + "/" + m.group(2);
+        String sinEsquema = ("github.com/" + m.group(1) + "/" + m.group(2)).toLowerCase(Locale.ROOT);
+        boolean escrito = readme.toLowerCase(Locale.ROOT).contains(sinEsquema);
+        return b.conEnlaces(escrito ? new ProjectLinks(limpio, null, null) : null);
+    }
+
+    private ProjectDraft conDiagramaColocado(ProjectDraft b) {
+        if (b.architectureNodes() == null || b.architectureNodes().isEmpty()) {
+            // Sin diagrama no se tocan ni las aristas ni el lienzo: vacio quiere
+            // decir "el readme no lo da", y asi lo recibe el formulario.
+            return b.architectureEdges() == null && b.architectureLayout() == null
+                    ? b : b.conDiagrama(null, null, null);
+        }
+        List<BlueprintEdge> aristas = b.architectureEdges() == null ? List.of() : b.architectureEdges();
+        MaquetadorDeDiagrama.Diagrama d = MaquetadorDeDiagrama.maquetar(b.architectureNodes(), aristas);
+        return b.conDiagrama(d.nodos(), d.aristas(), d.layout());
     }
 
     private void validar(ProjectDraft b) {
@@ -182,6 +240,8 @@ public class DraftProjectUseCase {
         exigirCorto(b.databaseArchitecture(), "databaseArchitecture");
         exigirCorto(b.aiArchitecture(), "aiArchitecture");
 
+        exigirDiagrama(b.architectureNodes(), b.architectureEdges());
+
         for (int i = 0; i < b.challenges().size(); i++) {
             Challenge c = b.challenges().get(i);
             if (c == null) {
@@ -193,7 +253,7 @@ public class DraftProjectUseCase {
     }
 
     /** Una lista opcional: puede faltar o venir vacia, pero no desbordarse. */
-    private void exigirLista(java.util.List<String> lista, String campo, int maximoPorEntrada) {
+    private void exigirLista(List<String> lista, String campo, int maximoPorEntrada) {
         if (lista == null) return;
         if (lista.size() > LISTA_MAX) {
             throw new BorradorInvalidoException(
@@ -208,6 +268,58 @@ public class DraftProjectUseCase {
                 throw new BorradorInvalidoException(
                         "La entrada " + (i + 1) + " de " + campo + " es demasiado larga ("
                                 + entrada.trim().length() + " caracteres, maximo " + maximoPorEntrada + ").");
+            }
+        }
+    }
+
+    /**
+     * El diagrama es opcional, pero si viene tiene que poder dibujarse: ids
+     * unicos, capas que el visor conoce y aristas entre nodos que existen. Una
+     * arista a un nodo que no esta no se ve como error en la ficha: se ve como
+     * una linea que sale de ninguna parte.
+     */
+    private void exigirDiagrama(List<BlueprintNode> nodos, List<BlueprintEdge> aristas) {
+        if (nodos == null || nodos.isEmpty()) return;
+        if (nodos.size() < NODOS_MIN || nodos.size() > NODOS_MAX) {
+            throw new BorradorInvalidoException(
+                    "El diagrama trae " + nodos.size() + " nodos; tienen que ser entre "
+                            + NODOS_MIN + " y " + NODOS_MAX + ", o ninguno.");
+        }
+        Set<String> ids = new HashSet<>();
+        for (int i = 0; i < nodos.size(); i++) {
+            BlueprintNode n = nodos.get(i);
+            if (n == null || n.id() == null || n.id().isBlank()) {
+                throw new BorradorInvalidoException("El nodo " + (i + 1) + " del diagrama llego sin id.");
+            }
+            if (!ids.add(n.id())) {
+                throw new BorradorInvalidoException("El id \"" + n.id() + "\" se repite en el diagrama.");
+            }
+            exigirTexto(n.label(), "architectureNodes[" + i + "].label", 1, ETIQUETA_MAX);
+            if (n.description() != null && n.description().trim().length() > DESCRIPCION_NODO_MAX) {
+                throw new BorradorInvalidoException(
+                        "La descripcion del nodo \"" + n.id() + "\" es demasiado larga ("
+                                + n.description().trim().length() + " caracteres, maximo "
+                                + DESCRIPCION_NODO_MAX + ").");
+            }
+            if (!MaquetadorDeDiagrama.GRUPOS.contains(n.group())) {
+                throw new BorradorInvalidoException(
+                        "El nodo \"" + n.id() + "\" tiene el group \"" + n.group() + "\"; tiene que ser uno de "
+                                + String.join(", ", MaquetadorDeDiagrama.GRUPOS) + ".");
+            }
+        }
+        if (aristas == null) return;
+        if (aristas.size() > ARISTAS_MAX) {
+            throw new BorradorInvalidoException(
+                    "El diagrama trae " + aristas.size() + " aristas, maximo " + ARISTAS_MAX + ".");
+        }
+        for (BlueprintEdge e : aristas) {
+            if (e == null || !ids.contains(e.from()) || !ids.contains(e.to())) {
+                throw new BorradorInvalidoException(
+                        "Una arista del diagrama une nodos que no existen: "
+                                + (e == null ? "null" : e.from() + " -> " + e.to()) + ".");
+            }
+            if (e.from().equals(e.to())) {
+                throw new BorradorInvalidoException("Una arista del diagrama une el nodo \"" + e.from() + "\" consigo mismo.");
             }
         }
     }

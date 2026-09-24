@@ -24,7 +24,10 @@ const CLAVES_JSON: ReadonlyArray<{ clave: string; salida: string }> = [
   { clave: 'features', salida: 'listas' },
   { clave: 'highlights', salida: 'listas' },
   { clave: 'keywords', salida: 'listas' },
-  { clave: '…Architecture', salida: 'arquitectura' }
+  { clave: '…Architecture', salida: 'arquitectura' },
+  { clave: 'links', salida: 'arquitectura' },
+  { clave: 'architectureNodes', salida: 'diagrama' },
+  { clave: 'architectureEdges', salida: 'diagrama' }
 ];
 
 /**

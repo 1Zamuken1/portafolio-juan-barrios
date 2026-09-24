@@ -1,6 +1,9 @@
 package com.juanbarrios.portfolio.application.usecase;
 
+import com.juanbarrios.portfolio.domain.model.BlueprintEdge;
+import com.juanbarrios.portfolio.domain.model.BlueprintNode;
 import com.juanbarrios.portfolio.domain.model.Challenge;
+import com.juanbarrios.portfolio.domain.model.ProjectLinks;
 import com.juanbarrios.portfolio.domain.model.ProjectDraft;
 import com.juanbarrios.portfolio.domain.model.ReadmeMarkdown;
 import com.juanbarrios.portfolio.domain.port.out.DrafterNoDisponibleException;
@@ -12,6 +15,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -241,6 +245,75 @@ class DraftProjectUseCaseTest {
         BorradorInvalidoException e = assertThrows(BorradorInvalidoException.class,
                 () -> conRespuesta(parrafo).draft("Gastu", README));
         assertTrue(e.getMessage().contains("coreArchitecture"), e.getMessage());
+    }
+
+    private static ProjectDraft conDiagrama(List<BlueprintNode> nodos, List<BlueprintEdge> aristas) {
+        return borradorValido().conDiagrama(nodos, aristas, null);
+    }
+
+    private static BlueprintNode nodo(String id, String grupo) {
+        return new BlueprintNode(id, id.toUpperCase(), null, "devicon-inventado-plain", grupo, null,
+                null, null, null, null);
+    }
+
+    private static BlueprintEdge arista(String de, String a) {
+        return new BlueprintEdge(de, a, null, null, null, null, null, null, null);
+    }
+
+    @Test
+    @DisplayName("el diagrama del modelo sale colocado: coordenadas, puertos, lienzo e iconos que existen")
+    void elDiagramaSaleColocado() {
+        ProjectDraft propuesto = conDiagrama(
+                List.of(nodo("spa", "client"), nodo("api", "application"), nodo("db", "database")),
+                List.of(arista("spa", "api"), arista("api", "db")));
+
+        ProjectDraft b = conRespuesta(propuesto).draft("Gastu", README);
+
+        BlueprintNode spa = b.architectureNodes().get(0);
+        BlueprintNode db = b.architectureNodes().get(2);
+        assertEquals(80, spa.x());
+        assertEquals(80 + 2 * 380, db.x(), "sin persistencia, la columna se cierra");
+        assertEquals(250, spa.width());
+        // El icono inventado no se dibujaria: se cambia por el de su capa.
+        assertEquals("pi pi-desktop", spa.icon());
+        assertEquals("right", b.architectureEdges().get(0).fromPort());
+        assertEquals("left", b.architectureEdges().get(0).toPort());
+        assertTrue(b.architectureLayout().canvas().width() >= db.x() + db.width());
+    }
+
+    @Test
+    @DisplayName("una arista a un nodo que no existe se rechaza, diciendo cual")
+    void unaAristaSueltaSeRechaza() {
+        ProjectDraft roto = conDiagrama(
+                List.of(nodo("spa", "client"), nodo("api", "application"), nodo("db", "database")),
+                List.of(arista("spa", "cache")));
+
+        BorradorInvalidoException e = assertThrows(BorradorInvalidoException.class,
+                () -> conRespuesta(roto).draft("Gastu", README));
+        assertTrue(e.getMessage().contains("spa -> cache"), e.getMessage());
+    }
+
+    @Test
+    @DisplayName("una capa que el visor no conoce se rechaza")
+    void unaCapaDesconocidaSeRechaza() {
+        ProjectDraft roto = conDiagrama(
+                List.of(nodo("spa", "frontend"), nodo("api", "application"), nodo("db", "database")),
+                List.of());
+        assertThrows(BorradorInvalidoException.class, () -> conRespuesta(roto).draft("Gastu", README));
+    }
+
+    @Test
+    @DisplayName("el enlace a GitHub solo se queda si esta escrito en el readme")
+    void elEnlaceSoloSiEstaEnElReadme() {
+        String conClone = README + "\ngit clone https://github.com/1Zamuken1/Gastu.git\n";
+        ProjectDraft propuesto = borradorValido().conEnlaces(
+                new ProjectLinks("https://github.com/1Zamuken1/Gastu.git", null, null));
+
+        assertEquals("https://github.com/1Zamuken1/Gastu",
+                conRespuesta(propuesto).draft("Gastu", conClone).links().github(),
+                "se queda, sin el .git");
+        assertNull(conRespuesta(propuesto).draft("Gastu", README).links(),
+                "no esta en el readme: se lo invento");
     }
 
     @Test

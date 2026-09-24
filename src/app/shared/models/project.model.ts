@@ -81,6 +81,13 @@ export interface ProjectDraft {
   coreArchitecture?: string;
   databaseArchitecture?: string;
   aiArchitecture?: string;
+  /** Solo el repositorio, y solo si esta escrito en el readme: el backend
+   *  tira el que no encuentra en el texto. */
+  links?: { github?: string };
+  /** El diagrama, ya colocado por el backend. Sin nodos, no hay diagrama. */
+  architectureNodes?: BlueprintNode[];
+  architectureEdges?: BlueprintEdge[];
+  architectureLayout?: BlueprintLayout;
 }
 
 export type { BlueprintNode, BlueprintEdge, BlueprintLayout };

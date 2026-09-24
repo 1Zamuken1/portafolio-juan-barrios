@@ -182,5 +182,17 @@ class GroqProjectDrafterTest {
                 "{" + prosa + "}", com.juanbarrios.portfolio.domain.model.ProjectDraft.class);
         org.junit.jupiter.api.Assertions.assertEquals("Gastu", soloProsa.name());
         org.junit.jupiter.api.Assertions.assertNull(soloProsa.features());
+        org.junit.jupiter.api.Assertions.assertNull(soloProsa.architectureNodes());
+
+        // Y con el diagrama y el enlace, que llegan sin coordenadas.
+        com.juanbarrios.portfolio.domain.model.ProjectDraft conDiagrama = json.readValue(
+                "{" + prosa + ",\"links\":{\"github\":\"https://github.com/a/b\"},"
+                        + "\"architectureNodes\":[{\"id\":\"api\",\"label\":\"REST API\",\"group\":\"application\"}],"
+                        + "\"architectureEdges\":[{\"from\":\"spa\",\"to\":\"api\"}]}",
+                com.juanbarrios.portfolio.domain.model.ProjectDraft.class);
+        org.junit.jupiter.api.Assertions.assertEquals("https://github.com/a/b", conDiagrama.links().github());
+        org.junit.jupiter.api.Assertions.assertEquals("REST API", conDiagrama.architectureNodes().get(0).label());
+        org.junit.jupiter.api.Assertions.assertNull(conDiagrama.architectureNodes().get(0).x());
+        org.junit.jupiter.api.Assertions.assertEquals("spa", conDiagrama.architectureEdges().get(0).from());
     }
 }

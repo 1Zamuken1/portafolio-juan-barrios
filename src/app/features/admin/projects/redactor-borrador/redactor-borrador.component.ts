@@ -71,7 +71,8 @@ const NODOS: ReadonlyArray<{ clave: string; titulo: string; icono: string }> = [
   { clave: 'caso', titulo: 'Caso de estudio', icono: 'pi pi-book' },
   { clave: 'desafios', titulo: 'Desafíos', icono: 'pi pi-flag' },
   { clave: 'listas', titulo: 'Listas', icono: 'pi pi-list' },
-  { clave: 'arquitectura', titulo: 'Arquitectura', icono: 'pi pi-sitemap' }
+  { clave: 'arquitectura', titulo: 'Arquitectura', icono: 'pi pi-sitemap' },
+  { clave: 'diagrama', titulo: 'Diagrama', icono: 'pi pi-share-alt' }
 ];
 
 const RUTAS_CASO = SECCIONES_CASO.map((s) => `readmeMarkdown.${s.clave}`);
@@ -88,11 +89,13 @@ const TAMANO_ESPERADO: Record<string, number> = {
   caso: 300 + 300 + 220 + 250 + 260,
   desafios: 3.5 * 200,
   listas: 6 * 70 + 5 * 80 + 7 * 10,
-  arquitectura: 30 + 20 + 30
+  arquitectura: 30 + 20 + 30 + 50,
+  diagrama: 7 * 40
 };
 
 /** Las salidas que vienen despues de los desafios, en el orden del JSON. */
-const TRAS_DESAFIOS = ['features', 'highlights', 'keywords', 'coreArchitecture', 'databaseArchitecture', 'aiArchitecture'];
+const TRAS_DESAFIOS = ['features', 'highlights', 'keywords', 'coreArchitecture', 'databaseArchitecture',
+  'aiArchitecture', 'links', 'architectureNodes', 'architectureEdges'];
 
 const enEspera = (): NodoPipeline[] =>
   NODOS.map((n) => ({ ...n, estado: 'espera' as EstadoNodo, detalle: '' }));
@@ -475,7 +478,7 @@ export class RedactorBorradorComponent implements OnDestroy {
         this.intento = 2;
         this.textoModelo.set('');
         this.nodos.update((ns) => ns.map((n) =>
-          ['parseo', 'validacion', 'nombre', 'descripciones', 'caso', 'desafios', 'listas', 'arquitectura'].includes(n.clave)
+          ['parseo', 'validacion', 'nombre', 'descripciones', 'caso', 'desafios', 'listas', 'arquitectura', 'diagrama'].includes(n.clave)
             ? { ...n, estado: 'espera' as EstadoNodo, detalle: '', progreso: 0, desde: undefined, duracion: undefined }
             : n));
         this.abrir('modelo', `Segundo intento: ${linea.detalle}`);
@@ -489,6 +492,7 @@ export class RedactorBorradorComponent implements OnDestroy {
         this.cerrarSiFalta('desafios');
         this.cerrarSiFalta('listas');
         this.cerrarSiFalta('arquitectura');
+        this.cerrarSiFalta('diagrama');
         this.abrir('parseo');
         break;
 
@@ -586,6 +590,15 @@ export class RedactorBorradorComponent implements OnDestroy {
       arq.every((r) => cerrada(r)),
       arq.filter((r) => cerrada(r)).length + ' de 3 resúmenes',
       (f.coreArchitecture ?? '').length + (f.databaseArchitecture ?? '').length + (f.aiArchitecture ?? '').length);
+
+    // El diagrama es lo ultimo del JSON: no tiene nada detras que lo cierre,
+    // asi que lo cierra el final de la respuesta.
+    const piezas = (f.piezas ?? []).filter((p) => p.label).length;
+    this.salida('diagrama',
+      f.piezas !== undefined,
+      false,
+      piezas === 1 ? '1 pieza' : `${piezas} piezas`,
+      (f.piezas ?? []).reduce((n, p) => n + (p.label?.length ?? 0) + 20, 0));
   }
 
   private contarListas(features?: string[], highlights?: string[], keywords?: string[]): string {
@@ -651,6 +664,12 @@ export class RedactorBorradorComponent implements OnDestroy {
     const arq = [borrador.coreArchitecture, borrador.databaseArchitecture, borrador.aiArchitecture]
       .filter((t): t is string => !!t?.trim());
     this.cerrar('arquitectura', arq.length ? arq.join(' · ') : 'El readme no la nombra');
+
+    const nodos = borrador.architectureNodes?.length ?? 0;
+    const aristas = borrador.architectureEdges?.length ?? 0;
+    this.cerrar('diagrama', nodos
+      ? `${nodos} piezas · ${aristas} conexiones, colocadas`
+      : 'El readme no da piezas');
 
     setTimeout(() => this.botonAceptar()?.nativeElement.querySelector('button')?.focus());
   }

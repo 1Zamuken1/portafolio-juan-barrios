@@ -36,7 +36,7 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayecto
 
 ### Tests
 
-**Frontend**, 160 tests en 21 ficheros (`pnpm run e2e`):
+**Frontend**, 167 tests en 22 ficheros (`pnpm run e2e`):
 
 | Suite | Qué protege |
 |---|---|
@@ -64,7 +64,7 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayecto
 
 **`ng test` no tiene target en `angular.json`**, así que `e2e/` es también donde viven los tests unitarios del frontend: las funciones puras se importan y se prueban sin navegador. Es el patrón a seguir mientras no se monte Karma. Las suites del panel entran poniendo un token en `localStorage` —el guard solo mira que exista— y `pipeline-borrador` simula el NDJSON con `page.route`, así que se prueban sin backend y sin gastar cuota de Groq.
 
-**Backend**, 15 clases de test, 64 tests (`mvn test` en Docker, ver el aviso de abajo):
+**Backend**, 16 clases de test, 74 tests (`mvn test` en Docker, ver el aviso de abajo):
 
 | Test | Qué protege |
 |---|---|

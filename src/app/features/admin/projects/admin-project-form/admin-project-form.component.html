@@ -212,9 +212,9 @@
       <!-- Van a links.github y links.live, que es donde vive el dato;
            githubUrl y liveUrl eran campos heredados y estaban siempre vacios. -->
       <div class="form-row" formGroupName="links">
-        <p-floatlabel variant="in" class="flex-1">
-          <input pInputText id="linkGithub" formControlName="github" />
-          <label for="linkGithub"><i class="pi pi-github" aria-hidden="true"></i> Repositorio</label>
+        <p-floatlabel variant="in" class="flex-1" [class.campo-ia]="loRellenoLaIa('linkGithub')">
+          <input pInputText id="linkGithub" formControlName="github" (input)="marcarComoMio('linkGithub')" />
+          <label for="linkGithub"><i class="pi pi-github" aria-hidden="true"></i> Repositorio@if (loRellenoLaIa('linkGithub')) {<span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>}</label>
         </p-floatlabel>
         <p-floatlabel variant="in" class="flex-1">
           <input pInputText id="linkLive" formControlName="live" />
@@ -257,6 +257,32 @@
           <input pInputText id="aiArchitecture" formControlName="aiArchitecture" (input)="marcarComoMio('aiArchitecture')" />
           <label for="aiArchitecture">IA@if (loRellenoLaIa('aiArchitecture')) {<span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>}</label>
         </p-floatlabel>
+      </div>
+
+      <!-- El diagrama no se edita aqui: son nodos con coordenadas. Se ve el
+           que hay y, si lo propuso la IA, se puede descartar antes de guardar. -->
+      <div class="diagrama-form" [class.campo-ia]="diagramaPropuesto()">
+        <div class="diagrama-form__cabeza">
+          <span class="diagrama-form__titulo">
+            <i class="pi pi-share-alt" aria-hidden="true"></i> Diagrama
+            @if (diagramaPropuesto()) {<span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>}
+          </span>
+          @if (diagramaPropuesto()) {
+            <p-button [text]="true" size="small" icon="pi pi-undo" label="Descartar el propuesto"
+                      (onClick)="descartarDiagrama()" />
+          }
+        </div>
+        @if (diagrama(); as d) {
+          <div class="diagrama-form__lienzo">
+            <app-blueprint-viewer [nodes]="d.nodes" [edges]="d.edges" [layout]="d.layout" version="panel" />
+          </div>
+          @if (diagramaPropuesto()) {
+            <small class="campo-ayuda">Lo propuso la IA a partir del readme: se guarda con la ficha.
+              Si ya había uno, lo sustituye.</small>
+          }
+        } @else {
+          <small class="campo-ayuda">Sin diagrama. El redactor propone uno si el readme describe las piezas del sistema.</small>
+        }
       </div>
     </section>
 
