@@ -72,8 +72,8 @@ test('las burbujas y la ficha están antes de redactar', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('jwt_token', 'prueba-e2e'));
   await page.goto('/admin/dashboard/projects/new');
 
-  await expect(page.locator('.nodo')).toHaveCount(8);
-  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(8);
+  await expect(page.locator('.nodo')).toHaveCount(9);
+  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(9);
   await expect(page.locator('.ventana')).toBeVisible();
   await expect(page.locator('.banner__titulo .hueco')).toBeVisible();
 });
@@ -82,8 +82,8 @@ test('el diagrama enciende todas las burbujas que el backend cuenta', async ({ p
   await simularStream(page, FLUJO_COMPLETO);
   await prepararRedaccion(page);
 
-  await expect(page.locator('.nodo')).toHaveCount(8);
-  await expect(page.locator('.nodo[data-estado="hecho"]')).toHaveCount(8);
+  await expect(page.locator('.nodo')).toHaveCount(9);
+  await expect(page.locator('.nodo[data-estado="hecho"]')).toHaveCount(9);
 });
 
 test('cada paso cuenta lo que dijo el backend al pasar por él', async ({ page }) => {
@@ -211,8 +211,45 @@ test('descartar deja el formulario intacto y la vista como al principio', async 
   await page.getByRole('button', { name: 'Descartar' }).click();
 
   await expect(page.locator('.acciones[data-modo="vacia"]')).toBeVisible();
-  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(8);
+  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(9);
   await expect(page.locator('#name')).toHaveValue('');
+});
+
+test('si el borrador no pasa las cotas, se ve el segundo intento y sale el bueno', async ({ page }) => {
+  // Lo que paso de verdad: el modelo devolvio los desafios vacios y todo el
+  // borrador se tiraba. Ahora el backend lo pide otra vez diciendole por que,
+  // y el panel lo cuenta en vez de mezclar los dos textos.
+  await simularStream(page, [
+    { etapa: 'entrada', detalle: 'Readme de 1200 caracteres' },
+    { etapa: 'modelo', detalle: 'Consultando openai/gpt-oss-120b' },
+    { etapa: 'texto', detalle: '{"name":"Primer intento","challenges":[]}' },
+    { etapa: 'respuesta', detalle: 'respondio' },
+    { etapa: 'parseo', detalle: 'El JSON tiene la forma esperada' },
+    { etapa: 'reintento', detalle: 'Se esperaban entre 2 y 6 challenges y llegaron 0.' },
+    { etapa: 'modelo', detalle: 'Consultando openai/gpt-oss-120b' },
+    { etapa: 'texto', detalle: '{"name":"Tsuki Translator"' },
+    { etapa: 'respuesta', detalle: 'respondio' },
+    { etapa: 'parseo', detalle: 'El JSON tiene la forma esperada' },
+    { etapa: 'validacion', detalle: 'Los 12 campos caben dentro de las cotas' },
+    { etapa: 'fin', borrador: BORRADOR }
+  ]);
+  await prepararRedaccion(page);
+
+  await expect(page.locator('.acciones[data-modo="lista"]')).toBeVisible();
+  await expect(nodo(page, 'Modelo')).toContainText('Segundo intento');
+  await expect(page.locator('.banner__titulo')).toHaveText('Tsuki Translator');
+});
+
+test('la espera del servidor tiene su estacion y no cae en la del readme', async ({ page }) => {
+  // El readme marco 137 segundos: era Render despertando. El primer aviso del
+  // backend cierra las dos a la vez, y el tiempo se lo queda el servidor.
+  await simularStream(page, FLUJO_COMPLETO);
+  await prepararRedaccion(page);
+
+  await expect(nodo(page, 'Servidor')).toHaveAttribute('data-estado', 'hecho');
+  await expect(nodo(page, 'Readme')).toHaveAttribute('data-estado', 'hecho');
+  // Sin tiempo en su estado: leer el readme no tarda nada que medir.
+  await expect(nodo(page, 'Readme').locator('.estado')).toHaveText('Listo');
 });
 
 test('solo una burbuja se lleva el fallo, aunque hubiera dos trabajando', async ({ page }) => {

@@ -98,7 +98,20 @@ public class DraftProjectUseCase {
 
         ProjectDraft borrador = drafter.draft(nombreLimpio, readmeLimpio, aviso);
 
-        validar(borrador);
+        // Un reintento, y solo uno, cuando el borrador no pasa las cotas. El
+        // modelo falla a veces en algo concreto --una lista vacia, una seccion
+        // que se queda corta-- y lo arregla en cuanto se le dice que fue. Sin
+        // esto, un borrador bueno en todo menos en los desafios se tiraba
+        // entero y habia que volver a pulsar. Solo uno porque cada intento es
+        // una llamada de pago: si falla dos veces seguidas, el problema esta en
+        // la entrada y lo tiene que ver una persona.
+        try {
+            validar(borrador);
+        } catch (BorradorInvalidoException primero) {
+            aviso.avisar("reintento", primero.getMessage());
+            borrador = drafter.draft(nombreLimpio, readmeLimpio, aviso, primero.getMessage());
+            validar(borrador);
+        }
         aviso.avisar("validacion", "Los " + camposValidados(borrador)
                 + " campos caben dentro de las cotas del portafolio");
         return borrador;

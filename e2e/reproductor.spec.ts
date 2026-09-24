@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import {
   PASO_MIN,
+  PRISA,
   RETRASO_MAX,
   Reproductor
 } from '../src/app/features/admin/projects/redactor-borrador/reproductor';
@@ -72,13 +73,36 @@ test('entre dos pasos pasa un minimo, para que cada uno se vea', () => {
   expect(aplicadas).toEqual(['entrada', 'modelo']);
 });
 
-test('un error no espera: se ensenia todo lo recibido y el fallo', () => {
-  const { r, aplicadas, ultimo } = montar();
+test('un error respeta el orden, pero lo pendiente se acelera', () => {
+  // La primera version lo ensenaba todo de golpe al llegar un fallo, y los
+  // pasos que si habian ido bien aparecian terminados en tres milisegundos.
+  const { r, avanzar, aplicadas, ultimo } = montar();
   r.recibir({ etapa: 'entrada' });
-  r.recibir({ etapa: 'texto', detalle: TEXTO });
-  r.recibir({ etapa: 'error', detalle: 'se corto' });
-  expect(ultimo()).toBe(TEXTO);
-  expect(aplicadas).toEqual(['entrada', 'error']);
+  r.recibir({ etapa: 'texto', detalle: 'x'.repeat(2000) });
+  r.recibir({ etapa: 'respuesta' });
+  r.recibir({ etapa: 'error', detalle: 'no paso las cotas' });
+
+  avanzar(100);
+  expect(aplicadas).not.toContain('error');
+
+  // Dos mil letras a velocidad de lectura serian mas de veinte segundos; con
+  // un error esperando se terminan en PRISA.
+  avanzar((PRISA + 0.8) * 1000);
+  expect(ultimo()).toHaveLength(2000);
+  expect(aplicadas).toEqual(['entrada', 'respuesta', 'error']);
+});
+
+test('un reintento empieza un tramo nuevo, sin mezclar los textos', () => {
+  const { r, avanzar, aplicadas, visto } = montar();
+  r.recibir({ etapa: 'texto', detalle: '{"name":"Primero"}' });
+  r.recibir({ etapa: 'reintento', detalle: 'llegaron 0 challenges' });
+  r.recibir({ etapa: 'texto', detalle: '{"name":"Segundo"}' });
+  avanzar(5000);
+
+  expect(aplicadas).toEqual(['reintento']);
+  // Lo ultimo que se ve es solo el segundo borrador, no los dos pegados.
+  expect(visto.at(-1)).toBe('{"name":"Segundo"}');
+  expect(visto.some((t) => t.includes('Primero') && t.includes('Segundo'))).toBe(false);
 });
 
 test('con mucho pendiente acelera, y no se queda mas atras del tope', () => {
