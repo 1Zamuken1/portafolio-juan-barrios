@@ -196,3 +196,19 @@ button {
   border-width: 0;
 }
 
+
+/* ---- Movimiento reducido ----
+   Varias animaciones no lo miraban: la entrada de las lineas de la portada,
+   el pulso de la barra de estado, el panel de perfil. En vez de perseguirlas
+   una a una, aqui se cortan todas: duran un instante y no se repiten, y con
+   `forwards` terminan en su estado final, asi que nada se queda invisible. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

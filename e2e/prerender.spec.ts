@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { distDesactualizado } from './dist-fresco';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import projects from '../src/assets/data/projects.json';
@@ -26,6 +27,10 @@ const paginas = [
 
 test.describe('HTML prerenderizado', () => {
   test.skip(!existsSync(DIST), 'no hay build: ejecuta pnpm run build');
+  test.beforeAll(() => {
+    const viejo = distDesactualizado(DIST, join(__dirname, '..'));
+    if (viejo) throw new Error(viejo);
+  });
 
   for (const p of paginas) {
     test(`${p.archivo} se genera con sus metadatos`, () => {

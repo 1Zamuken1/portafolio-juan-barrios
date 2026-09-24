@@ -158,18 +158,11 @@
     </div>
     <div class="md-line md-blank"></div>
     <div class="md-line links-row">
-      <a [routerLink]="['/projects', 1]" class="md-link">
-        <i class="pi pi-chart-line"></i> Gastu Django
-      </a>
-      <a [routerLink]="['/projects', 2]" class="md-link">
-        <i class="pi pi-desktop"></i> SGVA Assistant
-      </a>
-      <a [routerLink]="['/projects', 3]" class="md-link">
-        <i class="pi pi-search"></i> Seona
-      </a>
-      <a [routerLink]="['/projects', 4]" class="md-link">
-        <i class="pi pi-shopping-cart"></i> Salsamentaría
-      </a>
+      @for (p of destacados(); track p.id) {
+        <a [routerLink]="['/projects', p.id]" class="md-link">
+          <i [class]="p.icono"></i> {{ p.name }}
+        </a>
+      }
     </div>
     <div class="md-line md-blank"></div>
 

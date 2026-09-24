@@ -20,13 +20,13 @@
 
 ### Ramas
 
-Todo lo publicado pasa por `master` mediante pull request. Las seis ramas fusionadas que listaba la versión anterior de este documento ya se podaron; hoy quedan tres:
+Todo lo publicado pasa por `master` mediante pull request. El 24 de septiembre se podaron todas las ramas fusionadas y `develop` se adelantó a `master`; quedan dos:
 
 ```
-master   develop   feat/admin-diseno
+master   develop
 ```
 
-`develop` sigue descolgada de `master` y conviene adelantarla con `git merge --ff-only master`.
+Cada cambio va en una rama corta desde `master` (`feat/…`, `chore/…`, `contenido/…`) que se borra al fusionar.
 
 ### Contenido
 
@@ -36,7 +36,7 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayecto
 
 ### Tests
 
-**Frontend**, 167 tests en 22 ficheros (`pnpm run e2e`):
+**Frontend**, 169 tests en 24 ficheros (`pnpm run e2e`):
 
 | Suite | Qué protege |
 |---|---|
@@ -176,7 +176,7 @@ Y dos pérdidas de datos desde el panel de administración, ambas recuperadas co
 ### Inmediato
 
 - ~~Instalar un JDK~~ — resuelto con Docker (ver arriba). Instalar un JDK de verdad seguiría siendo más rápido, pero ya no es un bloqueo.
-- **Adelantar `develop` a `master`** con `git merge --ff-only master`.
+- **Borrar GastuApp (id 39) desde el panel.** Se retiró del JSON a mano; si sigue en la base, el próximo `mirror:publish` lo vuelve a traer.
 - **Comprobar si el `.exe` de SGVA Assistant sigue apuntando a `/releases/latest`** después de la próxima publicación.
 
 ### Deuda conocida
@@ -184,7 +184,8 @@ Y dos pérdidas de datos desde el panel de administración, ambas recuperadas co
 - **Tests unitarios del router del visor.** La lógica creció mucho —esquiva obstáculos, reparte carriles, ordena puertos—. `blueprint-router.spec.ts` ya cubre parte de las reglas desde `e2e/`, sin navegador; queda el resto.
 - **Coreografía scroll ↔ URL en `ProjectsComponent`.** Dos banderas y temporizadores de 1 s coordinando el scroll y el fragmento. Funciona, pero es el punto más frágil del frontend.
 - **`knowledge-pillars` está huérfano.** Solo lo usaba `legacy-ring`, que se borró. Tiene contenido —«lo que aplico hoy» frente a «lo que estoy incorporando»— que no está en ningún otro sitio: o vuelve a `profile.md` o se borra, pero merece una decisión.
-- **`environment.useStaticData` no se consulta en ningún sitio.** Su único lector era `legacy-ring`. Hoy es configuración muerta.
+- **Contenido de las fichas hechas a mano con datos que el readme no sostiene.** Salió al compararlas con las del redactor: Gastu Django habla de un «Circuit Breaker» y de «Llama 3», y da el agente de IA por integrado cuando el readme lo lista como pendiente; Salsamentaría dice «E-commerce B2B», «rating A» y «quality gates en CI». Puede que sean ciertos y el readme se haya quedado corto, pero hoy la ficha y el readme dicen cosas distintas.
+- **`structuredStack` para los proyectos del redactor.** Sin él, la cabecera de la ficha no enseña Backend ni Frontend. El redactor no lo genera a propósito (vocabulario inconsistente, ver apartado 5).
 - **La barra de guardado sólo está en las fichas.** Las listas no la necesitan, pero conviene no olvidar que el patrón existe si se añade otra vista con formulario largo.
 
 ### Rendimiento

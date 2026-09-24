@@ -44,8 +44,14 @@ test('el desplegable se maneja entero con el teclado', async ({ page }) => {
   // A la lista visible, no solo a aria-expanded: PrimeNG lo pone al empezar a
   // abrir, y un Escape a mitad de la animacion se pierde.
   await expect(page.getByRole('listbox')).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(estado).toHaveAttribute('aria-expanded', 'false');
+  // Aun visible, la lista puede seguir en su animacion de entrada, y PrimeNG
+  // descarta el Escape que llega entonces: era lo que hacia intermitente esta
+  // prueba. Se repite hasta que cierre. Pulsar Escape con la lista cerrada no
+  // hace nada, asi que repetirlo no cambia lo que se comprueba.
+  await expect(async () => {
+    await page.keyboard.press('Escape');
+    await expect(estado).toHaveAttribute('aria-expanded', 'false', { timeout: 400 });
+  }).toPass({ timeout: 5000 });
   await expect(estado).toContainText('Active Development');
 });
 
