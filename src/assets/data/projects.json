@@ -1289,67 +1289,189 @@
     "displayOrder": 4
   },
   {
-    "id": 38,
-    "name": "Taller Calidad Software Salsamentaria 2",
-    "slug": "taller 2",
-    "shortDescription": "Sistema web para gestión administrativa y comercial de una salsamentaría con autenticación JWT y panel de métricas.",
-    "fullDescription": "Aplicación web integral que permite la gestión de usuarios, productos, inventario y ventas para una salsamentaría. Está construida con Spring Boot 3.5.6 en el backend, Angular 20+ en el frontend y MySQL 8 como base de datos, incorporando seguridad con Spring Security y JWT, y visualización de datos mediante Chart.js.",
+    "id": 39,
+    "name": "GastuApp",
+    "shortDescription": "Aplicación web para gestionar finanzas personales con Django y Tailwind.",
+    "fullDescription": "GastuApp es una plataforma de gestión financiera personal que permite registrar ingresos y egresos, generar reportes en CSV, Excel y PDF, y visualizar un dashboard mensual. Está construida con Django 5.2, Django Templates, Tailwind CSS y utiliza SQLite en desarrollo y PostgreSQL vía Supabase en producción.",
     "features": [
-      "Registro y login con JWT",
-      "CRUD de productos y categorías",
-      "Carrito de compras con control de cantidades",
-      "Proceso de checkout con validación de stock",
-      "Panel de administración con gráficos de ventas",
-      "Alertas de stock crítico",
-      "Historial de compras para clientes",
-      "Restauración automática de inventario al cancelar ventas"
+      "Autenticación por email y contraseña",
+      "Login con Google OAuth",
+      "CRUD de movimientos y categorías",
+      "Exportación de reportes en CSV, Excel y PDF",
+      "Importación masiva de categorías vía CSV",
+      "Dashboard mensual de resumen financiero",
+      "Integración de agente IA Gemini Flash",
+      "Panel de administración con Tailwind CSS"
     ],
     "year": 2026,
-    "status": "Completed",
-    "teamSize": 1,
-    "coreArchitecture": "Spring Boot + Angular SPA",
-    "databaseArchitecture": "MySQL",
+    "status": "Draft",
+    "coreArchitecture": "Django MVC + services layer",
+    "databaseArchitecture": "SQLite / PostgreSQL (Supabase)",
     "highlights": [
-      "Seguridad basada en JWT y Spring Security",
-      "Control de stock en tiempo real con transacciones",
-      "Panel de métricas interactivo con Chart.js",
-      "Integración de SonarQube y Codacy para calidad de código",
-      "Arquitectura separada de backend y frontend SPA"
+      "Modo dual de base de datos configurable por .env",
+      "Fallback a Groq para Gemini Flash",
+      "Servicios de negocio centralizados en services.py",
+      "Uso exclusivo de FBV para mayor claridad",
+      "Tailwind CSS incluido vía CDN sin Node.js"
     ],
     "keywords": [
-      "Java",
-      "Spring Boot",
-      "Angular",
-      "MySQL",
-      "JWT",
-      "CRUD",
-      "Chart.js"
+      "finanzas",
+      "Django",
+      "Tailwind",
+      "PostgreSQL",
+      "Supabase",
+      "Gemini",
+      "openpyxl"
     ],
     "readmeMarkdown": {
-      "objective": "El proyecto busca proporcionar una solución completa para la administración de una salsamentaría, cubriendo desde la autenticación de usuarios hasta la gestión de inventario y ventas. Además, sirve como caso práctico para aplicar herramientas de análisis estático como SonarQube y Codacy y garantizar la calidad del código.",
-      "architecture": "La aplicación está dividida en dos capas principales: un backend RESTful construido con Spring Boot, Spring Security y Spring Data JPA, y un frontend SPA desarrollado con Angular, TypeScript y Bootstrap. La comunicación se realiza mediante API JSON protegida por JWT. Los datos persisten en MySQL y se acceden mediante JPA/Hibernate. El panel de administración utiliza Chart.js para representar métricas en tiempo real.",
-      "mainFeatures": "Autenticación y autorización con JWT y roles ADMINISTRADOR/CLIENTE; CRUD de productos, categorías y ventas; gestión de carrito y checkout con control de stock; panel de administración con gráficos de ventas y alertas de stock bajo; restauración automática de inventario al cancelar ventas; filtros y búsqueda avanzada en catálogos.",
-      "technologies": "Backend: Java 21, Spring Boot 3.5.6, Spring Security 6.x, Spring Data JPA, JWT (jjwt), Lombok, MySQL Connector, Maven. Frontend: Angular 20+, TypeScript 5.x, Bootstrap 5, Bootstrap Icons, Chart.js 4.5.0, RxJS 7. Base de datos: MySQL 8.0+. Estas tecnologías se eligieron por su madurez, soporte a arquitectura de microservicios y facilidad para implementar seguridad basada en tokens.",
-      "learnings": "Durante el desarrollo se consolidó el uso de Spring Security con JWT para proteger endpoints, se aprendió a sincronizar el stock en tiempo real entre backend y frontend, y se profundizó en la generación de métricas interactivas con Chart.js. Además, la integración de SonarQube y Codacy permitió identificar y corregir problemas de calidad de código, mejorando la mantenibilidad del proyecto."
+      "objective": "El proyecto busca ofrecer a usuarios una herramienta sencilla para controlar sus finanzas personales, registrar movimientos, categorizar gastos y generar reportes exportables. Se implementa como proyecto formativo del SENA, combinando funcionalidades de autenticación, exportación y un agente de IA para asistencia.",
+      "architecture": "La aplicación sigue una arquitectura basada en Django con capas separadas: vistas basadas en funciones (FBV) consumen servicios en `services.py`, que a su vez interactúan con el ORM nativo. El frontend se renderiza con Django Templates y Tailwind CSS vía CDN. La persistencia se gestiona con SQLite en desarrollo o PostgreSQL en Supabase según la variable `USE_SQLITE`. La autenticación incluye email/contraseña y Google OAuth mediante django‑allauth, y el agente de IA se conecta a Gemini Flash con Groq como fallback.",
+      "mainFeatures": "Registro y CRUD de movimientos y categorías, autenticación por email y Google, generación de reportes CSV, Excel y PDF, importación masiva de categorías vía CSV, dashboard mensual de resumen, integración de agente IA para asistencia, panel de administración estilizado con Tailwind.",
+      "technologies": "Django 5.2, Python 3.14, Django ORM, SQLite (desarrollo), PostgreSQL vía Supabase (producción), Tailwind CSS (CDN), Lucide Icons, openpyxl, reportlab, csv (stdlib), django‑allauth, Gemini Flash (Google AI Studio) y Groq como fallback, pytest y pytest‑django para pruebas.",
+      "learnings": "El proyecto demuestra la integración de un backend Django con dos motores de base de datos configurables mediante variables de entorno, la incorporación de autenticación social con django‑allauth y la generación de reportes en múltiples formatos usando bibliotecas específicas. Además, muestra cómo conectar un agente de IA externo y mantener una separación clara entre lógica de negocio y vistas mediante un módulo de servicios."
     },
     "challenges": [
       {
-        "title": "Implementación de seguridad con JWT y Spring Security",
-        "description": "Configurar filtros de autenticación, generación y validación de tokens, y protección de rutas según roles, garantizando que solo usuarios autorizados accedan a los recursos."
+        "title": "Gestión de bases de datos duales",
+        "description": "Implementar conmutación entre SQLite y PostgreSQL en Supabase mediante la variable `USE_SQLITE` sin modificar código."
       },
       {
-        "title": "Gestión de stock en tiempo real y restauración automática",
-        "description": "Sincronizar la disponibilidad de productos durante el proceso de checkout y revertir el inventario al cancelar ventas pendientes, evitando inconsistencias."
+        "title": "Integración de Google OAuth",
+        "description": "Configurar django‑allauth para permitir login con Google, manejando flujos de autorización y tokens."
       },
       {
-        "title": "Visualización de métricas empresariales",
-        "description": "Integrar Chart.js en el panel de administración para mostrar gráficos de ventas y alertas de stock bajo, optimizando la carga de datos y la actualización dinámica."
+        "title": "Exportación de reportes multi‑formato",
+        "description": "Generar archivos CSV, Excel y PDF a partir de los movimientos usando csv, openpyxl y reportlab."
       },
       {
-        "title": "Aplicación de herramientas de calidad de código",
-        "description": "Configurar SonarQube y Codacy para análisis estático, identificar vulnerabilidades y aplicar buenas prácticas de desarrollo en todo el código."
+        "title": "Estilizado del panel admin sin Node.js",
+        "description": "Utilizar Tailwind CSS vía CDN y compilar estilos pre‑generados para evitar dependencias de Node en el entorno de desarrollo."
       }
     ],
-    "displayOrder": 0
+    "displayOrder": 0,
+    "links": {
+      "github": "https://github.com/1Zamuken1/GastuDjango"
+    },
+    "aiArchitecture": "Gemini Flash + Groq",
+    "architectureNodes": [
+      {
+        "id": "client",
+        "label": "Landing/Public",
+        "description": "Página pública y dashboard",
+        "icon": "devicon-html5-plain",
+        "group": "client",
+        "type": "primary",
+        "x": 80,
+        "y": 240,
+        "width": 250,
+        "height": 96
+      },
+      {
+        "id": "api",
+        "label": "Django API",
+        "description": "Vistas FBV y rutas",
+        "icon": "devicon-django-plain",
+        "group": "application",
+        "type": "primary",
+        "x": 460,
+        "y": 240,
+        "width": 250,
+        "height": 96
+      },
+      {
+        "id": "orm",
+        "label": "Django ORM",
+        "description": "Acceso a datos",
+        "icon": "devicon-python-plain",
+        "group": "persistence",
+        "type": "secondary",
+        "x": 840,
+        "y": 80,
+        "width": 250,
+        "height": 96
+      },
+      {
+        "id": "db",
+        "label": "Database",
+        "description": "SQLite o PostgreSQL",
+        "icon": "devicon-postgresql-plain",
+        "group": "database",
+        "type": "secondary",
+        "x": 1220,
+        "y": 240,
+        "width": 250,
+        "height": 96
+      },
+      {
+        "id": "googleauth",
+        "label": "Google OAuth",
+        "description": "Autenticación social",
+        "icon": "devicon-google-plain",
+        "group": "external",
+        "type": "secondary",
+        "x": 840,
+        "y": 240,
+        "width": 250,
+        "height": 96
+      },
+      {
+        "id": "gemini",
+        "label": "Gemini AI",
+        "description": "Agente de IA con fallback",
+        "icon": "devicon-python-plain",
+        "group": "external",
+        "type": "secondary",
+        "x": 840,
+        "y": 400,
+        "width": 250,
+        "height": 96
+      }
+    ],
+    "architectureEdges": [
+      {
+        "from": "client",
+        "to": "api",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
+      },
+      {
+        "from": "api",
+        "to": "orm",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
+      },
+      {
+        "from": "orm",
+        "to": "db",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
+      },
+      {
+        "from": "api",
+        "to": "googleauth",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
+      },
+      {
+        "from": "api",
+        "to": "gemini",
+        "fromPort": "right",
+        "toPort": "left",
+        "routeType": "orthogonal"
+      }
+    ],
+    "architectureLayout": {
+      "orientation": "freeform",
+      "canvas": {
+        "width": 1560,
+        "height": 600,
+        "gridSize": 40,
+        "showGrid": true
+      }
+    }
   }
 ]
