@@ -18,6 +18,9 @@ export interface FichaVista {
   databaseArchitecture?: string;
   aiArchitecture?: string;
   github?: string;
+  /** El stack por capas y las caracteristicas por grupos. */
+  stack?: Record<string, string[]>;
+  grupos?: Record<string, string[]>;
   /** Las piezas del diagrama segun van llegando: solo el nombre y la capa. */
   piezas?: { label?: string; group?: string }[];
   /** El diagrama entero, cuando ya esta colocado. Mientras se escribe no lo
@@ -98,6 +101,16 @@ export function aFichaVista(valor: unknown): FichaVista {
     if (g !== undefined) ficha.github = g;
   }
 
+  const porGrupos = (v: unknown): Record<string, string[]> | undefined => {
+    if (!esObjeto(v)) return undefined;
+    return Object.fromEntries(Object.entries(v).map(([k, l]) =>
+      [k, Array.isArray(l) ? l.filter((x): x is string => typeof x === 'string') : []]));
+  };
+  const stack = porGrupos(valor['structuredStack']);
+  if (stack) ficha.stack = stack;
+  const grupos = porGrupos(valor['structuredFeatures']);
+  if (grupos) ficha.grupos = grupos;
+
   const nodos = valor['architectureNodes'];
   if (Array.isArray(nodos)) {
     ficha.piezas = nodos.filter(esObjeto).map((n) => ({ label: cadena(n['label']), group: cadena(n['group']) }));
@@ -129,6 +142,8 @@ export function fichaDeBorrador(b: ProjectDraft): FichaVista {
     databaseArchitecture: b.databaseArchitecture ?? '',
     aiArchitecture: b.aiArchitecture ?? '',
     github: b.links?.github ?? '',
+    stack: { ...(b.structuredStack ?? {}) },
+    grupos: { ...(b.structuredFeatures ?? {}) },
     piezas: (b.architectureNodes ?? []).map((n) => ({ label: n.label, group: n.group })),
     diagrama: b.architectureNodes?.length
       ? { nodes: b.architectureNodes, edges: b.architectureEdges ?? [], layout: b.architectureLayout }

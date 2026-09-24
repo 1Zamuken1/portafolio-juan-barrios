@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, AfterViewInit, inject, signal, computed, 
 import { Subscription } from 'rxjs';
 import { CoordinadorScroll } from './coordinador-scroll';
 import { metadatosFicha } from './metadatos-ficha';
+import { tituloCapa } from '../../shared/models/vocabulario';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../core/services/data.service';
@@ -268,6 +269,8 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
       .replace(/^\w/, c => c.toUpperCase())
       .trim();
   }
+
+  protected readonly tituloCapa = tituloCapa;
 
   getKeys(obj: Record<string, any>): string[] {
     return Object.keys(obj);

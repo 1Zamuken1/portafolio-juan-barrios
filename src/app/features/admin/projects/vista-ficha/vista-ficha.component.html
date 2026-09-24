@@ -116,6 +116,36 @@
       <!-- El diagrama. Mientras se escribe llegan las piezas sin sitio --las
            coordenadas las pone el backend al final--, asi que se ven como
            etiquetas por capa. Con el borrador terminado, el diagrama de verdad. -->
+      <!-- El stack por capas y las caracteristicas por grupos, como en la
+           ficha publica: los rotulos de las capas salen del vocabulario. -->
+      <section class="bloque" data-grupo="stack" [attr.data-estado]="estadoGrupo('stack')">
+        <h2 class="md-h2">Tecnologías por capa</h2>
+        @for (g of grupos('stack'); track g.clave) {
+          <h3 class="md-h3 capa">{{ tituloCapa(g.clave) }}</h3>
+          <div class="etiquetas">
+            @for (t of g.items; track $index) { <span class="etiqueta">{{ t }}</span> }
+          </div>
+        } @empty {
+          @if (sinHuecos()) {
+            <p class="no-dice">El readme no lo da.</p>
+          } @else {
+            <div class="etiquetas">
+              @for (n of LISTA_HUECO; track n) { <span class="etiqueta etiqueta--hueco" aria-hidden="true"></span> }
+            </div>
+          }
+        }
+
+        @if (grupos('grupos').length) {
+          <h2 class="md-h2">Características por grupo</h2>
+          @for (g of grupos('grupos'); track g.clave) {
+            <h3 class="md-h3 capa">{{ g.clave }}</h3>
+            <ul class="lista">
+              @for (t of g.items; track $index) { <li>{{ t }}</li> }
+            </ul>
+          }
+        }
+      </section>
+
       <section class="bloque" data-grupo="diagrama" [attr.data-estado]="estadoGrupo('diagrama')">
         <h2 class="md-h2">Diagrama de arquitectura</h2>
         @if (ficha().diagrama; as d) {

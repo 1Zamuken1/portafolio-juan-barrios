@@ -93,7 +93,7 @@
           <h2 class="md-h2">Tecnologías Utilizadas</h2>
           @if (project()!.structuredStack) {
             @for (key of getKeys(project()!.structuredStack!); track key) {
-              <h3 class="md-h3">{{ key }}</h3>
+              <h3 class="md-h3">{{ tituloCapa(key) }}</h3>
               <div class="tech-badges">
                 @for (item of project()!.structuredStack![key]; track item) {
                   <span class="tech-badge" [style.background]="getTechColor(item)" [style.borderColor]="getTechColor(item)">

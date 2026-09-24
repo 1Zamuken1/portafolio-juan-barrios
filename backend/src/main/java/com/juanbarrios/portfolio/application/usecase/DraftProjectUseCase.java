@@ -7,6 +7,7 @@ import com.juanbarrios.portfolio.domain.model.ProjectDraft;
 import com.juanbarrios.portfolio.domain.model.ProjectLinks;
 import com.juanbarrios.portfolio.domain.model.ReadmeMarkdown;
 import com.juanbarrios.portfolio.domain.service.MaquetadorDeDiagrama;
+import com.juanbarrios.portfolio.domain.service.Vocabulario;
 
 import java.util.HashSet;
 import java.util.List;
@@ -73,6 +74,15 @@ public class DraftProjectUseCase {
     private static final int ARISTAS_MAX = 20;
     private static final int ETIQUETA_MAX = 32;
     private static final int DESCRIPCION_NODO_MAX = 60;
+
+    // El stack y las caracteristicas por grupos, medidos sobre los cuatro
+    // proyectos: hasta 6 capas de hasta 7 tecnologias, y hasta 6 grupos de
+    // hasta 6 caracteristicas.
+    private static final int GRUPOS_MAX = 9;
+    private static final int POR_GRUPO_MAX = 10;
+    private static final int TECNOLOGIA_MAX = 40;
+    private static final int NOMBRE_GRUPO_MAX = 32;
+    private static final int CARACTERISTICA_MAX = 90;
 
     /** La URL de un repositorio de GitHub: owner y repo, y nada detras que importe. */
     private static final Pattern REPO = Pattern.compile(
@@ -141,11 +151,11 @@ public class DraftProjectUseCase {
         // la entrada y lo tiene que ver una persona.
         ProjectDraft borrador;
         try {
-            borrador = drafter.draft(nombreLimpio, readmeLimpio, aviso);
+            borrador = normalizar(drafter.draft(nombreLimpio, readmeLimpio, aviso));
             validar(borrador);
         } catch (BorradorInvalidoException | RespuestaIlegibleException primero) {
             aviso.avisar("reintento", primero.getMessage());
-            borrador = drafter.draft(nombreLimpio, readmeLimpio, aviso, primero.getMessage());
+            borrador = normalizar(drafter.draft(nombreLimpio, readmeLimpio, aviso, primero.getMessage()));
             validar(borrador);
         }
         borrador = conEnlaceDelReadme(borrador, readmeLimpio);
@@ -168,6 +178,19 @@ public class DraftProjectUseCase {
         // readme; cada challenge son dos mas, y cada nodo del diagrama uno.
         int nodos = b.architectureNodes() == null ? 0 : b.architectureNodes().size();
         return 8 + b.challenges().size() * 2 + nodos;
+    }
+
+    /**
+     * Lleva el stack y los grupos de caracteristicas a su vocabulario. Un
+     * "Architecture" donde iba "Arquitectura" no merece una llamada mas: se
+     * corrige aqui. Lo que no es ninguna capa del stack no se puede corregir,
+     * y eso lo rechaza validar().
+     */
+    private ProjectDraft normalizar(ProjectDraft b) {
+        if (b == null || (b.structuredStack() == null && b.structuredFeatures() == null)) return b;
+        return b.conEstructura(
+                Vocabulario.normalizarStack(b.structuredStack()),
+                Vocabulario.normalizarCaracteristicas(b.structuredFeatures()));
     }
 
     /**
@@ -241,6 +264,8 @@ public class DraftProjectUseCase {
         exigirCorto(b.aiArchitecture(), "aiArchitecture");
 
         exigirDiagrama(b.architectureNodes(), b.architectureEdges());
+        exigirGrupos(b.structuredStack(), "structuredStack", TECNOLOGIA_MAX, true);
+        exigirGrupos(b.structuredFeatures(), "structuredFeatures", CARACTERISTICA_MAX, false);
 
         for (int i = 0; i < b.challenges().size(); i++) {
             Challenge c = b.challenges().get(i);
@@ -320,6 +345,45 @@ public class DraftProjectUseCase {
             }
             if (e.from().equals(e.to())) {
                 throw new BorradorInvalidoException("Una arista del diagrama une el nodo \"" + e.from() + "\" consigo mismo.");
+            }
+        }
+    }
+
+    /**
+     * Un campo por grupos opcional. En el stack, cada clave tiene que ser una
+     * capa del vocabulario (ya normalizada: aqui solo llega lo que no era
+     * ninguna); en las caracteristicas, el nombre del grupo es libre.
+     */
+    private void exigirGrupos(java.util.Map<String, List<String>> grupos, String campo,
+                              int maximoPorEntrada, boolean soloCapas) {
+        if (grupos == null || grupos.isEmpty()) return;
+        if (grupos.size() > GRUPOS_MAX) {
+            throw new BorradorInvalidoException(
+                    campo + " trae " + grupos.size() + " grupos, maximo " + GRUPOS_MAX + ".");
+        }
+        for (var e : grupos.entrySet()) {
+            String clave = e.getKey();
+            if (soloCapas && !Vocabulario.CAPAS.containsKey(clave)) {
+                throw new BorradorInvalidoException(
+                        "structuredStack usa la capa \"" + clave + "\", que no existe: tiene que ser una de "
+                                + String.join(", ", Vocabulario.CAPAS.keySet()) + ".");
+            }
+            if (!soloCapas && (clave.isBlank() || clave.length() > NOMBRE_GRUPO_MAX)) {
+                throw new BorradorInvalidoException(
+                        "El grupo \"" + clave + "\" de " + campo + " tiene que tener entre 1 y "
+                                + NOMBRE_GRUPO_MAX + " caracteres.");
+            }
+            if (e.getValue().size() > POR_GRUPO_MAX) {
+                throw new BorradorInvalidoException(
+                        "El grupo \"" + clave + "\" de " + campo + " trae " + e.getValue().size()
+                                + " entradas, maximo " + POR_GRUPO_MAX + ".");
+            }
+            for (String x : e.getValue()) {
+                if (x.length() > maximoPorEntrada) {
+                    throw new BorradorInvalidoException(
+                            "Una entrada del grupo \"" + clave + "\" de " + campo + " es demasiado larga ("
+                                    + x.length() + " caracteres, maximo " + maximoPorEntrada + ").");
+                }
             }
         }
     }

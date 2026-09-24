@@ -1,0 +1,25 @@
+{
+  "stack": [
+    { "clave": "backend", "titulo": "Backend", "sinonimos": ["server", "servidor"] },
+    { "clave": "frontend", "titulo": "Frontend", "sinonimos": ["client", "cliente", "ui"] },
+    { "clave": "desktop", "titulo": "Escritorio", "sinonimos": ["platform", "plataforma", "escritorio"] },
+    { "clave": "database", "titulo": "Datos", "sinonimos": ["persistence", "persistencia", "datos", "db", "storage"] },
+    { "clave": "authentication", "titulo": "Autenticación", "sinonimos": ["auth", "autenticacion", "autenticación", "security", "seguridad"] },
+    { "clave": "ai", "titulo": "IA", "sinonimos": ["ia", "artificial intelligence", "inteligencia artificial"] },
+    { "clave": "automation", "titulo": "Automatización", "sinonimos": ["automatizacion", "automatización", "scraping"] },
+    { "clave": "export", "titulo": "Exportación", "sinonimos": ["exportacion", "exportación", "reports", "reportes"] },
+    { "clave": "quality", "titulo": "Calidad", "sinonimos": ["audit", "auditoria", "auditoría", "calidad", "testing", "tests"] }
+  ],
+  "caracteristicas": [
+    { "titulo": "Arquitectura", "sinonimos": ["architecture"] },
+    { "titulo": "Seguridad", "sinonimos": ["security", "autenticación", "autenticacion", "authentication"] },
+    { "titulo": "IA", "sinonimos": ["ai", "artificial intelligence", "inteligencia artificial"] },
+    { "titulo": "Automatización", "sinonimos": ["automation", "automatizacion"] },
+    { "titulo": "Datos", "sinonimos": ["persistence", "persistencia", "data"] },
+    { "titulo": "Exportación", "sinonimos": ["export", "exportacion"] },
+    { "titulo": "Reportes", "sinonimos": ["reporting", "reports", "informes"] },
+    { "titulo": "Rendimiento", "sinonimos": ["performance"] },
+    { "titulo": "Interfaz", "sinonimos": ["user interface", "ui", "interfaz de usuario"] }
+  ],
+  "metricasRepetidas": ["estado", "status", "equipo", "team"]
+}

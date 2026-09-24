@@ -72,8 +72,8 @@ test('las burbujas y la ficha están antes de redactar', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('jwt_token', 'prueba-e2e'));
   await page.goto('/admin/dashboard/projects/new');
 
-  await expect(page.locator('.nodo')).toHaveCount(12);
-  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(12);
+  await expect(page.locator('.nodo')).toHaveCount(13);
+  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(13);
   await expect(page.locator('.ventana')).toBeVisible();
   await expect(page.locator('.banner__titulo .hueco')).toBeVisible();
 });
@@ -82,8 +82,8 @@ test('el diagrama enciende todas las burbujas que el backend cuenta', async ({ p
   await simularStream(page, FLUJO_COMPLETO);
   await prepararRedaccion(page);
 
-  await expect(page.locator('.nodo')).toHaveCount(12);
-  await expect(page.locator('.nodo[data-estado="hecho"]')).toHaveCount(12);
+  await expect(page.locator('.nodo')).toHaveCount(13);
+  await expect(page.locator('.nodo[data-estado="hecho"]')).toHaveCount(13);
 });
 
 test('cada paso cuenta lo que dijo el backend al pasar por él', async ({ page }) => {
@@ -211,7 +211,7 @@ test('descartar deja el formulario intacto y la vista como al principio', async 
   await page.getByRole('button', { name: 'Descartar' }).click();
 
   await expect(page.locator('.acciones[data-modo="vacia"]')).toBeVisible();
-  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(12);
+  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(13);
   await expect(page.locator('#name')).toHaveValue('');
 });
 
@@ -370,4 +370,26 @@ test('mientras se escribe, las piezas del diagrama llegan como etiquetas', async
   ]);
   await prepararRedaccion(page);
   await expect(page.locator('app-vista-ficha .etiqueta--pieza')).toHaveText(['PyQt UI', 'Dominio']);
+});
+
+test('el stack y los grupos propuestos se ven, entran en la ficha y se pueden descartar', async ({ page }) => {
+  const conStack = {
+    ...BORRADOR,
+    structuredStack: { backend: ['Python'], desktop: ['PyQt'] },
+    structuredFeatures: { Interfaz: ['Arrastrar y soltar'], Traducción: ['Por lotes'] }
+  };
+  await simularStream(page, [...FLUJO_COMPLETO.slice(0, -1), { etapa: 'fin', borrador: conStack }]);
+  await prepararRedaccion(page);
+
+  await expect(nodo(page, 'Stack')).toHaveAttribute('data-estado', 'hecho');
+  // El rotulo sale del vocabulario: "desktop" se ensenia como Escritorio.
+  await expect(page.locator('app-vista-ficha [data-grupo="stack"]')).toContainText('Escritorio');
+
+  await page.getByRole('button', { name: 'Aceptar y completar la ficha' }).click();
+  const bloque = page.locator('.estructura-form');
+  await expect(bloque).toContainText('Escritorio');
+  await expect(bloque).toContainText('Traducción');
+
+  await bloque.getByRole('button', { name: 'Descartar el propuesto' }).click();
+  await expect(page.locator('.estructura-form')).toHaveCount(0);
 });

@@ -286,6 +286,16 @@
   overflow-wrap: anywhere;
 }
 
+/* ---- Stack ---- */
+.md-h3.capa {
+  margin: 0.8rem 0 0.4rem;
+  font-size: 0.72rem;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--md-text-muted);
+}
+
 /* ---- Diagrama ---- */
 .diagrama {
   height: 320px;

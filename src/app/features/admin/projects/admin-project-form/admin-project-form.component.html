@@ -206,6 +206,28 @@
           <label for="keywordsText">Palabras clave@if (loRellenoLaIa('keywordsText')) {<span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>}</label>
         </p-floatlabel>
       </div>
+
+      <!-- El stack por capas y las caracteristicas por grupos: los propone la
+           IA y aqui solo se ven; a mano se editan en el JSON. -->
+      @if (estructura(); as e) {
+        <div class="diagrama-form campo-ia estructura-form">
+          <div class="diagrama-form__cabeza">
+            <span class="diagrama-form__titulo">
+              <i class="pi pi-box" aria-hidden="true"></i> Stack y grupos
+              <span class="marca-ia"><i class="pi pi-sparkles" aria-hidden="true"></i> IA</span>
+            </span>
+            <p-button [text]="true" size="small" icon="pi pi-undo" label="Descartar el propuesto"
+                      (onClick)="descartarEstructura()" />
+          </div>
+          @for (g of entradas(e.stack); track g.clave) {
+            <p class="estructura-form__fila"><strong>{{ tituloCapa(g.clave) }}</strong> {{ g.items.join(' · ') }}</p>
+          }
+          @for (g of entradas(e.grupos); track g.clave) {
+            <p class="estructura-form__fila"><strong>{{ g.clave }}</strong> {{ g.items.join(' · ') }}</p>
+          }
+          <small class="campo-ayuda">Se guarda con la ficha y sustituye el que hubiera.</small>
+        </div>
+      }
     </section>
 
     <section class="form-seccion seccion" id="seccion-enlaces">

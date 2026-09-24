@@ -104,7 +104,7 @@
       ]
     },
     "structuredFeatures": {
-      "Autenticación": [
+      "Seguridad": [
         "Login Email",
         "Google OAuth"
       ],
@@ -115,7 +115,7 @@
         "Presupuestos",
         "Dashboard"
       ],
-      "Reportes": [
+      "Exportación": [
         "Excel",
         "PDF",
         "CSV"
@@ -135,12 +135,10 @@
     "rawMetrics": {
       "Apps Django": 10,
       "Módulos principales": 7,
-      "Motores IA": 2,
+      "Motores de IA": 2,
       "Bases de datos": 2,
       "Formatos de exportación": 3,
-      "Métodos de autenticación": 2,
-      "Equipo": 4,
-      "Estado": "Producción"
+      "Métodos de autenticación": 2
     },
     "architectureLayout": {
       "orientation": "freeform",
@@ -483,16 +481,16 @@
         "Vanilla JavaScript",
         "Glassmorphism"
       ],
-      "automation": [
-        "Playwright",
-        "Chromium"
+      "database": [
+        "JSON"
       ],
       "ai": [
         "Groq SDK",
         "Llama 3"
       ],
-      "persistence": [
-        "JSON"
+      "automation": [
+        "Playwright",
+        "Chromium"
       ],
       "export": [
         "ExcelJS",
@@ -500,35 +498,35 @@
       ]
     },
     "structuredFeatures": {
-      "Automation": [
+      "Automatización": [
         "Web scraping",
         "Login automation",
         "Modal handling",
         "Headless browser"
       ],
-      "Artificial Intelligence": [
+      "IA": [
         "Groq SDK",
         "Llama 3",
         "Prompt engineering",
         "Entity extraction"
       ],
-      "Persistence": [
+      "Datos": [
         "JSON cache",
         "Local storage",
         "Cache invalidation"
       ],
-      "Export": [
+      "Exportación": [
         "Excel",
         "ExcelJS",
         "Markdown",
         "CSV-ready data"
       ],
-      "Performance": [
+      "Rendimiento": [
         "Low Performance mode",
         "No animations",
         "Memory-efficient scraping"
       ],
-      "User Interface": [
+      "Interfaz": [
         "Electron renderer",
         "Glassmorphism UI",
         "Vanilla JS",
@@ -536,13 +534,12 @@
       ]
     },
     "rawMetrics": {
-      "Automation Engine": "Playwright",
-      "AI Model": "Llama 3",
-      "Desktop Platform": "Electron",
-      "Export Formats": 2,
-      "Persistence": "JSON Cache",
-      "Optimization Mode": "Low Performance",
-      "Status": "Active Development"
+      "Motor de automatización": "Playwright",
+      "Modelo de IA": "Llama 3",
+      "Plataforma": "Electron",
+      "Formatos de exportación": 2,
+      "Persistencia": "JSON Cache",
+      "Modo de optimización": "Low Performance"
     },
     "architectureLayout": {
       "orientation": "freeform",
@@ -793,16 +790,16 @@
         "Radix UI",
         "Tailwind CSS"
       ],
+      "desktop": [
+        "Electron"
+      ],
+      "database": [
+        "JSON"
+      ],
       "automation": [
         "Playwright",
         "Chromium",
         "Cheerio"
-      ],
-      "platform": [
-        "Electron"
-      ],
-      "persistence": [
-        "JSON"
       ],
       "export": [
         "JSON",
@@ -810,7 +807,7 @@
       ]
     },
     "structuredFeatures": {
-      "Analysis": [
+      "Análisis": [
         "Framework detection",
         "SEO audit (Meta)",
         "SEO audit (Technical)",
@@ -818,23 +815,23 @@
         "SEO audit (CSS)",
         "SEO audit (Performance)"
       ],
-      "Rendering": [
+      "Renderizado": [
         "Headless browser",
         "SPA rendering",
         "Static parse",
         "Parallel engine"
       ],
-      "Export": [
+      "Exportación": [
         "JSON",
         "Markdown",
         "IA-optimized reports"
       ],
-      "Performance": [
+      "Rendimiento": [
         "Parallel audits",
         "Cheerio static parse",
         "Playwright selective render"
       ],
-      "User Interface": [
+      "Interfaz": [
         "React 18",
         "Zustand state",
         "Recharts",
@@ -843,11 +840,10 @@
       ]
     },
     "rawMetrics": {
-      "Frameworks Detectados": 4,
-      "Motores de Auditoría": 5,
-      "Modos de Renderizado": 2,
-      "Formatos de Exportación": 2,
-      "Estado": "Publicado"
+      "Frameworks detectados": 4,
+      "Motores de auditoría": 5,
+      "Modos de renderizado": 2,
+      "Formatos de exportación": 2
     },
     "architectureLayout": {
       "orientation": "freeform",
@@ -1101,7 +1097,8 @@
         "Spring Boot",
         "Spring Security",
         "Spring Data JPA",
-        "JWT"
+        "JWT",
+        "Hibernate"
       ],
       "frontend": [
         "Angular 20",
@@ -1109,41 +1106,40 @@
         "Chart.js"
       ],
       "database": [
-        "MySQL",
-        "Hibernate"
+        "MySQL"
       ],
       "authentication": [
         "JWT",
         "Spring Security"
       ],
-      "audit": [
+      "quality": [
         "SonarQube",
         "Codacy"
       ]
     },
     "structuredFeatures": {
-      "Security": [
+      "Seguridad": [
         "JWT authentication",
         "Spring Security",
         "Token validation",
         "Role-based access"
       ],
-      "Catalog": [
+      "Catálogo": [
         "Categorías CRUD",
         "Productos CRUD",
         "Órdenes CRUD"
       ],
-      "Inventory": [
+      "Inventario": [
         "Reactive stock",
         "Transactional rollback",
         "Stock-on-hand control"
       ],
-      "Reporting": [
+      "Reportes": [
         "Sales dashboard",
         "Chart.js charts",
         "Export-ready data"
       ],
-      "Architecture": [
+      "Arquitectura": [
         "Spring Boot REST API",
         "Angular 20 SPA",
         "MySQL persistence",
@@ -1153,8 +1149,7 @@
     "rawMetrics": {
       "Endpoints REST": 12,
       "Roles de usuario": 2,
-      "Rating SonarQube": "A",
-      "Estado": "Completado"
+      "Calificación en SonarQube": "A"
     },
     "architectureLayout": {
       "orientation": "freeform",
