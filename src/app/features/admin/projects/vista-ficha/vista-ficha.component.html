@@ -4,6 +4,8 @@
   @let t = texto(ruta);
   @if (t || abierta() === ruta) {
     <span class="texto" [attr.data-ruta]="ruta">{{ t }}@if (abierta() === ruta) {<span class="cursor" aria-hidden="true"></span>}</span>
+  } @else if (sinHuecos()) {
+    <span class="no-dice" [attr.data-ruta]="ruta">—</span>
   } @else {
     <span class="hueco" [attr.data-ruta]="ruta" aria-hidden="true">
       @for (ancho of lineas; track $index) {
@@ -46,6 +48,17 @@
       <p class="banner__frase" data-grupo="descripciones">
         <ng-container *ngTemplateOutlet="campo; context: { ruta: 'shortDescription', lineas: HUECO_FRASE }" />
       </p>
+
+      <!-- Los resumenes de arquitectura, como los datos de la cabecera de la
+           ficha publica. Vacios si el readme no los nombra. -->
+      <dl class="banner__arquitectura bloque" data-grupo="arquitectura" [attr.data-estado]="estadoGrupo('arquitectura')">
+        @for (a of ARQUITECTURA; track a.clave) {
+          <div>
+            <dt>{{ a.titulo }}</dt>
+            <dd><ng-container *ngTemplateOutlet="campo; context: { ruta: a.clave, lineas: HUECO_LISTA }" /></dd>
+          </div>
+        }
+      </dl>
     </header>
 
     <div class="documento">
@@ -70,6 +83,32 @@
         }
       </section>
 
+      <!-- Las listas, en el orden de la ficha publica: lo que hace y lo que
+           la hace destacar. Las palabras clave van al final, como etiquetas. -->
+      <section class="bloque" data-grupo="listas" [attr.data-estado]="estadoGrupo('listas')">
+        <ng-template #listaFicha let-clave>
+          <ul class="lista">
+            @for (x of lista(clave); track $index; let i = $index) {
+              <li><ng-container *ngTemplateOutlet="campo; context: { ruta: clave + '.' + i, lineas: HUECO_LISTA }" /></li>
+            } @empty {
+              @if (sinHuecos()) {
+                <li class="no-dice">El readme no lo dice.</li>
+              } @else {
+                @for (n of LISTA_HUECO; track n) {
+                  <li><span class="hueco" aria-hidden="true"><span class="hueco__linea" style="width: 68%"></span></span></li>
+                }
+              }
+            }
+          </ul>
+        </ng-template>
+
+        <h2 class="md-h2">Características clave</h2>
+        <ng-container *ngTemplateOutlet="listaFicha; context: { $implicit: 'features' }" />
+
+        <h2 class="md-h2">Puntos destacados</h2>
+        <ng-container *ngTemplateOutlet="listaFicha; context: { $implicit: 'highlights' }" />
+      </section>
+
       <section class="bloque" data-grupo="desafios" [attr.data-estado]="estadoGrupo('desafios')">
         <h2 class="md-h2">Desafíos técnicos</h2>
 
@@ -88,9 +127,26 @@
         }
       </section>
 
+      <section class="bloque" [attr.data-estado]="estadoGrupo('listas')">
+        <h2 class="md-h2">Palabras clave</h2>
+        <div class="etiquetas">
+          @for (k of lista('keywords'); track $index; let i = $index) {
+            <span class="etiqueta"><ng-container *ngTemplateOutlet="campo; context: { ruta: 'keywords.' + i, lineas: [60] }" /></span>
+          } @empty {
+            @if (sinHuecos()) {
+              <span class="no-dice">El readme no lo dice.</span>
+            } @else {
+              @for (n of LISTA_HUECO; track n) {
+                <span class="etiqueta etiqueta--hueco" aria-hidden="true"></span>
+              }
+            }
+          }
+        </div>
+      </section>
+
       <p class="pie">
-        El diagrama, el stack y las métricas no salen del readme: se añaden después
-        en <code>projects.json</code>.
+        El diagrama, el stack estructurado y las métricas no salen del readme: se
+        añaden después en <code>projects.json</code>.
       </p>
     </div>
   </div>

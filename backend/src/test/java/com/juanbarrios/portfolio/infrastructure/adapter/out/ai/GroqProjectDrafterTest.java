@@ -158,4 +158,29 @@ class GroqProjectDrafterTest {
     void unaRespuestaSinCuerpoLoDice() {
         assertTrue(GroqProjectDrafter.pista(502, "").contains("sin cuerpo"));
     }
+
+    @Test
+    @DisplayName("el borrador se lee con las listas y la arquitectura, y tambien sin ellas")
+    void elBorradorSeLeeConYSinLasListas() throws Exception {
+        // El record tiene dos constructores (el completo y uno solo con la
+        // prosa). Jackson tiene que seguir usando el completo: si no, toda
+        // redaccion fallaria al parsear, y ninguna otra prueba lo leeria.
+        com.fasterxml.jackson.databind.ObjectMapper json = new com.fasterxml.jackson.databind.ObjectMapper();
+        String prosa = "\"name\":\"Gastu\",\"shortDescription\":\"a\",\"fullDescription\":\"b\","
+                + "\"readmeMarkdown\":{\"objective\":\"o\",\"architecture\":\"r\",\"mainFeatures\":\"m\","
+                + "\"technologies\":\"t\",\"learnings\":\"l\"},\"challenges\":[{\"title\":\"x\",\"description\":\"y\"}]";
+
+        com.juanbarrios.portfolio.domain.model.ProjectDraft completo = json.readValue(
+                "{" + prosa + ",\"features\":[\"Exportacion a Excel\"],\"highlights\":[],\"keywords\":[\"IA\"],"
+                        + "\"coreArchitecture\":\"Django Apps\",\"databaseArchitecture\":\"\",\"aiArchitecture\":\"Groq\"}",
+                com.juanbarrios.portfolio.domain.model.ProjectDraft.class);
+        org.junit.jupiter.api.Assertions.assertEquals(java.util.List.of("Exportacion a Excel"), completo.features());
+        org.junit.jupiter.api.Assertions.assertEquals("Django Apps", completo.coreArchitecture());
+        org.junit.jupiter.api.Assertions.assertEquals("Groq", completo.aiArchitecture());
+
+        com.juanbarrios.portfolio.domain.model.ProjectDraft soloProsa = json.readValue(
+                "{" + prosa + "}", com.juanbarrios.portfolio.domain.model.ProjectDraft.class);
+        org.junit.jupiter.api.Assertions.assertEquals("Gastu", soloProsa.name());
+        org.junit.jupiter.api.Assertions.assertNull(soloProsa.features());
+    }
 }

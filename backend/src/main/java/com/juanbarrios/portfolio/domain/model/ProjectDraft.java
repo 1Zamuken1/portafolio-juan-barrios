@@ -11,7 +11,13 @@ import java.util.List;
  * sigue el camino normal de guardado. Si esto fuera un Project seria demasiado
  * facil enviarlo directo al repositorio.
  *
- * Solo lleva prosa. Los campos con vocabulario propio (techStack y sus iconos
+ * <p>Lleva tambien las listas (funcionalidades, destacados, palabras clave) y
+ * los tres resumenes de arquitectura. Son opcionales a proposito: un readme
+ * que no nombra base de datos ni IA tiene que devolverlos vacios, no
+ * inventados. Vacio quiere decir "el readme no lo dice", y el formulario deja
+ * entonces lo que hubiera.
+ *
+ * <p>Lo que sigue fuera son los campos con vocabulario propio (techStack y sus iconos
  * devicon, structuredStack, structuredFeatures, rawMetrics) quedan fuera a
  * proposito: sus claves ya son inconsistentes entre proyectos --conviven
  * "Arquitectura" y "Architecture", "IA" y "Artificial Intelligence", y tres
@@ -32,5 +38,19 @@ public record ProjectDraft(
         String shortDescription,
         String fullDescription,
         ReadmeMarkdown readmeMarkdown,
-        List<Challenge> challenges
-) {}
+        List<Challenge> challenges,
+        List<String> features,
+        List<String> highlights,
+        List<String> keywords,
+        String coreArchitecture,
+        String databaseArchitecture,
+        String aiArchitecture
+) {
+
+    /** Un borrador solo con la prosa: listas y arquitectura sin decir. */
+    public ProjectDraft(String name, String shortDescription, String fullDescription,
+                        ReadmeMarkdown readmeMarkdown, List<Challenge> challenges) {
+        this(name, shortDescription, fullDescription, readmeMarkdown, challenges,
+                null, null, null, null, null, null);
+    }
+}

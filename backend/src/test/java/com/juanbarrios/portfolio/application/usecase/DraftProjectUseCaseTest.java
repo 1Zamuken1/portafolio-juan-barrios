@@ -222,6 +222,28 @@ class DraftProjectUseCaseTest {
     }
 
     @Test
+    @DisplayName("las listas y la arquitectura pueden venir vacias: el readme no lo dice")
+    void listasYArquitecturaVaciasValen() {
+        ProjectDraft v = borradorValido();
+        ProjectDraft conVacios = new ProjectDraft(v.name(), v.shortDescription(), v.fullDescription(),
+                v.readmeMarkdown(), v.challenges(), List.of(), List.of(), List.of(), "", "", "");
+        assertEquals(conVacios, conRespuesta(conVacios).draft("Gastu", README));
+    }
+
+    @Test
+    @DisplayName("un resumen de arquitectura que es un parrafo se rechaza, diciendo cual")
+    void unaArquitecturaLargaSeRechaza() {
+        ProjectDraft v = borradorValido();
+        ProjectDraft parrafo = new ProjectDraft(v.name(), v.shortDescription(), v.fullDescription(),
+                v.readmeMarkdown(), v.challenges(), null, null, null,
+                "Una arquitectura por capas ".repeat(10), null, null);
+
+        BorradorInvalidoException e = assertThrows(BorradorInvalidoException.class,
+                () -> conRespuesta(parrafo).draft("Gastu", README));
+        assertTrue(e.getMessage().contains("coreArchitecture"), e.getMessage());
+    }
+
+    @Test
     @DisplayName("una respuesta ilegible tambien se reintenta, una vez")
     void unaRespuestaIlegibleSeReintenta() {
         // Lo que se vio: el modelo se quedo razonando y el flujo llego sin una

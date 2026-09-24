@@ -72,8 +72,8 @@ test('las burbujas y la ficha están antes de redactar', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('jwt_token', 'prueba-e2e'));
   await page.goto('/admin/dashboard/projects/new');
 
-  await expect(page.locator('.nodo')).toHaveCount(9);
-  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(9);
+  await expect(page.locator('.nodo')).toHaveCount(11);
+  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(11);
   await expect(page.locator('.ventana')).toBeVisible();
   await expect(page.locator('.banner__titulo .hueco')).toBeVisible();
 });
@@ -82,8 +82,8 @@ test('el diagrama enciende todas las burbujas que el backend cuenta', async ({ p
   await simularStream(page, FLUJO_COMPLETO);
   await prepararRedaccion(page);
 
-  await expect(page.locator('.nodo')).toHaveCount(9);
-  await expect(page.locator('.nodo[data-estado="hecho"]')).toHaveCount(9);
+  await expect(page.locator('.nodo')).toHaveCount(11);
+  await expect(page.locator('.nodo[data-estado="hecho"]')).toHaveCount(11);
 });
 
 test('cada paso cuenta lo que dijo el backend al pasar por él', async ({ page }) => {
@@ -211,7 +211,7 @@ test('descartar deja el formulario intacto y la vista como al principio', async 
   await page.getByRole('button', { name: 'Descartar' }).click();
 
   await expect(page.locator('.acciones[data-modo="vacia"]')).toBeVisible();
-  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(9);
+  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(11);
   await expect(page.locator('#name')).toHaveValue('');
 });
 
@@ -293,4 +293,35 @@ test('un fallo a mitad se ve donde paro, aunque el estado HTTP sea 200', async (
   await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(0);
   await expect(page.locator('.acciones[data-modo="fallo"]')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Aceptar y completar la ficha' })).toHaveCount(0);
+});
+
+test('las listas y la arquitectura del readme entran en el formulario; las vacias no borran nada', async ({ page }) => {
+  // Lo que se pidio: que el modelo llene tambien listas y arquitectura, pero
+  // solo con lo que dice el readme. Este no nombra IA: aiArchitecture llega
+  // vacio, y eso no puede pisar lo que ya hubiera en el campo.
+  const conListas = {
+    ...BORRADOR,
+    features: ['Traduccion por lotes', 'Exportacion a SRT'],
+    highlights: ['Motor aislado detras de un puerto'],
+    keywords: ['subtitulos', 'Python', 'PyQt'],
+    coreArchitecture: 'Hexagonal',
+    databaseArchitecture: '',
+    aiArchitecture: ''
+  };
+  await simularStream(page, [...FLUJO_COMPLETO.slice(0, -1), { etapa: 'fin', borrador: conListas }]);
+  await prepararRedaccion(page);
+
+  await expect(nodo(page, 'Listas')).toHaveAttribute('data-estado', 'hecho');
+  await expect(nodo(page, 'Arquitectura')).toHaveAttribute('data-estado', 'hecho');
+  await expect(page.locator('app-vista-ficha .etiqueta')).toHaveCount(3);
+
+  await page.getByRole('button', { name: 'Aceptar y completar la ficha' }).click();
+
+  await expect(page.locator('#featuresText')).toHaveValue('Traduccion por lotes\nExportacion a SRT');
+  await expect(page.locator('#highlightsText')).toHaveValue('Motor aislado detras de un puerto');
+  await expect(page.locator('#keywordsText')).toHaveValue('subtitulos\nPython\nPyQt');
+  await expect(page.locator('#coreArchitecture')).toHaveValue('Hexagonal');
+  await expect(page.locator('#aiArchitecture')).toHaveValue('');
+  await expect(page.locator('label[for="coreArchitecture"] .marca-ia')).toHaveCount(1);
+  await expect(page.locator('label[for="aiArchitecture"] .marca-ia')).toHaveCount(0);
 });

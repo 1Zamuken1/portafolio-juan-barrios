@@ -45,6 +45,15 @@ public class DraftProjectUseCase {
     private static final int CHALLENGES_MIN = 2;
     private static final int CHALLENGES_MAX = 6;
 
+    // Las listas y la arquitectura son opcionales: vacias significan "el readme
+    // no lo dice". Solo tienen techo, medido sobre los cuatro proyectos: 6
+    // funcionalidades y 6 destacados de menos de 90 letras, 7 palabras clave,
+    // y resumenes de arquitectura de menos de 40.
+    private static final int LISTA_MAX = 10;
+    private static final int ENTRADA_MAX = 160;
+    private static final int PALABRA_MAX = 40;
+    private static final int ARQUITECTURA_MAX = 100;
+
     /**
      * Un readme mas corto que esto no da material para redactar nada: el modelo
      * rellenaria el hueco inventando. Y por arriba se corta porque cada
@@ -166,6 +175,13 @@ public class DraftProjectUseCase {
                             + " challenges y llegaron "
                             + (b.challenges() == null ? 0 : b.challenges().size()) + ".");
         }
+        exigirLista(b.features(), "features", ENTRADA_MAX);
+        exigirLista(b.highlights(), "highlights", ENTRADA_MAX);
+        exigirLista(b.keywords(), "keywords", PALABRA_MAX);
+        exigirCorto(b.coreArchitecture(), "coreArchitecture");
+        exigirCorto(b.databaseArchitecture(), "databaseArchitecture");
+        exigirCorto(b.aiArchitecture(), "aiArchitecture");
+
         for (int i = 0; i < b.challenges().size(); i++) {
             Challenge c = b.challenges().get(i);
             if (c == null) {
@@ -173,6 +189,35 @@ public class DraftProjectUseCase {
             }
             exigirTexto(c.title(), "challenges[" + i + "].title", 1, 160);
             exigirTexto(c.description(), "challenges[" + i + "].description", 1, SECCION_MAX);
+        }
+    }
+
+    /** Una lista opcional: puede faltar o venir vacia, pero no desbordarse. */
+    private void exigirLista(java.util.List<String> lista, String campo, int maximoPorEntrada) {
+        if (lista == null) return;
+        if (lista.size() > LISTA_MAX) {
+            throw new BorradorInvalidoException(
+                    "La lista " + campo + " trae " + lista.size() + " entradas, maximo " + LISTA_MAX + ".");
+        }
+        for (int i = 0; i < lista.size(); i++) {
+            String entrada = lista.get(i);
+            if (entrada == null || entrada.isBlank()) {
+                throw new BorradorInvalidoException("La entrada " + (i + 1) + " de " + campo + " llego vacia.");
+            }
+            if (entrada.trim().length() > maximoPorEntrada) {
+                throw new BorradorInvalidoException(
+                        "La entrada " + (i + 1) + " de " + campo + " es demasiado larga ("
+                                + entrada.trim().length() + " caracteres, maximo " + maximoPorEntrada + ").");
+            }
+        }
+    }
+
+    /** Un resumen de una linea opcional: vacio vale, un parrafo no. */
+    private void exigirCorto(String valor, String campo) {
+        if (valor != null && valor.trim().length() > ARQUITECTURA_MAX) {
+            throw new BorradorInvalidoException(
+                    "El campo " + campo + " es demasiado largo (" + valor.trim().length()
+                            + " caracteres, maximo " + ARQUITECTURA_MAX + "): es un resumen de una linea.");
         }
     }
 

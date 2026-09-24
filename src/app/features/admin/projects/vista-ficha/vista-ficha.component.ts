@@ -8,7 +8,7 @@ import {
   viewChild
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { FichaVista, MetaFicha, SECCIONES_CASO, SeccionCaso } from './ficha-vista';
+import { ARQUITECTURA, FichaVista, ListaFicha, MetaFicha, SECCIONES_CASO, SeccionCaso } from './ficha-vista';
 
 /**
  * En que momento esta la vista previa. Cada uno se dibuja distinto porque dice
@@ -25,7 +25,7 @@ import { FichaVista, MetaFicha, SECCIONES_CASO, SeccionCaso } from './ficha-vist
 export type ModoVista = 'vacia' | 'actual' | 'redactando' | 'lista' | 'aplicada' | 'fallo';
 
 /** Los cuatro grupos de la vista, los mismos que las burbujas de salida. */
-export type GrupoFicha = 'nombre' | 'descripciones' | 'caso' | 'desafios';
+export type GrupoFicha = 'nombre' | 'descripciones' | 'caso' | 'desafios' | 'listas' | 'arquitectura';
 
 const ETIQUETA_MODO: Record<ModoVista, string> = {
   vacia: 'Vista previa',
@@ -41,7 +41,9 @@ const RUTAS: Record<GrupoFicha, (ruta: string) => boolean> = {
   nombre: (r) => r === 'name',
   descripciones: (r) => r === 'shortDescription' || r === 'fullDescription',
   caso: (r) => r.startsWith('readmeMarkdown.'),
-  desafios: (r) => r.startsWith('challenges.')
+  desafios: (r) => r.startsWith('challenges.'),
+  listas: (r) => /^(features|highlights|keywords)\./.test(r),
+  arquitectura: (r) => r.endsWith('Architecture')
 };
 
 /**
@@ -73,6 +75,9 @@ export class VistaFichaComponent {
   proyectoId = input<number | null>(null);
 
   protected readonly SECCIONES = SECCIONES_CASO;
+  protected readonly ARQUITECTURA = ARQUITECTURA;
+  protected readonly HUECO_LISTA = [72];
+  protected readonly LISTA_HUECO = [0, 1, 2];
   protected readonly etiquetaModo = computed(() => ETIQUETA_MODO[this.modo()]);
 
   /** Anchos de los huecos, en %. Irregulares a proposito: lineas del mismo
@@ -122,11 +127,14 @@ export class VistaFichaComponent {
     const [raiz, hijo, campo] = ruta.split('.');
 
     if (raiz === 'readmeMarkdown') return f.readmeMarkdown?.[hijo as SeccionCaso] ?? '';
+    if (raiz === 'features' || raiz === 'highlights' || raiz === 'keywords') {
+      return f[raiz as ListaFicha]?.[+hijo] ?? '';
+    }
     if (raiz === 'challenges') {
       const c = f.challenges?.[+hijo];
       return (campo === 'title' ? c?.title : c?.description) ?? '';
     }
-    return (f[raiz as 'name' | 'shortDescription' | 'fullDescription'] as string | undefined) ?? '';
+    return (f[raiz as 'name' | 'shortDescription' | 'fullDescription' | 'coreArchitecture'] as string | undefined) ?? '';
   }
 
   /** En que punto esta un grupo, para la marca lateral. */
@@ -136,6 +144,20 @@ export class VistaFichaComponent {
   }
 
   protected desafios = computed(() => this.ficha().challenges ?? []);
+
+  protected lista(clave: ListaFicha): string[] {
+    return this.ficha()[clave] ?? [];
+  }
+
+  /**
+   * Si un campo vacio se dibuja como hueco o como "no lo dice".
+   *
+   * Mientras se redacta, vacio quiere decir "todavia no ha llegado", y lo
+   * honesto es un hueco. Con el borrador terminado --o ensenando lo que ya
+   * tiene el proyecto-- vacio quiere decir "el readme no lo dice", y un hueco
+   * seguiria prometiendo algo que no va a llegar.
+   */
+  protected sinHuecos = computed(() => ['lista', 'aplicada', 'actual'].includes(this.modo()));
 
   /** Lleva la vista a un grupo y lo destaca un momento. Lo usa la pipeline
    *  al pulsar una burbuja de salida. */
