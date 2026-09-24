@@ -37,6 +37,13 @@ final class DraftPrompt {
                ir vacio.
             4. Responde UNICAMENTE con un objeto JSON, sin texto alrededor y sin
                vallas de codigo.
+            5. Lo pendiente no esta hecho. Si el readme marca un modulo como
+               "pendiente", "planificado", "en progreso" o "TODO", no lo
+               presentes como funcionando: no va en features, ni en
+               highlights, ni en challenges, ni en el diagrama, y en la prosa
+               solo puede aparecer como planificado. Que una tecnologia este
+               en la tabla del stack no quiere decir que su modulo este
+               terminado: manda lo que diga la lista de modulos.
 
             FORMA EXACTA DE LA RESPUESTA:
 
@@ -149,10 +156,23 @@ final class DraftPrompt {
             los dos. NO escribas coordenadas ni tamanos: la maqueta la calcula
             el sitio.
 
-            - Entre 4 y 9 nodos. Cada uno es una pieza que el readme nombra: el
-              cliente, la API, la seguridad, el ORM, el motor de datos, un
-              servicio externo. No uno por libreria: Lombok o Bootstrap no son
-              piezas de la arquitectura.
+            - Entre 4 y 10 nodos. Cada uno es una pieza que el readme nombra: el
+              cliente, las vistas o la API, la seguridad, el ORM, el motor de
+              datos, un servicio externo. No uno por libreria: Lombok o
+              Bootstrap no son piezas de la arquitectura.
+            - No te saltes capas que el readme nombra. Si dice que la logica
+              de negocio vive en una capa de servicios (services.py, un
+              Service, un caso de uso), esa capa es un nodo entre las vistas y
+              el acceso a datos, y las vistas no se conectan directamente al
+              ORM.
+            - Un modulo con seccion propia en el readme (exportacion,
+              notificaciones, importacion) es un nodo, conectado a quien lo
+              usa.
+            - Si el readme describe varios motores de datos y como se elige
+              entre ellos, un nodo por motor, no uno para los dos.
+            - Llama a cada pieza por lo que es: unas vistas que devuelven
+              plantillas HTML no son una "API"; una API es la que devuelve
+              JSON a otro cliente.
             - id: corto, en minusculas y sin espacios: "spa", "api", "db".
             - label: el nombre de la pieza, menos de 24 caracteres. Ejemplo:
               "Angular SPA", "REST API", "MySQL".
@@ -166,10 +186,17 @@ final class DraftPrompt {
                 external     servicios de terceros (APIs de IA, pagos,
                              analisis de codigo)
                 database     los motores de datos
-            - type: "primary" para el camino principal de una peticion,
-              "secondary" para las piezas de apoyo.
+            - type: "primary" para el camino principal de una peticion, desde
+              el cliente hasta los datos; "secondary" para las piezas de apoyo
+              que cuelgan de el.
             - icon: SOLO uno de esta lista, o "" si ninguno encaja:
               {ICONOS}
+              Un devicon solo si la pieza ES esa tecnologia: el nodo MySQL
+              lleva devicon-mysql-plain y el nodo Django devicon-django-plain.
+              Una pieza que es una funcion lleva el icono de la funcion:
+              servicios pi pi-cog, autenticacion pi pi-lock, IA pi pi-sparkles,
+              exportacion pi pi-file-export, un ORM pi pi-sitemap. No pongas
+              el icono del lenguaje a una pieza que no es el lenguaje.
             - architectureEdges: de quien llama a quien es llamado, con los id
               de los nodos. Solo conexiones que el readme sostiene.
 
