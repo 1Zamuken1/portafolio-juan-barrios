@@ -13,6 +13,8 @@ export type EtapaClave =
   | 'respuesta'
   | 'parseo'
   | 'validacion'
+  /** El borrador no paso las cotas y se pide otra vez; el detalle dice por que. */
+  | 'reintento'
   | 'fin'
   | 'error';
 

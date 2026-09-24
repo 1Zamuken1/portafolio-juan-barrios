@@ -42,6 +42,21 @@
 
 <div class="linea">
 
+  <!-- ===== El servidor =====
+       Lo que se espera antes de que empiece nada: Render despertando. Tiene
+       estacion propia para que esa espera no caiga en la del readme. -->
+  @if (servidor(); as n) {
+    <section class="estacion estacion--servidor nodo" [attr.data-estado]="n.estado" [style.--nivel]="nivel(n)"
+             [attr.aria-label]="n.titulo + ': ' + lectura(n.estado).etiqueta">
+      <span class="vaso"><ng-container *ngTemplateOutlet="liquido" /></span>
+      @if (n.estado === 'fallo') { <ng-container *ngTemplateOutlet="rotura" /> }
+      <ng-container *ngTemplateOutlet="cabeza; context: { $implicit: n }" />
+      @if (n.detalle) { <p class="estacion__detalle">{{ n.detalle }}</p> }
+    </section>
+  }
+
+  <ng-container *ngTemplateOutlet="tubo; context: { $implicit: conducto(servidor(), readme()) }" />
+
   <!-- ===== El readme: de aqui sale el liquido ===== -->
   @if (readme(); as n) {
     <section class="estacion nodo" [attr.data-estado]="n.estado" [style.--nivel]="nivel(n)"

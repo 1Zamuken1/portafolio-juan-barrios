@@ -87,13 +87,14 @@ export class PipelineBorradorComponent implements OnDestroy {
     return this.nodos().find((n) => n.clave === clave);
   }
 
+  protected servidor = computed(() => this.nodo('servidor'));
   protected readme = computed(() => this.nodo('readme'));
   protected modelo = computed(() => this.nodo('modelo'));
   protected parseo = computed(() => this.nodo('parseo'));
   protected validacion = computed(() => this.nodo('validacion'));
 
   protected salidas = computed(() =>
-    this.nodos().filter((n) => !['readme', 'modelo', 'parseo', 'validacion'].includes(n.clave)));
+    this.nodos().filter((n) => !['servidor', 'readme', 'modelo', 'parseo', 'validacion'].includes(n.clave)));
 
   protected lectura(estado: EstadoNodo) {
     return LECTURA_ESTADO[estado];

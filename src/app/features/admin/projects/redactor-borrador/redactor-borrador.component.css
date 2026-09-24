@@ -62,6 +62,43 @@
   color: var(--text-primary);
 }
 
+/* Como esta el backend. Render duerme sin uso y tarda en despertar; decirlo
+   aqui evita que la espera se lea como que la redaccion se ha colgado. */
+.servidor {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: 0.6rem;
+  padding: 0.12rem 0.6rem;
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  vertical-align: middle;
+}
+
+.servidor__punto {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--text-accent);
+  animation: latido-servidor 1.2s ease-in-out infinite;
+}
+
+.servidor[data-estado='listo'] { color: var(--estado-ok); }
+.servidor[data-estado='listo'] .servidor__punto { background: var(--estado-ok); animation: none; }
+.servidor[data-estado='sin-respuesta'] { color: var(--estado-fallo); }
+.servidor[data-estado='sin-respuesta'] .servidor__punto { background: var(--estado-fallo); animation: none; }
+
+@keyframes latido-servidor {
+  50% { opacity: 0.3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .servidor__punto { animation: none; }
+}
+
 .fuente__lema {
   margin: 0.2rem 0 0;
   font-size: 0.82rem;

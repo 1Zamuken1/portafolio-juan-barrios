@@ -28,6 +28,7 @@ import {
 } from '../../../../core/services/borrador-stream.service';
 import { ProjectDraft } from '../../../../shared/models/project.model';
 import { leerJsonParcial } from '../../../../shared/utils/json-parcial';
+import { environment } from '../../../../../environments/environment';
 import { PipelineBorradorComponent } from '../pipeline-borrador/pipeline-borrador.component';
 import { Reproductor } from './reproductor';
 import { EstadoNodo, NodoPipeline } from '../pipeline-borrador/estado-nodo';
@@ -51,15 +52,16 @@ const MARKDOWN_MAXIMO = 512 * 1024;
 /**
  * Las burbujas del diagrama, en orden.
  *
- * Las cuatro primeras son los pasos: lo que pasa, por donde pasa. Las cuatro
- * ultimas son lo que sale, y cuelgan del modelo porque se escriben mientras
- * responde.
+ * Las cinco primeras son los pasos: lo que pasa, por donde pasa, empezando
+ * por el servidor, que es lo primero que se espera. Las cuatro ultimas son lo
+ * que sale, y cuelgan del modelo porque se escriben mientras responde.
  *
  * Se pintan todas desde el principio, tambien las que no han ocurrido. Una
  * lista que crece no distingue "va por la tercera" de "se quedo en la
  * tercera", y lo segundo es justo lo que hay que poder ver.
  */
 const NODOS: ReadonlyArray<{ clave: string; titulo: string; icono: string }> = [
+  { clave: 'servidor', titulo: 'Servidor', icono: 'pi pi-server' },
   { clave: 'readme', titulo: 'Readme', icono: 'pi pi-file' },
   { clave: 'modelo', titulo: 'Modelo', icono: 'pi pi-sparkles' },
   { clave: 'parseo', titulo: 'JSON', icono: 'pi pi-code' },
@@ -175,6 +177,18 @@ export class RedactorBorradorComponent implements OnDestroy {
   aplicada = signal(false);
   fallo = signal<string | null>(null);
 
+  /** Que intento es: el segundo si el primero no paso las cotas. */
+  private intento = 1;
+
+  /**
+   * Como esta el backend. Render duerme a los quince minutos sin uso y tarda
+   * hasta dos en despertar; antes esa espera caia entera en la burbuja del
+   * readme, que marcaba 137 segundos por leer un texto que tarda cero. Ahora
+   * se le da un toque al abrir la pagina, para que vaya despertando mientras
+   * se pega el readme, y la espera que quede tiene su propia estacion.
+   */
+  servidor = signal<'despertando' | 'listo' | 'sin-respuesta'>('despertando');
+
   private suscripcion?: Subscription;
   private reproductor?: Reproductor;
 
@@ -212,6 +226,7 @@ export class RedactorBorradorComponent implements OnDestroy {
 
   constructor() {
     this.readmeFuente.valueChanges.subscribe((t) => this.largo.set(t.trim().length));
+    this.despertarServidor();
 
     // El texto en crudo crece por abajo: sin esto se ve el principio quieto
     // mientras lo interesante pasa fuera de la vista.
@@ -220,6 +235,18 @@ export class RedactorBorradorComponent implements OnDestroy {
       const caja = this.crudo()?.nativeElement;
       if (caja) caja.scrollTop = caja.scrollHeight;
     });
+  }
+
+  /**
+   * Un GET a /health nada mas abrir el redactor. Es publico y no toca la base,
+   * asi que despertar a Render cuesta una peticion vacia. Si ya estaba
+   * despierto, contesta al momento y no cambia nada.
+   */
+  private despertarServidor(): void {
+    if (typeof fetch !== 'function') return;
+    fetch(`${environment.apiUrl}/health`)
+      .then((r) => this.servidor.set(r.ok ? 'listo' : 'sin-respuesta'))
+      .catch(() => this.servidor.set('sin-respuesta'));
   }
 
   ngOnDestroy(): void {
@@ -336,6 +363,7 @@ export class RedactorBorradorComponent implements OnDestroy {
     this.aplicada.set(false);
     this.fallo.set(null);
     this.textoModelo.set('');
+    this.intento = 1;
     this.redactando.set(true);
 
     // Se pliega el editor: a partir de aqui lo que hay que mirar es lo de
@@ -347,8 +375,16 @@ export class RedactorBorradorComponent implements OnDestroy {
 
     this.nodos.set(enEspera().map((n, i) =>
       // El primero arranca en curso: el backend no manda un aviso de "he
-      // empezado", manda uno por cada paso terminado.
-      i === 0 ? { ...n, estado: 'curso' as EstadoNodo, desde: Date.now() } : n));
+      // empezado", manda uno por cada paso terminado. Y el primero es el
+      // servidor, que es lo que se espera hasta que llega ese primer aviso.
+      i === 0 ? {
+        ...n,
+        estado: 'curso' as EstadoNodo,
+        desde: Date.now(),
+        detalle: this.servidor() === 'listo'
+          ? 'Conectando con el backend'
+          : 'Esperando a Render: si estaba dormido, tarda hasta dos minutos en despertar'
+      } : n));
 
     // Lo que llega no se aplica al llegar: pasa por el reproductor, que lo
     // suelta a ritmo de lectura. Ver reproductor.ts para lo que ese ritmo
@@ -407,17 +443,39 @@ export class RedactorBorradorComponent implements OnDestroy {
    */
   private avanzar(linea: LineaPipeline): void {
     switch (linea.etapa) {
-      case 'entrada':
+      case 'entrada': {
+        // El primer aviso del backend dice dos cosas: que el servidor ya esta
+        // despierto y que el readme ya se leyo. Lo segundo es instantaneo, asi
+        // que la espera entera se la queda el servidor, que es donde estuvo.
+        const espera = Date.now() - (this.nodos()[0].desde ?? Date.now());
+        this.servidor.set('listo');
+        this.cerrar('servidor', espera > 5000
+          ? 'Render estaba dormido y tuvo que arrancar'
+          : 'Ya estaba despierto');
         this.cerrar('readme', linea.detalle);
         this.abrir('modelo');
         break;
+      }
 
       case 'modelo':
-        this.abrir('modelo', linea.detalle);
+        this.abrir('modelo', this.intento > 1 ? `Segundo intento · ${linea.detalle}` : linea.detalle);
+        break;
+
+      case 'reintento':
+        // El primer borrador no paso las cotas y el backend lo pide otra vez,
+        // diciendole al modelo que fallo. Lo que salio del primero se tira: el
+        // segundo es otro borrador, no la continuacion del anterior.
+        this.intento = 2;
+        this.textoModelo.set('');
+        this.nodos.update((ns) => ns.map((n) =>
+          ['parseo', 'validacion', 'nombre', 'descripciones', 'caso', 'desafios'].includes(n.clave)
+            ? { ...n, estado: 'espera' as EstadoNodo, detalle: '', progreso: 0, desde: undefined, duracion: undefined }
+            : n));
+        this.abrir('modelo', `Segundo intento: ${linea.detalle}`);
         break;
 
       case 'respuesta':
-        this.cerrar('modelo', linea.detalle);
+        this.cerrar('modelo', this.intento > 1 ? `Segundo intento · ${linea.detalle}` : linea.detalle);
         // El modelo dejo de escribir, asi que lo ultimo que quedaba abierto ya
         // esta cerrado tambien.
         this.revisarSalidas();

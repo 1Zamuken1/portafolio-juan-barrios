@@ -5,7 +5,17 @@
   <div class="fuente__cabeza">
     <span class="fuente__icono" aria-hidden="true"><i class="pi pi-sparkles"></i></span>
     <div class="fuente__titulos">
-      <h3 class="fuente__titulo">Redactar desde un readme</h3>
+      <h3 class="fuente__titulo">
+        Redactar desde un readme
+        <span class="servidor" [attr.data-estado]="servidor()" aria-live="polite">
+          <span class="servidor__punto" aria-hidden="true"></span>
+          @switch (servidor()) {
+            @case ('listo') { Servidor listo }
+            @case ('sin-respuesta') { El servidor no responde }
+            @default { Despertando el servidor… }
+          }
+        </span>
+      </h3>
       <p class="fuente__lema">
         Salen el nombre, las descripciones, el caso de estudio y los desafíos.
         <strong>No se guarda nada</strong> y nada entra solo en el formulario.

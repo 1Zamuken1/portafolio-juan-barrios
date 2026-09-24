@@ -148,6 +148,12 @@
   100% { transform: translateY(calc(-1 * var(--alto-burbuja, 60px))); opacity: 0; }
 }
 
+/* El servidor es una estacion de paso: mas baja que las demas. */
+.estacion--servidor {
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+}
+
 /* ---- La cabecera ---- */
 .estacion__cabeza {
   position: relative;
