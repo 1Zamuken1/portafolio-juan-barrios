@@ -1,0 +1,209 @@
+/* ================================================
+   El cromo del editor, en vidrio
+   ================================================
+
+   Va aparte del CSS del layout para que se lea de una vez que cambia y que
+   no: la estructura, las medidas y los colores de VSCode siguen alli; aqui
+   solo las superficies, la elevacion y las capas de estado. Se carga
+   despues, asi que a igual especificidad gana. Los tokens --pv-* estan en
+   styles/vidrio-publico.css.
+
+   El area de lectura (.editor-content) se queda opaca: es donde se lee. */
+
+/* Tokens que el CSS del layout usaba sin definir: las pestanas caian en
+   silencio al color heredado. */
+.theme-shades-of-purple {
+  --vscode-fg: var(--vscode-text-main);
+  --vscode-fg-muted: var(--vscode-text-muted);
+  --vscode-bg-active: var(--vscode-bg);
+  --vscode-accent: var(--vscode-primary);
+}
+
+/* ---- Las luces de detras ----
+   Fijas: el cromo no se mueve y el editor tapa el centro, asi que solo se
+   ven por los bordes, a traves del vidrio. */
+.vscode-app-container {
+  background:
+    radial-gradient(36rem 26rem at 0% 0%, var(--pv-luz-1), transparent 70%),
+    radial-gradient(30rem 20rem at 100% 0%, var(--pv-luz-2), transparent 70%),
+    radial-gradient(44rem 16rem at 40% 100%, var(--pv-luz-3), transparent 70%),
+    var(--vscode-bg);
+}
+
+.editor-area {
+  background: transparent;
+}
+
+.editor-content {
+  background: var(--vscode-bg);
+}
+
+/* ---- Barras ---- */
+.title-bar,
+.activity-bar,
+.sidebar-explorer,
+.editor-tabs,
+.status-bar {
+  background-color: var(--pv-vidrio);
+}
+
+.title-bar { border-bottom-color: var(--pv-vidrio-borde); }
+.activity-bar { border-right-color: var(--pv-vidrio-borde); box-shadow: var(--pv-brillo); }
+.sidebar-explorer { border-right-color: var(--pv-vidrio-borde); }
+.editor-tabs { box-shadow: inset 0 -1px 0 var(--pv-vidrio-borde); }
+.status-bar { box-shadow: inset 0 1px 0 var(--pv-vidrio-borde); }
+
+/* ---- Barra de actividad ----
+   El activo deja el borde izquierdo de VSCode por una gota del liquido del
+   panel, con su brillo. Al pulsar, el icono se hunde un poco. */
+.icon-item {
+  transition: color 0.15s ease, background 0.2s var(--pv-curva), transform 0.15s var(--pv-curva);
+}
+
+.icon-item:hover { background-color: var(--pv-capa-hover); }
+.icon-item:active { transform: scale(0.92); background-color: var(--pv-capa-press); }
+
+.icon-item.active {
+  border-left: none;
+  box-shadow: var(--pv-brillo);
+}
+
+.icon-item.active::before {
+  content: '';
+  position: absolute;
+  left: -0.25rem;
+  top: 22%;
+  bottom: 22%;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--pv-liquido);
+  box-shadow: 0 0 10px var(--pv-liquido-brillo);
+}
+
+/* ---- Tooltips ----
+   Flotan sobre el editor: aqui el desenfoque si tiene algo detras. */
+.icon-tooltip {
+  background: var(--pv-vidrio-alto);
+  -webkit-backdrop-filter: var(--pv-desenfoque);
+  backdrop-filter: var(--pv-desenfoque);
+  color: var(--vscode-text-main);
+  border: 1px solid var(--pv-vidrio-borde);
+  border-radius: 0.5rem;
+  box-shadow: var(--pv-brillo), var(--pv-elev-2);
+  padding: 0.35rem 0.7rem;
+}
+
+/* ---- Explorador ---- */
+.section-list,
+.folder-contents {
+  padding-right: 0.5rem;
+}
+
+.list-item,
+.folder-header,
+.section-header {
+  border-radius: 0.375rem;
+}
+
+.list-item:hover,
+.folder-header:hover,
+.section-header:hover {
+  background: var(--pv-capa-hover);
+}
+
+.list-item:active,
+.folder-header:active {
+  background: var(--pv-capa-press);
+}
+
+.list-item.active {
+  position: relative;
+  border-left: none;
+  box-shadow: var(--pv-brillo);
+}
+
+.list-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 18%;
+  bottom: 18%;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--pv-liquido);
+  box-shadow: 0 0 8px var(--pv-liquido-brillo);
+}
+
+/* ---- Pestanas ----
+   La activa se funde con el editor, como en VSCode, y lleva arriba un filo
+   del liquido en vez de la linea plana. */
+.tab {
+  position: relative;
+  background: transparent;
+  border-right-color: var(--pv-vidrio-borde);
+  transition: background 0.2s var(--pv-curva), color 0.15s ease;
+}
+
+.tab:hover { background: var(--pv-capa-hover); }
+.tab:active { background: var(--pv-capa-press); }
+
+.tab.active {
+  background: var(--vscode-bg);
+  border-top: none;
+}
+
+.tab.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--pv-liquido-h);
+  box-shadow: 0 0 8px var(--pv-liquido-brillo);
+}
+
+.tab-close { border-radius: 999px; }
+.tab-close:hover { background: var(--pv-capa-press); }
+
+.tab-sidebar-toggle { border-radius: 0.375rem; }
+.tab-sidebar-toggle:hover { background: var(--pv-capa-hover); }
+
+/* ---- Barra de estado ---- */
+.status-item {
+  border-radius: 999px;
+  padding: 0 0.45rem;
+}
+
+.status-item:hover { background: var(--pv-capa-hover); }
+
+/* ---- Panel de perfil ---- */
+.profile-panel {
+  background: var(--pv-vidrio-alto);
+  -webkit-backdrop-filter: var(--pv-desenfoque);
+  backdrop-filter: var(--pv-desenfoque);
+  border: 1px solid var(--pv-vidrio-borde);
+  border-radius: 0.875rem;
+  box-shadow: var(--pv-brillo), var(--pv-elev-3);
+}
+
+/* ---- Explorador flotante en movil ----
+   Aqui el explorador flota sobre el editor, asi que es vidrio de verdad, y
+   el velo de debajo desenfoca un poco lo que tapa. */
+@media (max-width: 768px) {
+  .sidebar-explorer {
+    background-color: var(--pv-vidrio-alto);
+    -webkit-backdrop-filter: var(--pv-desenfoque);
+    backdrop-filter: var(--pv-desenfoque);
+    box-shadow: var(--pv-brillo), var(--pv-elev-3);
+  }
+
+  .sidebar-scrim {
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-item:active { transform: none; }
+}
