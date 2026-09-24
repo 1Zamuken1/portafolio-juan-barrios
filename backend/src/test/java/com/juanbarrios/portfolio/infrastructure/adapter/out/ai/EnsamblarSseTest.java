@@ -132,4 +132,44 @@ class EnsamblarSseTest {
         Resultado r = ensamblar("data:{\"choices\":[{\"delta\":{\"content\":\"pegado\"}}]}");
         assertEquals("pegado", r.texto());
     }
+
+    @Test
+    @DisplayName("un error de Groq dentro del flujo se cuenta, no se toma por un flujo vacio")
+    void unErrorDentroDelFlujoSeCuenta() {
+        // Lo que se vio: un flujo que abria con el saludo de rol y el contenido
+        // vacio, y el fallo salia como "ninguna linea traia contenido".
+        String primera = "data: {\"choices\":[{\"delta\":{\"role\":\"assistant\",\"content\":\"\"}}]}";
+        BufferedReader resto = new BufferedReader(new java.io.StringReader(
+                "data: {\"error\":{\"message\":\"Failed to generate JSON\",\"code\":\"json_validate_failed\"}}\n"));
+
+        com.juanbarrios.portfolio.domain.port.out.RespuestaIlegibleException e = org.junit.jupiter.api.Assertions.assertThrows(
+                com.juanbarrios.portfolio.domain.port.out.RespuestaIlegibleException.class,
+                () -> GroqProjectDrafter.ensamblarSse(primera, resto, JSON, t -> { }));
+        org.junit.jupiter.api.Assertions.assertTrue(e.getMessage().contains("json_validate_failed"), e.getMessage());
+    }
+
+    @Test
+    @DisplayName("un flujo que solo razono dice que se quedo sin espacio")
+    void unFlujoQueSoloRazonoLoDice() throws Exception {
+        String primera = "data: {\"choices\":[{\"delta\":{\"role\":\"assistant\",\"content\":\"\"}}]}";
+        BufferedReader resto = new BufferedReader(new java.io.StringReader(
+                "data: {\"choices\":[{\"delta\":{\"reasoning\":\"pensando en el readme\"}}]}\n"
+                        + "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"length\"}]}\n"
+                        + "data: [DONE]\n"));
+
+        GroqProjectDrafter.Diagnostico visto = new GroqProjectDrafter.Diagnostico();
+        String texto = GroqProjectDrafter.ensamblarSse(primera, resto, JSON, t -> { }, visto);
+
+        org.junit.jupiter.api.Assertions.assertEquals("", texto);
+        String porQue = visto.porQueVinoVacio();
+        org.junit.jupiter.api.Assertions.assertTrue(porQue.contains("sin espacio"), porQue);
+        org.junit.jupiter.api.Assertions.assertTrue(porQue.contains("razonamiento"), porQue);
+    }
+
+    @Test
+    @DisplayName("solo los gpt-oss reciben reasoning_effort")
+    void soloLosGptOssRazonanPoco() {
+        org.junit.jupiter.api.Assertions.assertTrue(GroqProjectDrafter.razonaDemasiado("openai/gpt-oss-120b"));
+        org.junit.jupiter.api.Assertions.assertFalse(GroqProjectDrafter.razonaDemasiado("qwen/qwen3.6-27b"));
+    }
 }

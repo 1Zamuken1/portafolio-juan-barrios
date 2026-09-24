@@ -222,6 +222,25 @@ class DraftProjectUseCaseTest {
     }
 
     @Test
+    @DisplayName("una respuesta ilegible tambien se reintenta, una vez")
+    void unaRespuestaIlegibleSeReintenta() {
+        // Lo que se vio: el modelo se quedo razonando y el flujo llego sin una
+        // letra de la ficha. El proveedor estaba en pie; un segundo intento lo
+        // arregla.
+        int[] llamadas = {0};
+        DraftProjectUseCase caso = new DraftProjectUseCase((nombre, readme, aviso) -> {
+            if (llamadas[0]++ == 0) {
+                throw new com.juanbarrios.portfolio.domain.port.out.RespuestaIlegibleException(
+                        "El modelo se quedo sin espacio antes de escribir la ficha.");
+            }
+            return borradorValido();
+        });
+
+        assertEquals(borradorValido(), caso.draft("Gastu", README));
+        assertEquals(2, llamadas[0]);
+    }
+
+    @Test
     @DisplayName("si el reintento tambien falla, se rechaza y no se sigue pagando")
     void siElReintentoFallaSeRechaza() {
         int[] llamadas = {0};
