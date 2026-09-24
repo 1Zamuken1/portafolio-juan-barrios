@@ -27,6 +27,7 @@ import { BlueprintEdge, BlueprintLayout, BlueprintNode } from '../../../../share
 import { FichaVista, MetaFicha } from '../vista-ficha/ficha-vista';
 import { Project, ProjectDraft } from '../../../../shared/models/project.model';
 import { limpiarVacios } from '../../../../shared/utils/limpiar-vacios';
+import { aSlug } from '../../../../shared/utils/slug';
 
 /** Lista -> texto, una entrada por linea. */
 const aLineas = (lista?: string[]): string => (lista ?? []).join('\n');
@@ -213,9 +214,28 @@ export class AdminProjectFormComponent implements OnInit {
       this.isEditMode = true;
       this.projectId = +id;
       this.loadProject(this.projectId);
+    } else {
+      this.proponerOrden();
     }
 
     this.irA(this.isEditMode ? 2 : 1);
+  }
+
+  /**
+   * Un proyecto nuevo va al final: el orden por defecto era 0, y todo lo
+   * creado desde el panel salia el primero de la lista. Si no se puede
+   * preguntar al backend se queda en 0, como antes.
+   */
+  private proponerOrden(): void {
+    this.dataService.getProjects().subscribe({
+      next: (proyectos) => {
+        const control = this.form.get('displayOrder');
+        if (!control || control.dirty) return;
+        const ultimo = proyectos.reduce((m, p) => Math.max(m, p.displayOrder ?? 0), 0);
+        control.setValue(ultimo + 1);
+      },
+      error: () => undefined
+    });
   }
 
   /** Cambia de paso. Al entrar en el primero, le cuenta al redactor como esta
@@ -466,6 +486,8 @@ export class AdminProjectFormComponent implements OnInit {
 
     const projectData: Project = {
       ...resto,
+      // Sin slug, el espejo no puede emparejar el proyecto con su id.
+      slug: (resto.slug ?? '').trim() || aSlug(resto.name ?? ''),
       features: aLista(featuresText),
       highlights: aLista(highlightsText),
       keywords: aLista(keywordsText),

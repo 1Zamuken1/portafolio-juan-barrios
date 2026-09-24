@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { distDesactualizado } from './dist-fresco';
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
@@ -83,6 +84,8 @@ test.describe('sitemap', () => {
 
   test('lista exactamente las paginas que genera el build', () => {
     test.skip(!existsSync(DIST), 'no hay build: ejecuta pnpm run build');
+    const viejo = distDesactualizado(DIST, RAIZ);
+    if (viejo) throw new Error(viejo);
 
     const generadas = rutasPrerenderizadas();
     const listadas = rutasDelSitemap();
