@@ -7,6 +7,7 @@ import com.juanbarrios.portfolio.domain.port.out.DrafterNoDisponibleException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -183,6 +184,57 @@ class DraftProjectUseCaseTest {
         BorradorInvalidoException e = assertThrows(BorradorInvalidoException.class,
                 () -> conRespuesta(anonimo).draft("", README));
         assertTrue(e.getMessage().contains("name"), e.getMessage());
+    }
+
+    @Test
+    @DisplayName("si el borrador no pasa las cotas se pide otra vez, diciendo por que")
+    void seReintentaUnaVezConLaCorreccion() {
+        // Lo que se vio de verdad: un borrador bueno en todo menos en los
+        // desafios, que llegaron vacios, se tiraba entero.
+        ProjectDraft v = borradorValido();
+        ProjectDraft sinDesafios = new ProjectDraft(
+                v.name(), v.shortDescription(), v.fullDescription(), v.readmeMarkdown(), List.of());
+
+        List<String> correcciones = new ArrayList<>();
+        List<String> etapas = new ArrayList<>();
+        DraftProjectUseCase caso = new DraftProjectUseCase(new com.juanbarrios.portfolio.domain.port.out.ProjectDrafterPort() {
+            @Override
+            public ProjectDraft draft(String nombre, String readme,
+                                      com.juanbarrios.portfolio.domain.port.out.AvisoDeEtapa aviso) {
+                return sinDesafios;
+            }
+
+            @Override
+            public ProjectDraft draft(String nombre, String readme,
+                                      com.juanbarrios.portfolio.domain.port.out.AvisoDeEtapa aviso,
+                                      String correccion) {
+                correcciones.add(correccion);
+                return v;
+            }
+        });
+
+        ProjectDraft salida = caso.draft("Gastu", README, (etapa, detalle) -> etapas.add(etapa));
+
+        assertEquals(v, salida);
+        assertEquals(1, correcciones.size(), "un solo reintento");
+        assertTrue(correcciones.get(0).contains("challenges"), correcciones.get(0));
+        assertTrue(etapas.contains("reintento"), "el panel tiene que ver que se reintento");
+    }
+
+    @Test
+    @DisplayName("si el reintento tambien falla, se rechaza y no se sigue pagando")
+    void siElReintentoFallaSeRechaza() {
+        int[] llamadas = {0};
+        ProjectDraft v = borradorValido();
+        ProjectDraft sinDesafios = new ProjectDraft(
+                v.name(), v.shortDescription(), v.fullDescription(), v.readmeMarkdown(), List.of());
+        DraftProjectUseCase caso = new DraftProjectUseCase((nombre, readme, aviso) -> {
+            llamadas[0]++;
+            return sinDesafios;
+        });
+
+        assertThrows(BorradorInvalidoException.class, () -> caso.draft("Gastu", README));
+        assertEquals(2, llamadas[0], "el intento y un reintento, ni uno mas");
     }
 
     @Test

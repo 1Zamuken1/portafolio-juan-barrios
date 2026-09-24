@@ -125,6 +125,11 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
 
     @Override
     public ProjectDraft draft(String nombre, String readme, AvisoDeEtapa aviso) {
+        return draft(nombre, readme, aviso, null);
+    }
+
+    @Override
+    public ProjectDraft draft(String nombre, String readme, AvisoDeEtapa aviso, String correccion) {
         if (apiKey.isEmpty()) {
             throw new DrafterNoDisponibleException(
                     "No hay clave de Groq configurada. Define GROQ_API_KEY en el entorno.");
@@ -143,7 +148,7 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
                         : "Probando " + modelo + ", que es el siguiente de la lista");
 
                 long arranque = System.nanoTime();
-                String contenido = pedirRespuesta(modelo, nombre, readme, aviso);
+                String contenido = pedirRespuesta(modelo, nombre, readme, correccion, aviso);
                 long tardo = (System.nanoTime() - arranque) / 1_000_000;
 
                 aviso.avisar("respuesta", modelo + " respondio " + contenido.length()
@@ -244,7 +249,8 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
      * para mirar, no datos para usar. La diferencia importa: nada del
      * formulario se toca hasta que el borrador completo pasa las cotas.
      */
-    private String pedirRespuesta(String modelo, String nombre, String readme, AvisoDeEtapa aviso) {
+    private String pedirRespuesta(String modelo, String nombre, String readme, String correccion,
+                                  AvisoDeEtapa aviso) {
         Map<String, Object> peticion = Map.of(
                 "model", modelo,
                 // Cero temperatura: esto no es escritura creativa, es extraer
@@ -254,7 +260,7 @@ public class GroqProjectDrafter implements ProjectDrafterPort {
                 "stream", true,
                 "messages", java.util.List.of(
                         Map.of("role", "system", "content", DraftPrompt.SISTEMA),
-                        Map.of("role", "user", "content", DraftPrompt.usuario(nombre, readme))));
+                        Map.of("role", "user", "content", DraftPrompt.usuario(nombre, readme, correccion))));
 
         try {
             // exchange() y no retrieve(): hace falta el cuerpo como flujo para

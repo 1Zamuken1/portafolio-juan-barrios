@@ -31,4 +31,18 @@ public interface ProjectDrafterPort {
     default ProjectDraft draft(String nombre, String readme) {
         return draft(nombre, readme, AvisoDeEtapa.NINGUNO);
     }
+
+    /**
+     * Lo mismo, diciendole al redactor por que se rechazo el intento anterior.
+     *
+     * La implementacion por defecto ignora la correccion: los dobles de las
+     * pruebas y cualquier redactor que no sepa usarla siguen funcionando, solo
+     * que el reintento sale igual que el primero.
+     *
+     * @param correccion el motivo del rechazo anterior, tal como lo dio la
+     *                   validacion; null en el primer intento.
+     */
+    default ProjectDraft draft(String nombre, String readme, AvisoDeEtapa aviso, String correccion) {
+        return draft(nombre, readme, aviso);
+    }
 }

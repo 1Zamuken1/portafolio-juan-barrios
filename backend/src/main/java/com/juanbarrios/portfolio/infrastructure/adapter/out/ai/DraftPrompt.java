@@ -29,7 +29,10 @@ final class DraftPrompt {
                librerias y problemas reales por su nombre.
             3. No inventes. Si el readme no dice algo, no lo supongas: escribe
                solo lo que el texto sostiene. Es preferible una ficha escueta
-               que una detallada y falsa.
+               que una detallada y falsa. Esto vale para los datos --que
+               tecnologias, que resultados, que cifras--, no para la
+               estructura: todos los campos son obligatorios y ninguno puede
+               ir vacio.
             4. Responde UNICAMENTE con un objeto JSON, sin texto alrededor y sin
                vallas de codigo.
 
@@ -73,10 +76,18 @@ final class DraftPrompt {
               Entre 180 y 320 caracteres.
             - readmeMarkdown.learnings: que dejo el proyecto, en primera persona
               del plural o impersonal. Entre 200 y 320 caracteres.
-            - challenges: entre 3 y 4 entradas. Cada una es un problema tecnico
-              concreto que hubo que resolver, no una caracteristica. El titulo
-              va en menos de 60 caracteres y la descripcion explica en una o dos
-              frases en que consistia la dificultad y como se abordo.
+            - challenges: SIEMPRE entre 3 y 4 entradas; nunca una lista vacia.
+              Cada una es un problema tecnico concreto, no una caracteristica.
+              Casi ningun readme los cuenta con esas palabras, asi que
+              deducelos de lo que si describe: una integracion con un servicio
+              externo (autenticacion, pagos, una API de IA), convivir con dos
+              motores de base de datos, exportar a varios formatos, procesar en
+              segundo plano, desplegar, un requisito de seguridad o de
+              rendimiento. Cada desafio tiene que poder senalarse en el readme;
+              lo que no puedes es inventar tecnologias o resultados que el
+              texto no nombra. El titulo va en menos de 60 caracteres y la
+              descripcion explica en una o dos frases en que consistia la
+              dificultad y como se abordo.
 
             Las cinco secciones de readmeMarkdown son texto corrido en markdown.
             No pongas titulos dentro: el sitio ya los dibuja por su cuenta.
@@ -91,17 +102,32 @@ final class DraftPrompt {
      *              siempre estaba ya en el texto de entrada.
      */
     static String usuario(String pista, String readme) {
+        return usuario(pista, readme, null);
+    }
+
+    /**
+     * @param correccion por que se rechazo el intento anterior, o null. Se le
+     *                   dice al modelo tal cual lo dio la validacion: es un
+     *                   motivo concreto ("llegaron 0 challenges") y eso es lo
+     *                   que lo arregla, no una instruccion generica.
+     */
+    static String usuario(String pista, String readme, String correccion) {
         String cabecera = (pista == null || pista.isBlank())
                 ? "El readme no viene acompanado de un nombre: sacalo del propio texto."
                 : "Nombre del proyecto, ya decidido: " + pista.trim()
                         + "\nUsa ese nombre tal cual en el campo name, sin cambiarlo.";
 
+        String aviso = (correccion == null || correccion.isBlank())
+                ? ""
+                : "\n\nUn intento anterior se rechazo por esto: " + correccion.trim()
+                        + "\nCorrigelo en esta respuesta y devuelve el JSON completo.";
+
         return """
-                %s
+                %s%s
 
                 Readme:
 
                 %s
-                """.formatted(cabecera, readme);
+                """.formatted(cabecera, aviso, readme);
     }
 }
