@@ -18,6 +18,11 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideAnimationsAsync(),
     providePrimeNG({
+      // Las listas y los menus se montan en <body>, no junto a su campo. Cada
+      // seccion del panel es vidrio (backdrop-filter), y eso le da su propio
+      // contexto de apilamiento: una lista abierta dentro de ella quedaba por
+      // debajo de la seccion siguiente, por alto que fuera su z-index.
+      overlayAppendTo: 'body',
       theme: {
         preset: PresetPanel,
         options: {
