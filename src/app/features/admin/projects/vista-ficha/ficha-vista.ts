@@ -1,4 +1,4 @@
-import { ProjectDraft } from '../../../../shared/models/project.model';
+import { BlueprintEdge, BlueprintLayout, BlueprintNode, ProjectDraft } from '../../../../shared/models/project.model';
 
 /**
  * Lo que dibuja la vista previa: la parte de la ficha que redacta la IA, con
@@ -17,6 +17,12 @@ export interface FichaVista {
   coreArchitecture?: string;
   databaseArchitecture?: string;
   aiArchitecture?: string;
+  github?: string;
+  /** Las piezas del diagrama segun van llegando: solo el nombre y la capa. */
+  piezas?: { label?: string; group?: string }[];
+  /** El diagrama entero, cuando ya esta colocado. Mientras se escribe no lo
+   *  esta: las coordenadas las pone el backend al final. */
+  diagrama?: { nodes: BlueprintNode[]; edges: BlueprintEdge[]; layout?: BlueprintLayout };
 }
 
 /** Las tres listas del borrador. */
@@ -86,6 +92,17 @@ export function aFichaVista(valor: unknown): FichaVista {
     if (t !== undefined) ficha[clave] = t;
   }
 
+  const links = valor['links'];
+  if (esObjeto(links)) {
+    const g = cadena(links['github']);
+    if (g !== undefined) ficha.github = g;
+  }
+
+  const nodos = valor['architectureNodes'];
+  if (Array.isArray(nodos)) {
+    ficha.piezas = nodos.filter(esObjeto).map((n) => ({ label: cadena(n['label']), group: cadena(n['group']) }));
+  }
+
   const lista = valor['challenges'];
   if (Array.isArray(lista)) {
     ficha.challenges = lista.filter(esObjeto).map((c) => ({
@@ -110,7 +127,12 @@ export function fichaDeBorrador(b: ProjectDraft): FichaVista {
     keywords: [...(b.keywords ?? [])],
     coreArchitecture: b.coreArchitecture ?? '',
     databaseArchitecture: b.databaseArchitecture ?? '',
-    aiArchitecture: b.aiArchitecture ?? ''
+    aiArchitecture: b.aiArchitecture ?? '',
+    github: b.links?.github ?? '',
+    piezas: (b.architectureNodes ?? []).map((n) => ({ label: n.label, group: n.group })),
+    diagrama: b.architectureNodes?.length
+      ? { nodes: b.architectureNodes, edges: b.architectureEdges ?? [], layout: b.architectureLayout }
+      : undefined
   };
 }
 

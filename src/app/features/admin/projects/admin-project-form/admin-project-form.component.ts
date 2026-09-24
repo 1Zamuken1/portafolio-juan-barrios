@@ -22,6 +22,8 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../../../core/services/data.service';
 import { RedactorBorradorComponent } from '../redactor-borrador/redactor-borrador.component';
+import { BlueprintViewerComponent } from '../../../../shared/components/blueprint-viewer/blueprint-viewer.component';
+import { BlueprintEdge, BlueprintLayout, BlueprintNode } from '../../../../shared/models/project.model';
 import { FichaVista, MetaFicha } from '../vista-ficha/ficha-vista';
 import { Project, ProjectDraft } from '../../../../shared/models/project.model';
 import { limpiarVacios } from '../../../../shared/utils/limpiar-vacios';
@@ -94,7 +96,7 @@ import { PRIMENG_FORMULARIO } from '../../primeng';
 @Component({
   selector: 'app-admin-project-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgTemplateOutlet, ...PRIMENG_FORMULARIO, TabsModule, RedactorBorradorComponent],
+  imports: [CommonModule, ReactiveFormsModule, NgTemplateOutlet, ...PRIMENG_FORMULARIO, TabsModule, RedactorBorradorComponent, BlueprintViewerComponent],
   templateUrl: './admin-project-form.component.html',
   styleUrls: ['../../admin.css', './admin-project-form.component.css']
 })
@@ -124,6 +126,16 @@ export class AdminProjectFormComponent implements OnInit {
    *  formulario, y leerlo en vivo solo serviria para moverle la vista. */
   pista = signal('');
   actual = signal<FichaVista | null>(null);
+
+  /**
+   * El diagrama del proyecto. No es un control del formulario: son nodos con
+   * coordenadas, que no se editan a mano aqui. Se guarda solo si lo propuso
+   * la IA en esta visita (`diagramaPropuesto`); si no, no viaja, y el backend
+   * conserva el que hubiera.
+   */
+  diagrama = signal<{ nodes: BlueprintNode[]; edges: BlueprintEdge[]; layout?: BlueprintLayout } | null>(null);
+  diagramaPropuesto = signal(false);
+  private diagramaGuardado: { nodes: BlueprintNode[]; edges: BlueprintEdge[]; layout?: BlueprintLayout } | null = null;
   meta = signal<MetaFicha>({});
 
   protected readonly SECCIONES = SECCIONES_FICHA;
@@ -221,7 +233,15 @@ export class AdminProjectFormComponent implements OnInit {
         shortDescription: v.shortDescription,
         fullDescription: v.fullDescription,
         readmeMarkdown: { ...v.readmeMarkdown },
-        challenges: v.challenges
+        challenges: v.challenges,
+        features: aLista(v.featuresText),
+        highlights: aLista(v.highlightsText),
+        keywords: aLista(v.keywordsText),
+        coreArchitecture: v.coreArchitecture ?? '',
+        databaseArchitecture: v.databaseArchitecture ?? '',
+        aiArchitecture: v.aiArchitecture ?? '',
+        github: v.links?.github ?? '',
+        diagrama: this.diagrama() ?? undefined
       } : null);
     }
     this.cambiarDePaso(paso);
@@ -332,6 +352,11 @@ export class AdminProjectFormComponent implements OnInit {
           this.challenges.clear();
           (project.challenges ?? []).forEach((c) =>
             this.agregarChallenge(c.title, c.description));
+
+          this.diagramaGuardado = project.architectureNodes?.length
+            ? { nodes: project.architectureNodes, edges: project.architectureEdges ?? [], layout: project.architectureLayout }
+            : null;
+          this.diagrama.set(this.diagramaGuardado);
         }
         this.loading.set(false);
       },
@@ -377,6 +402,23 @@ export class AdminProjectFormComponent implements OnInit {
     }
     this.form.patchValue(extra);
 
+    // El repositorio, con la misma regla: solo si llega. El backend ya tiro el
+    // que no estaba escrito en el readme.
+    const github = borrador.links?.github?.trim();
+    if (github) {
+      this.form.patchValue({ links: { github } });
+      extra['linkGithub'] = github;
+    }
+
+    if (borrador.architectureNodes?.length) {
+      this.diagrama.set({
+        nodes: borrador.architectureNodes,
+        edges: borrador.architectureEdges ?? [],
+        layout: borrador.architectureLayout
+      });
+      this.diagramaPropuesto.set(true);
+    }
+
     this.rellenados.set(new Set([
       'name', 'shortDescription', 'fullDescription',
       'objective', 'architecture', 'mainFeatures', 'technologies', 'learnings',
@@ -391,6 +433,12 @@ export class AdminProjectFormComponent implements OnInit {
       detail: 'Revisalos y completa el resto. Todavia no se ha guardado nada.',
       life: 6000
     });
+  }
+
+  /** Vuelve al diagrama que habia antes de la propuesta, o a ninguno. */
+  descartarDiagrama(): void {
+    this.diagrama.set(this.diagramaGuardado);
+    this.diagramaPropuesto.set(false);
   }
 
   /** Si un campo lo escribio el borrador y todavia no se ha tocado. */
@@ -428,6 +476,13 @@ export class AdminProjectFormComponent implements OnInit {
         }))
         .filter((c: { title: string; description: string }) => c.title || c.description)
     };
+
+    const d = this.diagrama();
+    if (this.diagramaPropuesto() && d) {
+      projectData.architectureNodes = d.nodes;
+      projectData.architectureEdges = d.edges;
+      projectData.architectureLayout = d.layout;
+    }
 
     // Los campos que este formulario no maneja (diagramas, techStack,
     // structuredStack, rawMetrics) no se envian. El backend hace una

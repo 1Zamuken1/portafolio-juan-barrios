@@ -72,8 +72,8 @@ test('las burbujas y la ficha están antes de redactar', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('jwt_token', 'prueba-e2e'));
   await page.goto('/admin/dashboard/projects/new');
 
-  await expect(page.locator('.nodo')).toHaveCount(11);
-  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(11);
+  await expect(page.locator('.nodo')).toHaveCount(12);
+  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(12);
   await expect(page.locator('.ventana')).toBeVisible();
   await expect(page.locator('.banner__titulo .hueco')).toBeVisible();
 });
@@ -82,8 +82,8 @@ test('el diagrama enciende todas las burbujas que el backend cuenta', async ({ p
   await simularStream(page, FLUJO_COMPLETO);
   await prepararRedaccion(page);
 
-  await expect(page.locator('.nodo')).toHaveCount(11);
-  await expect(page.locator('.nodo[data-estado="hecho"]')).toHaveCount(11);
+  await expect(page.locator('.nodo')).toHaveCount(12);
+  await expect(page.locator('.nodo[data-estado="hecho"]')).toHaveCount(12);
 });
 
 test('cada paso cuenta lo que dijo el backend al pasar por él', async ({ page }) => {
@@ -211,7 +211,7 @@ test('descartar deja el formulario intacto y la vista como al principio', async 
   await page.getByRole('button', { name: 'Descartar' }).click();
 
   await expect(page.locator('.acciones[data-modo="vacia"]')).toBeVisible();
-  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(11);
+  await expect(page.locator('.nodo[data-estado="espera"]')).toHaveCount(12);
   await expect(page.locator('#name')).toHaveValue('');
 });
 
@@ -324,4 +324,50 @@ test('las listas y la arquitectura del readme entran en el formulario; las vacia
   await expect(page.locator('#aiArchitecture')).toHaveValue('');
   await expect(page.locator('label[for="coreArchitecture"] .marca-ia')).toHaveCount(1);
   await expect(page.locator('label[for="aiArchitecture"] .marca-ia')).toHaveCount(0);
+});
+
+test('el diagrama propuesto se ve en la vista previa y entra en la ficha, y se puede descartar', async ({ page }) => {
+  // El modelo propone las piezas; las coordenadas las pone el backend. Aqui
+  // llegan ya colocadas, como las manda la linea `fin`.
+  const conDiagrama = {
+    ...BORRADOR,
+    links: { github: 'https://github.com/1Zamuken1/tsuki-translator' },
+    architectureNodes: [
+      { id: 'ui', label: 'PyQt UI', group: 'client', type: 'primary', icon: 'pi pi-desktop', x: 80, y: 80, width: 250, height: 96 },
+      { id: 'core', label: 'Dominio', group: 'application', type: 'primary', icon: 'pi pi-cog', x: 460, y: 80, width: 250, height: 96 },
+      { id: 'motor', label: 'Motor local', group: 'external', type: 'secondary', icon: 'pi pi-sparkles', x: 840, y: 80, width: 250, height: 96 }
+    ],
+    architectureEdges: [
+      { from: 'ui', to: 'core', fromPort: 'right', toPort: 'left', routeType: 'orthogonal' },
+      { from: 'core', to: 'motor', fromPort: 'right', toPort: 'left', routeType: 'orthogonal' }
+    ],
+    architectureLayout: { orientation: 'freeform', canvas: { width: 1200, height: 280, gridSize: 40, showGrid: true } }
+  };
+  await simularStream(page, [...FLUJO_COMPLETO.slice(0, -1), { etapa: 'fin', borrador: conDiagrama }]);
+  await prepararRedaccion(page);
+
+  await expect(nodo(page, 'Diagrama')).toHaveAttribute('data-estado', 'hecho');
+  await expect(page.locator('app-vista-ficha app-blueprint-viewer')).toBeVisible();
+  await expect(page.locator('app-vista-ficha .banner__repo')).toContainText('github.com/1Zamuken1/tsuki-translator');
+
+  await page.getByRole('button', { name: 'Aceptar y completar la ficha' }).click();
+
+  await expect(page.locator('#linkGithub')).toHaveValue('https://github.com/1Zamuken1/tsuki-translator');
+  const bloque = page.locator('.diagrama-form');
+  await expect(bloque.locator('app-blueprint-viewer')).toBeVisible();
+  await expect(bloque.locator('.marca-ia')).toHaveCount(1);
+
+  await bloque.getByRole('button', { name: 'Descartar el propuesto' }).click();
+  await expect(bloque.locator('app-blueprint-viewer')).toHaveCount(0);
+  await expect(bloque).toContainText('Sin diagrama');
+});
+
+test('mientras se escribe, las piezas del diagrama llegan como etiquetas', async ({ page }) => {
+  await simularStream(page, [
+    ...FLUJO_COMPLETO.slice(0, 2),
+    { etapa: 'texto', detalle: '{"name":"Tsuki","architectureNodes":[{"id":"ui","label":"PyQt UI","group":"client"},' },
+    { etapa: 'texto', detalle: '{"id":"core","label":"Dominio","group":"application"}' }
+  ]);
+  await prepararRedaccion(page);
+  await expect(page.locator('app-vista-ficha .etiqueta--pieza')).toHaveText(['PyQt UI', 'Dominio']);
 });

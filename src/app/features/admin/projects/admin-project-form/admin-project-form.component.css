@@ -521,3 +521,36 @@
   .pasos__lema { display: none; }
   .aviso-ia { border-radius: 18px; }
 }
+
+/* ---- El diagrama, dentro de Arquitectura ---- */
+.diagrama-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--admin-borde, rgba(168, 85, 247, 0.2));
+  border-radius: 10px;
+}
+
+.diagrama-form__cabeza {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 2rem;
+}
+
+.diagrama-form__titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.diagrama-form__lienzo {
+  height: 360px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #1e1e3f;
+}

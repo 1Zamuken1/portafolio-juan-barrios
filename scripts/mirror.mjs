@@ -267,7 +267,12 @@ const git = (...args) => execFileSync('git', args, { cwd: RAIZ, encoding: 'utf-8
 async function publish() {
   await pull();
 
-  git('add', 'src/assets/data');
+  // El sitemap sale de los mismos datos: un proyecto nuevo que no este en el
+  // sitemap existe pero no se anuncia, y e2e/sitemap.spec.ts lo tumba. Paso
+  // con el primero que se publico desde el panel.
+  execFileSync(process.execPath, [join(RAIZ, 'scripts', 'sitemap.mjs')], { cwd: RAIZ, stdio: 'inherit' });
+
+  git('add', 'src/assets/data', 'public/sitemap.xml');
   const pendiente = git('diff', '--cached', '--name-only');
   if (!pendiente) {
     console.log('\nNada que publicar: el espejo ya coincide con la base.');

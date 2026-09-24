@@ -24,8 +24,12 @@ import java.util.List;
  * variantes de "Formatos de exportacion"-- y un modelo generandolas libremente
  * anadiria una cuarta cada vez. Los iconos son peor todavia: son clases CSS
  * concretas que el modelo no puede adivinar, solo acertar por casualidad.
- * Los diagramas tambien quedan fuera: colocar nodos sin solapamientos es un
- * problema de layout, no de redaccion.
+ *
+ * <p>El diagrama de arquitectura si entra, pero partido: el modelo propone las
+ * piezas y quien llama a quien, y las coordenadas las pone
+ * {@link com.juanbarrios.portfolio.domain.service.MaquetadorDeDiagrama}.
+ * Colocar nodos sin solapamientos es un problema de maquetacion, no de
+ * redaccion. Y el enlace al repositorio solo sale si esta escrito en el readme.
  *
  * <p>El nombre si entra, aunque no sea prosa. Antes habia que escribirlo a mano
  * <b>antes</b> de poder redactar, y eso ponia un paso manual delante del
@@ -44,7 +48,11 @@ public record ProjectDraft(
         List<String> keywords,
         String coreArchitecture,
         String databaseArchitecture,
-        String aiArchitecture
+        String aiArchitecture,
+        ProjectLinks links,
+        List<BlueprintNode> architectureNodes,
+        List<BlueprintEdge> architectureEdges,
+        BlueprintLayout architectureLayout
 ) {
 
     /** Un borrador solo con la prosa: listas y arquitectura sin decir. */
@@ -52,5 +60,29 @@ public record ProjectDraft(
                         ReadmeMarkdown readmeMarkdown, List<Challenge> challenges) {
         this(name, shortDescription, fullDescription, readmeMarkdown, challenges,
                 null, null, null, null, null, null);
+    }
+
+    /** Con listas y arquitectura, sin enlace ni diagrama. */
+    public ProjectDraft(String name, String shortDescription, String fullDescription,
+                        ReadmeMarkdown readmeMarkdown, List<Challenge> challenges,
+                        List<String> features, List<String> highlights, List<String> keywords,
+                        String coreArchitecture, String databaseArchitecture, String aiArchitecture) {
+        this(name, shortDescription, fullDescription, readmeMarkdown, challenges,
+                features, highlights, keywords, coreArchitecture, databaseArchitecture, aiArchitecture,
+                null, null, null, null);
+    }
+
+    /** El mismo borrador con otro enlace. */
+    public ProjectDraft conEnlaces(ProjectLinks otros) {
+        return new ProjectDraft(name, shortDescription, fullDescription, readmeMarkdown, challenges,
+                features, highlights, keywords, coreArchitecture, databaseArchitecture, aiArchitecture,
+                otros, architectureNodes, architectureEdges, architectureLayout);
+    }
+
+    /** El mismo borrador con el diagrama ya colocado. */
+    public ProjectDraft conDiagrama(List<BlueprintNode> nodos, List<BlueprintEdge> aristas, BlueprintLayout layout) {
+        return new ProjectDraft(name, shortDescription, fullDescription, readmeMarkdown, challenges,
+                features, highlights, keywords, coreArchitecture, databaseArchitecture, aiArchitecture,
+                links, nodos, aristas, layout);
     }
 }

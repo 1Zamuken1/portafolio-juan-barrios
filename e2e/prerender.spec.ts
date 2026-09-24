@@ -58,13 +58,17 @@ test.describe('HTML prerenderizado', () => {
 
   test('cada proyecto anuncia su propia imagen al compartirse', () => {
     const vistas = new Set<string>();
-    for (const p of (projects as Array<{ id: number; status: string }>).filter((x) => x.status !== 'Draft')) {
+    const publicados = (projects as Array<{ id: number; status: string; imageUrl?: string }>).filter((x) => x.status !== 'Draft');
+    for (const p of publicados) {
       const html = readFileSync(join(DIST, `projects/${p.id}/index.html`), 'utf-8');
       const img = /property="og:image" content="(.*?)"/.exec(html)?.[1] ?? '';
       expect(img).toBeTruthy();
       vistas.add(img);
     }
-    // Ninguna se repite: cada caso de estudio tiene su propia portada.
-    expect(vistas.size).toBe(4);
+    // Ninguna se repite: cada caso de estudio con imagen tiene su propia
+    // portada, y los que aun no la tienen comparten la del sitio.
+    const conImagen = publicados.filter((p) => p.imageUrl).length;
+    const sinImagen = publicados.length - conImagen;
+    expect(vistas.size).toBe(conImagen + (sinImagen > 0 ? 1 : 0));
   });
 });

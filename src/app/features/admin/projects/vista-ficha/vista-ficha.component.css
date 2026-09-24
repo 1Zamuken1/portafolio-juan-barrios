@@ -278,6 +278,30 @@
   color: var(--md-text);
 }
 
+.banner__repo {
+  margin: 0.6rem 0 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--md-text-muted);
+  overflow-wrap: anywhere;
+}
+
+/* ---- Diagrama ---- */
+.diagrama {
+  height: 320px;
+  border: 1px solid var(--md-code-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #1e1e3f;
+}
+
+.etiqueta--pieza[data-capa='client'] { border-color: #60a5fa; }
+.etiqueta--pieza[data-capa='application'] { border-color: #a855f7; }
+.etiqueta--pieza[data-capa='automation'] { border-color: #f59e0b; }
+.etiqueta--pieza[data-capa='persistence'] { border-color: #10b981; }
+.etiqueta--pieza[data-capa='database'] { border-color: #22d3ee; }
+.etiqueta--pieza[data-capa='external'] { border-color: #f472b6; }
+
 /* ---- Listas ---- */
 .lista {
   margin: 0 0 0.5rem;

@@ -49,6 +49,10 @@
         <ng-container *ngTemplateOutlet="campo; context: { ruta: 'shortDescription', lineas: HUECO_FRASE }" />
       </p>
 
+      @if (ficha().github) {
+        <p class="banner__repo"><i class="pi pi-github" aria-hidden="true"></i> {{ ficha().github }}</p>
+      }
+
       <!-- Los resumenes de arquitectura, como los datos de la cabecera de la
            ficha publica. Vacios si el readme no los nombra. -->
       <dl class="banner__arquitectura bloque" data-grupo="arquitectura" [attr.data-estado]="estadoGrupo('arquitectura')">
@@ -109,6 +113,32 @@
         <ng-container *ngTemplateOutlet="listaFicha; context: { $implicit: 'highlights' }" />
       </section>
 
+      <!-- El diagrama. Mientras se escribe llegan las piezas sin sitio --las
+           coordenadas las pone el backend al final--, asi que se ven como
+           etiquetas por capa. Con el borrador terminado, el diagrama de verdad. -->
+      <section class="bloque" data-grupo="diagrama" [attr.data-estado]="estadoGrupo('diagrama')">
+        <h2 class="md-h2">Diagrama de arquitectura</h2>
+        @if (ficha().diagrama; as d) {
+          <div class="diagrama">
+            <app-blueprint-viewer [nodes]="d.nodes" [edges]="d.edges" [layout]="d.layout" version="IA" />
+          </div>
+        } @else {
+          <div class="etiquetas">
+            @for (p of piezas(); track $index) {
+              <span class="etiqueta etiqueta--pieza" [attr.data-capa]="p.group">{{ p.label }}</span>
+            } @empty {
+              @if (sinHuecos()) {
+                <span class="no-dice">El readme no da piezas para un diagrama.</span>
+              } @else {
+                @for (n of LISTA_HUECO; track n) {
+                  <span class="etiqueta etiqueta--hueco" aria-hidden="true"></span>
+                }
+              }
+            }
+          </div>
+        }
+      </section>
+
       <section class="bloque" data-grupo="desafios" [attr.data-estado]="estadoGrupo('desafios')">
         <h2 class="md-h2">Desafíos técnicos</h2>
 
@@ -145,8 +175,8 @@
       </section>
 
       <p class="pie">
-        El diagrama, el stack estructurado y las métricas no salen del readme: se
-        añaden después en <code>projects.json</code>.
+        El stack estructurado y las métricas no salen del readme: se añaden
+        después en <code>projects.json</code>.
       </p>
     </div>
   </div>

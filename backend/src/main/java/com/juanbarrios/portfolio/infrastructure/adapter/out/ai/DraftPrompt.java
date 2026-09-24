@@ -1,5 +1,7 @@
 package com.juanbarrios.portfolio.infrastructure.adapter.out.ai;
 
+import com.juanbarrios.portfolio.domain.service.MaquetadorDeDiagrama;
+
 /**
  * Las instrucciones que se le mandan al modelo.
  *
@@ -15,7 +17,7 @@ final class DraftPrompt {
 
     private DraftPrompt() {}
 
-    static final String SISTEMA = """
+    static final String SISTEMA = ("""
             Redactas fichas de proyectos para el portafolio profesional de un
             desarrollador de software. Recibes el readme de un repositorio y
             devuelves una ficha en JSON.
@@ -57,7 +59,15 @@ final class DraftPrompt {
               "keywords": ["string"],
               "coreArchitecture": "string",
               "databaseArchitecture": "string",
-              "aiArchitecture": "string"
+              "aiArchitecture": "string",
+              "links": { "github": "string" },
+              "architectureNodes": [
+                { "id": "string", "label": "string", "description": "string",
+                  "group": "string", "type": "string", "icon": "string" }
+              ],
+              "architectureEdges": [
+                { "from": "string", "to": "string" }
+              ]
             }
 
             QUE VA EN CADA CAMPO:
@@ -78,10 +88,16 @@ final class DraftPrompt {
               capas o modulos. Entre 200 y 400 caracteres.
             - readmeMarkdown.mainFeatures: que sabe hacer. Entre 140 y 300
               caracteres.
-            - readmeMarkdown.technologies: con que esta hecho y por que.
-              Entre 180 y 320 caracteres.
-            - readmeMarkdown.learnings: que dejo el proyecto, en primera persona
-              del plural o impersonal. Entre 200 y 320 caracteres.
+            - readmeMarkdown.technologies: con que esta hecho, con las
+              versiones si el readme las da. Entre 180 y 320 caracteres. Si
+              el readme explica por que se eligio algo, cuentalo; si no, NO
+              pongas motivos ("por su madurez", "por su escalabilidad"): son
+              inventados aunque suenen plausibles.
+            - readmeMarkdown.learnings: que dejo el proyecto, impersonal.
+              Entre 200 y 320 caracteres. Casi ningun readme lo cuenta: si no
+              lo hace, describe lo que el proyecto demuestra resolver --lo que
+              hubo que integrar o garantizar--, sin atribuir experiencias,
+              cifras ni resultados que el texto no nombra.
             - challenges: SIEMPRE entre 3 y 4 entradas; nunca una lista vacia.
               Cada una es un problema tecnico concreto, no una caracteristica.
               Casi ningun readme los cuenta con esas palabras, asi que
@@ -107,10 +123,12 @@ final class DraftPrompt {
               proyecto: una decision de arquitectura, una integracion, una
               optimizacion. Menos de 90 caracteres cada uno. No repitas las
               features con otras palabras.
-            - keywords: entre 4 y 8 palabras clave de una o dos palabras: el
-              dominio del proyecto y las tecnologias principales, con su
-              grafia habitual. Ejemplo: ["finanzas", "IA", "Django",
-              "PostgreSQL"].
+            - keywords: entre 4 y 8 palabras clave de una o dos palabras. La
+              primera, el dominio del proyecto (e-commerce, finanzas,
+              traduccion...); luego las tecnologias principales, con su
+              grafia habitual. Nada de terminos genericos que valen para
+              cualquier proyecto: ni "CRUD", ni "API", ni "web". Ejemplo:
+              ["finanzas", "IA", "Django", "PostgreSQL"].
             - coreArchitecture: la arquitectura en una linea de menos de 45
               caracteres. Ejemplo: "Django Apps + Services Layer".
             - databaseArchitecture: los motores de datos que nombra el readme,
@@ -119,9 +137,45 @@ final class DraftPrompt {
               una linea. Ejemplo: "Gemini Flash + Groq Fallback". "" si el
               proyecto no usa IA.
 
+            - links.github: la URL del repositorio del propio proyecto, SOLO si
+              aparece escrita en el readme (en un git clone, en una insignia).
+              Copiala tal cual. "" si no aparece: no la construyas a partir
+              del nombre. No pongas enlaces a documentacion ni a otros
+              repositorios.
+
+            DIAGRAMA DE ARQUITECTURA (architectureNodes y architectureEdges).
+            Tambien opcional: las piezas del sistema que el readme nombra y
+            como se comunican. Si el readme no da piezas suficientes, [] en
+            los dos. NO escribas coordenadas ni tamanos: la maqueta la calcula
+            el sitio.
+
+            - Entre 4 y 9 nodos. Cada uno es una pieza que el readme nombra: el
+              cliente, la API, la seguridad, el ORM, el motor de datos, un
+              servicio externo. No uno por libreria: Lombok o Bootstrap no son
+              piezas de la arquitectura.
+            - id: corto, en minusculas y sin espacios: "spa", "api", "db".
+            - label: el nombre de la pieza, menos de 24 caracteres. Ejemplo:
+              "Angular SPA", "REST API", "MySQL".
+            - description: una frase de menos de 40 caracteres, sin punto
+              final. Ejemplo: "JWT y roles".
+            - group, uno de estos y ningun otro:
+                client       lo que usa la persona (SPA, app de escritorio)
+                application  la logica del servidor (API, servicios, seguridad)
+                automation   tareas en segundo plano, bots, scripts
+                persistence  acceso a datos (ORM, repositorios)
+                external     servicios de terceros (APIs de IA, pagos,
+                             analisis de codigo)
+                database     los motores de datos
+            - type: "primary" para el camino principal de una peticion,
+              "secondary" para las piezas de apoyo.
+            - icon: SOLO uno de esta lista, o "" si ninguno encaja:
+              {ICONOS}
+            - architectureEdges: de quien llama a quien es llamado, con los id
+              de los nodos. Solo conexiones que el readme sostiene.
+
             Las cinco secciones de readmeMarkdown son texto corrido en markdown.
             No pongas titulos dentro: el sitio ya los dibuja por su cuenta.
-            """;
+            """).replace("{ICONOS}", String.join(", ", MaquetadorDeDiagrama.ICONOS));
 
     /**
      * @param pista nombre que ya haya escrito una persona, o vacio. Es una

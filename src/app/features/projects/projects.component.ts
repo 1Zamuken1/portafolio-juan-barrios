@@ -1,6 +1,7 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, inject, signal, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, inject, signal, computed, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { CoordinadorScroll } from './coordinador-scroll';
+import { metadatosFicha } from './metadatos-ficha';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../core/services/data.service';
@@ -27,6 +28,10 @@ export class ProjectsComponent implements OnInit, OnDestroy, AfterViewInit {
   private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   project = signal<Project | null>(null);
+  protected metadatos = computed(() => {
+    const p = this.project();
+    return p ? metadatosFicha(p) : [];
+  });
   loading = signal(true);
 
   @ViewChild('projectScroller') projectScroller!: ElementRef<HTMLElement>;
