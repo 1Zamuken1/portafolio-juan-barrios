@@ -182,7 +182,7 @@ Y dos pérdidas de datos desde el panel de administración, ambas recuperadas co
 
 ### Deuda conocida
 
-- **Tests unitarios del router del visor.** La lógica creció mucho —esquiva obstáculos, reparte carriles, ordena puertos—. `blueprint-router.spec.ts` ya cubre parte de las reglas desde `e2e/`, sin navegador; queda el resto.
+- ~~Tests unitarios del router del visor~~ — hecho el 24 de septiembre. La orquestación salió del componente a `services/blueprint-router.ts` (funciones puras `colocarNodos` y `trazarConectores`), y `e2e/blueprint-diagramas.spec.ts` la prueba sobre los cuatro diagramas publicados y uno con la forma del maquetador de la IA. Comprueba que cada conector sale y llega al borde de su caja, no cruza otra caja, no comparte punto de anclaje con otro conector y sigue siendo ortogonal tras el reparto. Las piezas sueltas siguen en `blueprint-router.spec.ts`.
 - **Coreografía scroll ↔ URL en `ProjectsComponent`.** Dos banderas y temporizadores de 1 s coordinando el scroll y el fragmento. Funciona, pero es el punto más frágil del frontend.
 - **`knowledge-pillars` está huérfano.** Solo lo usaba `legacy-ring`, que se borró. Tiene contenido —«lo que aplico hoy» frente a «lo que estoy incorporando»— que no está en ningún otro sitio: o vuelve a `profile.md` o se borra, pero merece una decisión.
 - **Contenido de las fichas hechas a mano con datos que el readme no sostiene.** Salió al compararlas con las del redactor: Gastu Django habla de un «Circuit Breaker» y de «Llama 3», y da el agente de IA por integrado cuando el readme lo lista como pendiente; Salsamentaría dice «E-commerce B2B», «rating A» y «quality gates en CI». Puede que sean ciertos y el readme se haya quedado corto, pero hoy la ficha y el readme dicen cosas distintas.
