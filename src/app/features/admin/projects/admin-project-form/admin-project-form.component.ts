@@ -23,6 +23,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../../../core/services/data.service';
 import { RedactorBorradorComponent } from '../redactor-borrador/redactor-borrador.component';
 import { BlueprintViewerComponent } from '../../../../shared/components/blueprint-viewer/blueprint-viewer.component';
+import { tituloCapa } from '../../../../shared/models/vocabulario';
 import { BlueprintEdge, BlueprintLayout, BlueprintNode } from '../../../../shared/models/project.model';
 import { FichaVista, MetaFicha } from '../vista-ficha/ficha-vista';
 import { Project, ProjectDraft } from '../../../../shared/models/project.model';
@@ -136,6 +137,15 @@ export class AdminProjectFormComponent implements OnInit {
    */
   diagrama = signal<{ nodes: BlueprintNode[]; edges: BlueprintEdge[]; layout?: BlueprintLayout } | null>(null);
   diagramaPropuesto = signal(false);
+
+  /** El stack por capas y las caracteristicas por grupos que propuso la IA.
+   *  Como el diagrama: no son controles, se ven y se pueden descartar, y solo
+   *  viajan al guardar si son una propuesta de esta visita. */
+  estructura = signal<{ stack: Record<string, string[]>; grupos: Record<string, string[]> } | null>(null);
+  protected readonly tituloCapa = tituloCapa;
+  protected entradas(g: Record<string, string[]>): { clave: string; items: string[] }[] {
+    return Object.entries(g).map(([clave, items]) => ({ clave, items }));
+  }
   private diagramaGuardado: { nodes: BlueprintNode[]; edges: BlueprintEdge[]; layout?: BlueprintLayout } | null = null;
   meta = signal<MetaFicha>({});
 
@@ -430,6 +440,12 @@ export class AdminProjectFormComponent implements OnInit {
       extra['linkGithub'] = github;
     }
 
+    const stack = borrador.structuredStack ?? {};
+    const grupos = borrador.structuredFeatures ?? {};
+    if (Object.keys(stack).length || Object.keys(grupos).length) {
+      this.estructura.set({ stack, grupos });
+    }
+
     if (borrador.architectureNodes?.length) {
       this.diagrama.set({
         nodes: borrador.architectureNodes,
@@ -453,6 +469,11 @@ export class AdminProjectFormComponent implements OnInit {
       detail: 'Revisalos y completa el resto. Todavia no se ha guardado nada.',
       life: 6000
     });
+  }
+
+  /** Tira el stack y los grupos propuestos: se conserva lo que hubiera. */
+  descartarEstructura(): void {
+    this.estructura.set(null);
   }
 
   /** Vuelve al diagrama que habia antes de la propuesta, o a ninguno. */
@@ -498,6 +519,10 @@ export class AdminProjectFormComponent implements OnInit {
         }))
         .filter((c: { title: string; description: string }) => c.title || c.description)
     };
+
+    const e = this.estructura();
+    if (e && Object.keys(e.stack).length) projectData.structuredStack = e.stack;
+    if (e && Object.keys(e.grupos).length) projectData.structuredFeatures = e.grupos;
 
     const d = this.diagrama();
     if (this.diagramaPropuesto() && d) {

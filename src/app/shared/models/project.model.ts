@@ -88,6 +88,10 @@ export interface ProjectDraft {
   architectureNodes?: BlueprintNode[];
   architectureEdges?: BlueprintEdge[];
   architectureLayout?: BlueprintLayout;
+  /** El stack por capas y las caracteristicas por grupos, ya en el
+   *  vocabulario de src/assets/data/vocabulario.json. */
+  structuredStack?: Record<string, string[]>;
+  structuredFeatures?: Record<string, string[]>;
 }
 
 export type { BlueprintNode, BlueprintEdge, BlueprintLayout };

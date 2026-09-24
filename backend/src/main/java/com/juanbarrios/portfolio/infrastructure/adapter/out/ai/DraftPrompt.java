@@ -1,6 +1,7 @@
 package com.juanbarrios.portfolio.infrastructure.adapter.out.ai;
 
 import com.juanbarrios.portfolio.domain.service.MaquetadorDeDiagrama;
+import com.juanbarrios.portfolio.domain.service.Vocabulario;
 
 /**
  * Las instrucciones que se le mandan al modelo.
@@ -67,6 +68,8 @@ final class DraftPrompt {
               "coreArchitecture": "string",
               "databaseArchitecture": "string",
               "aiArchitecture": "string",
+              "structuredStack": { "capa": ["string"] },
+              "structuredFeatures": { "Grupo": ["string"] },
               "links": { "github": "string" },
               "architectureNodes": [
                 { "id": "string", "label": "string", "description": "string",
@@ -144,6 +147,19 @@ final class DraftPrompt {
               una linea. Ejemplo: "Gemini Flash + Groq Fallback". "" si el
               proyecto no usa IA.
 
+            - structuredStack: las tecnologias que el readme nombra, por capas.
+              Las claves SOLO pueden ser estas, en minusculas: {CAPAS}.
+              Solo las capas que el proyecto tiene. Cada tecnologia con su
+              nombre habitual y sin version: "Spring Boot", no "Spring Boot
+              3.5.6". No metas librerias menores (Lombok, Bootstrap Icons) ni
+              herramientas de desarrollo (Maven, venv): lo que forma el
+              sistema. Ejemplo: {"backend": ["Java", "Spring Boot"],
+              "database": ["MySQL"]}.
+            - structuredFeatures: las funcionalidades agrupadas, entre 3 y 6
+              grupos de 2 a 5 entradas cortas. Para los temas comunes usa
+              exactamente estos nombres, en espanol: {GRUPOS}. Para lo propio
+              del dominio, un nombre corto en espanol con mayuscula inicial
+              ("Finanzas", "Catalogo"). Nada de nombres en ingles.
             - links.github: la URL del repositorio del propio proyecto, SOLO si
               aparece escrita en el readme (en un git clone, en una insignia).
               Copiala tal cual. "" si no aparece: no la construyas a partir
@@ -202,7 +218,9 @@ final class DraftPrompt {
 
             Las cinco secciones de readmeMarkdown son texto corrido en markdown.
             No pongas titulos dentro: el sitio ya los dibuja por su cuenta.
-            """).replace("{ICONOS}", String.join(", ", MaquetadorDeDiagrama.ICONOS));
+            """).replace("{ICONOS}", String.join(", ", MaquetadorDeDiagrama.ICONOS))
+            .replace("{CAPAS}", String.join(", ", Vocabulario.CAPAS.keySet()))
+            .replace("{GRUPOS}", String.join(", ", Vocabulario.GRUPOS.keySet()));
 
     /**
      * @param pista nombre que ya haya escrito una persona, o vacio. Es una

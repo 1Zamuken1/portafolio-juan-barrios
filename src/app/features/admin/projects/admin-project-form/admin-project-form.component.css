@@ -554,3 +554,19 @@
   overflow: hidden;
   background: #1e1e3f;
 }
+
+.estructura-form__fila {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.estructura-form__fila strong {
+  display: inline-block;
+  min-width: 8rem;
+  margin-right: 0.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--admin-texto-suave, inherit);
+}

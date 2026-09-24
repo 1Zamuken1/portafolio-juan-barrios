@@ -303,6 +303,30 @@ class DraftProjectUseCaseTest {
     }
 
     @Test
+    @DisplayName("el stack y los grupos llegan con su vocabulario, aunque el modelo use sinonimos")
+    void elStackLlegaNormalizado() {
+        ProjectDraft propuesto = borradorValido().conEstructura(
+                java.util.Map.of("persistence", List.of("PostgreSQL"), "backend", List.of("Django")),
+                java.util.Map.of("Architecture", List.of("Capa de servicios")));
+
+        ProjectDraft b = conRespuesta(propuesto).draft("Gastu", README);
+
+        assertEquals(List.of("backend", "database"), new ArrayList<>(b.structuredStack().keySet()));
+        assertEquals(List.of("Arquitectura"), new ArrayList<>(b.structuredFeatures().keySet()));
+    }
+
+    @Test
+    @DisplayName("una capa del stack que no existe se rechaza, diciendo cuales valen")
+    void unaCapaInventadaSeRechaza() {
+        ProjectDraft propuesto = borradorValido().conEstructura(
+                java.util.Map.of("blockchain", List.of("Ethereum")), null);
+
+        BorradorInvalidoException e = assertThrows(BorradorInvalidoException.class,
+                () -> conRespuesta(propuesto).draft("Gastu", README));
+        assertTrue(e.getMessage().contains("blockchain") && e.getMessage().contains("backend"), e.getMessage());
+    }
+
+    @Test
     @DisplayName("el enlace a GitHub solo se queda si esta escrito en el readme")
     void elEnlaceSoloSiEstaEnElReadme() {
         String conClone = README + "\ngit clone https://github.com/1Zamuken1/Gastu.git\n";

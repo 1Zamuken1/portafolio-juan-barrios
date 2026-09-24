@@ -1,6 +1,7 @@
 package com.juanbarrios.portfolio.domain.model;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Borrador de los campos de prosa de un proyecto, redactado a partir de un
@@ -52,7 +53,9 @@ public record ProjectDraft(
         ProjectLinks links,
         List<BlueprintNode> architectureNodes,
         List<BlueprintEdge> architectureEdges,
-        BlueprintLayout architectureLayout
+        BlueprintLayout architectureLayout,
+        Map<String, List<String>> structuredStack,
+        Map<String, List<String>> structuredFeatures
 ) {
 
     /** Un borrador solo con la prosa: listas y arquitectura sin decir. */
@@ -69,20 +72,28 @@ public record ProjectDraft(
                         String coreArchitecture, String databaseArchitecture, String aiArchitecture) {
         this(name, shortDescription, fullDescription, readmeMarkdown, challenges,
                 features, highlights, keywords, coreArchitecture, databaseArchitecture, aiArchitecture,
-                null, null, null, null);
+                null, null, null, null, null, null);
     }
 
     /** El mismo borrador con otro enlace. */
     public ProjectDraft conEnlaces(ProjectLinks otros) {
         return new ProjectDraft(name, shortDescription, fullDescription, readmeMarkdown, challenges,
                 features, highlights, keywords, coreArchitecture, databaseArchitecture, aiArchitecture,
-                otros, architectureNodes, architectureEdges, architectureLayout);
+                otros, architectureNodes, architectureEdges, architectureLayout,
+                structuredStack, structuredFeatures);
     }
 
     /** El mismo borrador con el diagrama ya colocado. */
     public ProjectDraft conDiagrama(List<BlueprintNode> nodos, List<BlueprintEdge> aristas, BlueprintLayout layout) {
         return new ProjectDraft(name, shortDescription, fullDescription, readmeMarkdown, challenges,
                 features, highlights, keywords, coreArchitecture, databaseArchitecture, aiArchitecture,
-                links, nodos, aristas, layout);
+                links, nodos, aristas, layout, structuredStack, structuredFeatures);
+    }
+
+    /** El mismo borrador con el stack y las caracteristicas por grupos. */
+    public ProjectDraft conEstructura(Map<String, List<String>> stack, Map<String, List<String>> grupos) {
+        return new ProjectDraft(name, shortDescription, fullDescription, readmeMarkdown, challenges,
+                features, highlights, keywords, coreArchitecture, databaseArchitecture, aiArchitecture,
+                links, architectureNodes, architectureEdges, architectureLayout, stack, grupos);
     }
 }

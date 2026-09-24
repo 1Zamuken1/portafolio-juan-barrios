@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { BlueprintViewerComponent } from '../../../../shared/components/blueprint-viewer/blueprint-viewer.component';
+import { tituloCapa } from '../../../../shared/models/vocabulario';
 import { ARQUITECTURA, FichaVista, ListaFicha, MetaFicha, SECCIONES_CASO, SeccionCaso } from './ficha-vista';
 
 /**
@@ -26,7 +27,7 @@ import { ARQUITECTURA, FichaVista, ListaFicha, MetaFicha, SECCIONES_CASO, Seccio
 export type ModoVista = 'vacia' | 'actual' | 'redactando' | 'lista' | 'aplicada' | 'fallo';
 
 /** Los cuatro grupos de la vista, los mismos que las burbujas de salida. */
-export type GrupoFicha = 'nombre' | 'descripciones' | 'caso' | 'desafios' | 'listas' | 'arquitectura' | 'diagrama';
+export type GrupoFicha = 'nombre' | 'descripciones' | 'caso' | 'desafios' | 'listas' | 'arquitectura' | 'stack' | 'diagrama';
 
 const ETIQUETA_MODO: Record<ModoVista, string> = {
   vacia: 'Vista previa',
@@ -45,6 +46,7 @@ const RUTAS: Record<GrupoFicha, (ruta: string) => boolean> = {
   desafios: (r) => r.startsWith('challenges.'),
   listas: (r) => /^(features|highlights|keywords)\./.test(r),
   arquitectura: (r) => r.endsWith('Architecture') || r.startsWith('links.'),
+  stack: (r) => r.startsWith('structuredStack.') || r.startsWith('structuredFeatures.'),
   diagrama: (r) => r.startsWith('architectureNodes.')
 };
 
@@ -147,6 +149,15 @@ export class VistaFichaComponent {
   }
 
   protected desafios = computed(() => this.ficha().challenges ?? []);
+
+  protected readonly tituloCapa = tituloCapa;
+
+  /** Pares clave-lista de un campo por grupos, sin los grupos vacios. */
+  protected grupos(de: 'stack' | 'grupos'): { clave: string; items: string[] }[] {
+    return Object.entries(this.ficha()[de] ?? {})
+      .filter(([, items]) => items.length)
+      .map(([clave, items]) => ({ clave, items }));
+  }
 
   protected piezas = computed(() => (this.ficha().piezas ?? []).filter((p) => p.label));
 

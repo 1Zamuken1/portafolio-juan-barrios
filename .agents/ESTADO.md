@@ -36,7 +36,7 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayecto
 
 ### Tests
 
-**Frontend**, 169 tests en 24 ficheros (`pnpm run e2e`):
+**Frontend**, 177 tests en 24 ficheros (`pnpm run e2e`):
 
 | Suite | Qué protege |
 |---|---|
@@ -64,7 +64,7 @@ Los datos viven en `src/assets/data/*.json`: 4 proyectos, 3 entradas de trayecto
 
 **`ng test` no tiene target en `angular.json`**, así que `e2e/` es también donde viven los tests unitarios del frontend: las funciones puras se importan y se prueban sin navegador. Es el patrón a seguir mientras no se monte Karma. Las suites del panel entran poniendo un token en `localStorage` —el guard solo mira que exista— y `pipeline-borrador` simula el NDJSON con `page.route`, así que se prueban sin backend y sin gastar cuota de Groq.
 
-**Backend**, 16 clases de test, 77 tests (`mvn test` en Docker, ver el aviso de abajo):
+**Backend**, 17 clases de test, 82 tests (`mvn test` en Docker, ver el aviso de abajo):
 
 | Test | Qué protege |
 |---|---|
@@ -176,6 +176,7 @@ Y dos pérdidas de datos desde el panel de administración, ambas recuperadas co
 ### Inmediato
 
 - ~~Instalar un JDK~~ — resuelto con Docker (ver arriba). Instalar un JDK de verdad seguiría siendo más rápido, pero ya no es un bloqueo.
+- **Tras fusionar el vocabulario, `pnpm run mirror:push`.** Los datos se migraron en el JSON; la base sigue con las claves viejas, y un `mirror:publish` antes del push las traería de vuelta. El push sustituye la base por el JSON, así que de paso se va GastuApp (id 39), que ya no está en el JSON. Lo que se haya editado en el panel sin publicar se pierde: si hay dudas, antes un `mirror:pull` y mirar el diff.
 - **Borrar GastuApp (id 39) desde el panel.** Se retiró del JSON a mano; si sigue en la base, el próximo `mirror:publish` lo vuelve a traer.
 - **Comprobar si el `.exe` de SGVA Assistant sigue apuntando a `/releases/latest`** después de la próxima publicación.
 
@@ -185,7 +186,6 @@ Y dos pérdidas de datos desde el panel de administración, ambas recuperadas co
 - **Coreografía scroll ↔ URL en `ProjectsComponent`.** Dos banderas y temporizadores de 1 s coordinando el scroll y el fragmento. Funciona, pero es el punto más frágil del frontend.
 - **`knowledge-pillars` está huérfano.** Solo lo usaba `legacy-ring`, que se borró. Tiene contenido —«lo que aplico hoy» frente a «lo que estoy incorporando»— que no está en ningún otro sitio: o vuelve a `profile.md` o se borra, pero merece una decisión.
 - **Contenido de las fichas hechas a mano con datos que el readme no sostiene.** Salió al compararlas con las del redactor: Gastu Django habla de un «Circuit Breaker» y de «Llama 3», y da el agente de IA por integrado cuando el readme lo lista como pendiente; Salsamentaría dice «E-commerce B2B», «rating A» y «quality gates en CI». Puede que sean ciertos y el readme se haya quedado corto, pero hoy la ficha y el readme dicen cosas distintas.
-- **`structuredStack` para los proyectos del redactor.** Sin él, la cabecera de la ficha no enseña Backend ni Frontend. El redactor no lo genera a propósito (vocabulario inconsistente, ver apartado 5).
 - **La barra de guardado sólo está en las fichas.** Las listas no la necesitan, pero conviene no olvidar que el patrón existe si se añade otra vista con formulario largo.
 
 ### Rendimiento
@@ -218,7 +218,7 @@ Lo que en su día se discutió aquí y hoy funciona:
 
 Lo que se dejó fuera a propósito y sigue pendiente de decidir:
 
-**Normalizar el vocabulario de `structuredFeatures` y `rawMetrics`.** Sus claves ya son inconsistentes entre proyectos: conviven `Arquitectura` y `Architecture`, `IA` y `Artificial Intelligence`, y tres variantes de «Formatos de exportación» que solo se diferencian en idioma y mayúsculas. Por eso el redactor no las genera: heredaría el desorden y lo ensancharía. Arreglarlo exige decidir un vocabulario único y reescribir los cuatro proyectos, y es más trabajo que el propio pipeline. Mientras tanto, esos campos se editan a mano en el JSON.
+~~Normalizar el vocabulario de `structuredStack`, `structuredFeatures` y `rawMetrics`~~ — hecho el 24 de septiembre. Hay un vocabulario cerrado en `src/assets/data/vocabulario.json`, los cuatro proyectos migrados y el redactor genera el stack y los grupos. Las métricas se normalizaron (claves en español, sin repetir Estado ni Equipo, que ya salen en la cabecera), pero el redactor no las genera: son cifras.
 
 ## 6. Limitaciones conocidas
 
